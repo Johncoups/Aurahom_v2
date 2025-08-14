@@ -68,12 +68,20 @@ export function LoginForm() {
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              onBlur={(e) => e.target.checkValidity()}
+              onBlur={(e) => e.currentTarget.reportValidity()}
               placeholder="Enter your email"
-              className="pl-10 border-gray-200 focus:border-cyan-800 focus:ring-cyan-800"
+              className={`pl-10 border-gray-200 focus:border-cyan-800 focus:ring-cyan-800 ${
+                email && !email.includes('@') ? 'border-red-300 focus:border-red-500 focus:ring-red-500' : ''
+              }`}
               required
             />
           </div>
+          {/* Email validation feedback */}
+          {email && !email.includes('@') && (
+            <div className="text-xs text-red-500">
+              ✗ Please enter a valid email address
+            </div>
+          )}
         </div>
 
         {/* Password Field */}
