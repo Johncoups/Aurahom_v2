@@ -47,9 +47,9 @@ export function TestimonialsSection() {
     <section id="testimonials" className="py-20 bg-cyan-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center space-y-4 mb-16">
-          <h2 className="text-3xl lg:text-5xl font-serif font-bold text-gray-900">Hear from Our Community</h2>
+          <h2 className="text-3xl lg:text-5xl font-serif font-bold text-gray-900">Be Among the First</h2>
           <p className="text-xl text-slate-600 max-w-3xl mx-auto">
-            Discover how Aurahom has transformed the building experience for individuals and professionals alike.
+            Join our growing community of home builders and be part of something special from the beginning.
           </p>
         </div>
 

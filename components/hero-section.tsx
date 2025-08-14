@@ -7,47 +7,38 @@ export function HeroSection() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid lg:grid-cols-2 gap-12 items-center">
           {/* Left Content */}
-          <div className="space-y-8">
-            <div className="space-y-4">
-              <h1 className="text-4xl lg:text-6xl font-serif font-bold text-gray-900 leading-tight">
-                Build Your Dream Home with <span className="text-cyan-800">Ease</span>
-              </h1>
-              <p className="text-xl text-slate-600 leading-relaxed">
-                Empowering individuals and small-scale builders with the tools they need to create their perfect home.
-                From planning to completion, we're with you every step of the way.
-              </p>
-            </div>
-
-            <div className="flex flex-col sm:flex-row gap-4">
-              <Button
-                size="lg"
-                className="bg-violet-500 hover:bg-violet-600 text-white px-8 py-4 text-lg font-medium transition-all hover:scale-105"
-              >
-                Get Started
-                <ArrowRight className="ml-2 h-5 w-5" />
-              </Button>
-              <Button
-                variant="outline"
-                size="lg"
-                className="border-cyan-800 text-cyan-800 hover:bg-cyan-800 hover:text-white px-8 py-4 text-lg font-medium bg-transparent"
-              >
-                <Play className="mr-2 h-5 w-5" />
-                Watch Demo
-              </Button>
-            </div>
+                      <div className="space-y-4">
+              <div className="space-y-4">
+                <h1 className="text-4xl lg:text-6xl font-serif font-bold text-gray-900 leading-tight">
+                  Build Your Dream Home with <span className="text-cyan-800">Ease</span>
+                </h1>
+                <div className="flex justify-center -ml-32">
+                  <Button
+                    size="lg"
+                    className="bg-violet-500 hover:bg-violet-600 text-white px-8 py-4 text-lg font-medium transition-all hover:scale-105"
+                  >
+                    Get Started
+                    <ArrowRight className="ml-2 h-5 w-5" />
+                  </Button>
+                </div>
+                <p className="text-xl text-slate-600 leading-relaxed">
+                  Empowering individuals and small-scale builders with the tools they need to create their perfect home.
+                  From planning to completion, we're with you every step of the way.
+                </p>
+              </div>
 
             <div className="flex items-center space-x-8 pt-4">
               <div className="text-center">
-                <div className="text-2xl font-serif font-bold text-cyan-800">10K+</div>
-                <div className="text-sm text-slate-600">Projects Completed</div>
+                <div className="text-2xl font-serif font-bold text-cyan-800">In Beta</div>
+                <div className="text-sm text-slate-600">Early Access</div>
               </div>
               <div className="text-center">
-                <div className="text-2xl font-serif font-bold text-cyan-800">500+</div>
-                <div className="text-sm text-slate-600">Builders</div>
+                <div className="text-2xl font-serif font-bold text-cyan-800">Coming Soon</div>
+                <div className="text-sm text-slate-600">Launch Date</div>
               </div>
               <div className="text-center">
-                <div className="text-2xl font-serif font-bold text-cyan-800">4.9★</div>
-                <div className="text-sm text-slate-600">User Rating</div>
+                <div className="text-2xl font-serif font-bold text-cyan-800">Limited Spots</div>
+                <div className="text-sm text-slate-600">Join Now</div>
               </div>
             </div>
           </div>

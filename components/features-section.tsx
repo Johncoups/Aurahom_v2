@@ -10,9 +10,9 @@ const features = [
   },
   {
     icon: Lightbulb,
-    title: "Expert Guidance",
+    title: "Expense Tracking",
     description:
-      "Access resources and tips from industry professionals to make informed decisions throughout your build.",
+      "Keep your budget under control with detailed cost tracking, budget alerts, and financial reporting tools.",
   },
   {
     icon: Users,
