@@ -56,8 +56,8 @@ export function HeroSection() {
           <div className="relative">
             <div className="relative rounded-2xl overflow-hidden shadow-2xl">
               <img
-                src="/modern-house-construction.png"
-                alt="Modern house construction with blueprints and tools"
+                src="/residentia_home_construction.jpg"
+                alt="Residential home construction with wooden framing and blue sky"
                 className="w-full h-auto object-cover"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-cyan-800/20 to-transparent"></div>
