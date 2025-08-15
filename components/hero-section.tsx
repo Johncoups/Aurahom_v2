@@ -1,5 +1,6 @@
 import { Button } from "@/components/ui/button"
 import { Play, ArrowRight } from "lucide-react"
+import Image from "next/image"
 
 export function HeroSection() {
   return (
@@ -46,9 +47,13 @@ export function HeroSection() {
           {/* Right Content - Hero Image */}
           <div className="relative">
             <div className="relative rounded-2xl overflow-hidden shadow-2xl">
-              <img
+              <Image
                 src="/residentia_home_construction.jpg"
                 alt="Residential home construction with wooden framing and blue sky"
+                width={1600}
+                height={1067}
+                priority
+                sizes="(max-width: 1024px) 100vw, 50vw"
                 className="w-full h-auto object-cover"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-cyan-800/20 to-transparent"></div>

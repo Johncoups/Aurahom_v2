@@ -42,18 +42,18 @@ export function Header() {
 
           {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center space-x-8">
-            <a href="#features" className="text-slate-600 hover:text-cyan-800 transition-colors">
+            <a href="#features" className="text-slate-600 hover:text-cyan-800 transition-colors px-3 py-2 rounded-md">
               Features
             </a>
-            <a href="#testimonials" className="text-slate-600 hover:text-cyan-800 transition-colors">
+            <a href="#testimonials" className="text-slate-600 hover:text-cyan-800 transition-colors px-3 py-2 rounded-md">
               Testimonials
             </a>
-            <a href="#about" className="text-slate-600 hover:text-cyan-800 transition-colors">
+            <a href="#about" className="text-slate-600 hover:text-cyan-800 transition-colors px-3 py-2 rounded-md">
               About
             </a>
             {isAuthenticated ? (
               <>
-                <span className="text-slate-700 hidden lg:inline">{user?.email}</span>
+                <span className="text-slate-700 hidden lg:inline" aria-live="polite">{user?.email}</span>
                 <Button
                   onClick={async () => {
                     await signOutUser()
@@ -61,11 +61,12 @@ export function Header() {
                   }}
                   variant="outline"
                   className="border-cyan-800 text-cyan-800 hover:bg-cyan-800 hover:text-white bg-transparent"
+                  aria-label="Sign out"
                 >
                   Sign Out
                 </Button>
                 <Button asChild className="bg-violet-500 hover:bg-violet-600 text-white">
-                  <a href="/dashboard">Dashboard</a>
+                  <a href="/dashboard" aria-label="Go to dashboard">Dashboard</a>
                 </Button>
               </>
             ) : (
@@ -75,10 +76,10 @@ export function Header() {
                   variant="outline"
                   className="border-cyan-800 text-cyan-800 hover:bg-cyan-800 hover:text-white bg-transparent"
                 >
-                  <a href="/login">Sign In</a>
+                  <a href="/login" aria-label="Sign in">Sign In</a>
                 </Button>
-                <Button asChild className="bg-violet-500 hover:bg-violet-600 text-white">
-                  <a href="/register">Get Started</a>
+                <Button asChild className="bg-violet-600 hover:bg-violet-700 text-white">
+                  <a href="/register" aria-label="Create an account">Get Started</a>
                 </Button>
               </>
             )}
@@ -86,7 +87,12 @@ export function Header() {
 
           {/* Mobile menu button */}
           <div className="md:hidden">
-            <Button variant="ghost" size="sm" onClick={() => setIsMenuOpen(!isMenuOpen)}>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setIsMenuOpen(!isMenuOpen)}
+              aria-label={isMenuOpen ? "Close menu" : "Open menu"}
+            >
               {isMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
             </Button>
           </div>
@@ -96,13 +102,13 @@ export function Header() {
         {isMenuOpen && (
           <div className="md:hidden">
             <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3 border-t border-gray-100">
-              <a href="#features" className="block px-3 py-2 text-slate-600 hover:text-cyan-800">
+              <a href="#features" className="block px-4 py-3 text-slate-600 hover:text-cyan-800 rounded-md">
                 Features
               </a>
-              <a href="#testimonials" className="block px-3 py-2 text-slate-600 hover:text-cyan-800">
+              <a href="#testimonials" className="block px-4 py-3 text-slate-600 hover:text-cyan-800 rounded-md">
                 Testimonials
               </a>
-              <a href="#about" className="block px-3 py-2 text-slate-600 hover:text-cyan-800">
+              <a href="#about" className="block px-4 py-3 text-slate-600 hover:text-cyan-800 rounded-md">
                 About
               </a>
               <div className="flex flex-col space-y-2 px-3 pt-2">

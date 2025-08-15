@@ -138,7 +138,7 @@
 ### Security
 - [X] Verify environment variables are secure
 - [X] Add baseline security headers (CSP, XFO, XCTO, Referrer, Permissions)
-- [ ] Test for common vulnerabilities
+- [X] Test for common vulnerabilities
 - [ ] Ensure HTTPS in production
 
 ### Documentation

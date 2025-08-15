@@ -9,7 +9,8 @@
     "start": "next start",
     "scan:snyk": "npx snyk test",
     "scan:audit": "npm audit --audit-level=high",
-    "check:lighthouse": "npx lighthouse http://localhost:3000 --preset=desktop --output html --output-path ./lighthouse-report.html"
+    "check:lighthouse": "npx lighthouse http://localhost:3000 --preset=desktop --output html --output-path ./lighthouse-report.html",
+    "check:lhci": "npx lhci autorun"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",
