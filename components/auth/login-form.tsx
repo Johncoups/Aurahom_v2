@@ -6,6 +6,8 @@ import { Input } from "@/components/ui/input"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Label } from "@/components/ui/label"
 import { Eye, EyeOff, Mail, Lock } from "lucide-react"
+import { useRouter } from "next/navigation"
+import { useAuth } from "@/contexts/auth-context"
 
 export function LoginForm() {
   const [email, setEmail] = useState("")
@@ -14,6 +16,8 @@ export function LoginForm() {
   const [showPassword, setShowPassword] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState("")
+  const router = useRouter()
+  const { signIn } = useAuth()
 
   const isPasswordValid = (password: string) => {
     return (
@@ -27,18 +31,29 @@ export function LoginForm() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    setIsLoading(true)
     setError("")
 
+    // Basic client-side checks in case required attrs are bypassed
+    if (!email || !email.includes('@')) {
+      setError("Please enter a valid email address")
+      return
+    }
+    if (password.length < 8) {
+      setError("Password must be at least 8 characters")
+      return
+    }
+
+    setIsLoading(true)
     try {
-      // TODO: Implement Supabase authentication
-      console.log("Login attempt:", { email, password, rememberMe })
-      
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000))
-      
+      const result = await signIn({ email, password, rememberMe })
+      if (!result.success) {
+        setError(result.error || "Login failed. Please check your credentials.")
+        return
+      }
+      // Redirect after successful login
+      router.push("/dashboard")
     } catch (err) {
-      setError("Login failed. Please check your credentials.")
+      setError("An unexpected error occurred. Please try again.")
     } finally {
       setIsLoading(false)
     }
@@ -55,13 +70,17 @@ export function LoginForm() {
         </p>
       </div>
 
-      <form onSubmit={handleSubmit} className="space-y-6">
+      <form onSubmit={handleSubmit} className="space-y-6" aria-label="Login form">
         {/* Email Field */}
         <div className="space-y-2">
           <Label htmlFor="email" className="text-sm font-medium text-gray-700">
             Email Address
           </Label>
           <div className="relative">
+            {/* Skeleton placeholder while loading (e.g., during auth state init) */}
+            {isLoading && (
+              <div className="animate-pulse h-10 bg-gray-200 rounded mb-2" />
+            )}
             <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-slate-400" />
             <Input
               id="email"
@@ -74,11 +93,13 @@ export function LoginForm() {
                 email && !email.includes('@') ? 'border-red-300 focus:border-red-500 focus:ring-red-500' : ''
               }`}
               required
+              aria-invalid={!!email && !email.includes('@')}
+              aria-describedby="email-error"
             />
           </div>
           {/* Email validation feedback */}
           {email && !email.includes('@') && (
-            <div className="text-xs text-red-500">
+            <div id="email-error" className="text-xs text-red-500">
               ✗ Please enter a valid email address
             </div>
           )}
@@ -90,6 +111,9 @@ export function LoginForm() {
             Password
           </Label>
           <div className="relative">
+            {isLoading && (
+              <div className="animate-pulse h-10 bg-gray-200 rounded mb-2" />
+            )}
             <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-slate-400" />
             <Input
               id="password"
@@ -108,6 +132,7 @@ export function LoginForm() {
               type="button"
               onClick={() => setShowPassword(!showPassword)}
               className="absolute right-3 top-1/2 transform -translate-y-1/2 text-slate-400 hover:text-slate-600"
+              aria-label={showPassword ? "Hide password" : "Show password"}
             >
               {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
             </button>
@@ -147,7 +172,7 @@ export function LoginForm() {
             </Label>
           </div>
           <a
-            href="#forgot-password"
+            href="/forgot-password"
             className="text-sm text-cyan-800 hover:text-cyan-600 transition-colors"
           >
             Forgot password?
@@ -156,7 +181,7 @@ export function LoginForm() {
 
         {/* Error Message */}
         {error && (
-          <div className="p-3 bg-red-50 border border-red-200 rounded-md">
+          <div role="alert" aria-live="polite" className="p-3 bg-red-50 border border-red-200 rounded-md">
             <p className="text-sm text-red-600">{error}</p>
           </div>
         )}
@@ -165,7 +190,7 @@ export function LoginForm() {
         <Button
           type="submit"
           disabled={isLoading}
-          className="w-full bg-cyan-800 hover:bg-cyan-700 text-white py-3 text-lg font-medium transition-all hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="w-full bg-violet-500 hover:bg-violet-600 text-white py-3 text-lg font-medium transition-all hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {isLoading ? "Signing In..." : "Sign In"}
         </Button>
@@ -176,7 +201,7 @@ export function LoginForm() {
         <p className="text-slate-600">
           Don't have an account?{" "}
           <a
-            href="#register"
+            href="/register"
             className="text-cyan-800 hover:text-cyan-600 font-medium transition-colors"
           >
             Sign up

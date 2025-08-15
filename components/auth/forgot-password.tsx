@@ -5,12 +5,14 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Mail, ArrowLeft, CheckCircle } from "lucide-react"
+import { useAuth } from "@/contexts/auth-context"
 
 export function ForgotPassword() {
   const [email, setEmail] = useState("")
   const [isLoading, setIsLoading] = useState(false)
   const [isSubmitted, setIsSubmitted] = useState(false)
   const [error, setError] = useState("")
+  const { resetPasswordUser } = useAuth()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -25,12 +27,11 @@ export function ForgotPassword() {
     setError("")
 
     try {
-      // TODO: Implement Supabase password reset
-      console.log("Password reset requested for:", email)
-      
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000))
-      
+      const result = await resetPasswordUser(email)
+      if (!result.success) {
+        setError(result.error || "Failed to send reset email. Please try again.")
+        return
+      }
       setIsSubmitted(true)
     } catch (err) {
       setError("Failed to send reset email. Please try again.")
@@ -69,7 +70,7 @@ export function ForgotPassword() {
           </Button>
           
           <a
-            href="#login"
+            href="/login"
             className="block text-sm text-cyan-800 hover:text-cyan-600 transition-colors"
           >
             ← Back to Sign In
@@ -130,7 +131,7 @@ export function ForgotPassword() {
         <Button
           type="submit"
           disabled={isLoading}
-          className="w-full bg-cyan-800 hover:bg-cyan-700 text-white py-3 text-lg font-medium transition-all hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="w-full bg-violet-500 hover:bg-violet-600 text-white py-3 text-lg font-medium transition-all hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {isLoading ? "Sending..." : "Send Reset Link"}
         </Button>
@@ -139,7 +140,7 @@ export function ForgotPassword() {
       {/* Back to Login */}
       <div className="text-center mt-6">
         <a
-          href="#login"
+          href="/login"
           className="inline-flex items-center text-sm text-cyan-800 hover:text-cyan-600 transition-colors"
         >
           <ArrowLeft className="h-4 w-4 mr-1" />

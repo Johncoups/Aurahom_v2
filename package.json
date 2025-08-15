@@ -6,7 +6,10 @@
     "build": "next build",
     "dev": "next dev",
     "lint": "next lint",
-    "start": "next start"
+    "start": "next start",
+    "scan:snyk": "npx snyk test",
+    "scan:audit": "npm audit --audit-level=high",
+    "check:lighthouse": "npx lighthouse http://localhost:3000 --preset=desktop --output html --output-path ./lighthouse-report.html"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",

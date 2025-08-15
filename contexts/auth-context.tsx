@@ -37,6 +37,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const [user, setUser] = useState<User | null>(null)
   const [session, setSession] = useState<Session | null>(null)
   const [isLoading, setIsLoading] = useState(true)
+  const [isOnline, setIsOnline] = useState<boolean>(typeof window === 'undefined' ? true : navigator.onLine)
 
   const isAuthenticated = !!user
 
@@ -44,17 +45,35 @@ export function AuthProvider({ children }: AuthProviderProps) {
     initializeAuth()
 
     const { data: { subscription } } = onAuthStateChange((event, nextSession) => {
-      if (nextSession) {
-        setUser(nextSession.user)
-        setSession(nextSession)
-      } else {
-        setUser(null)
-        setSession(null)
+      switch (event) {
+        case 'SIGNED_IN':
+        case 'TOKEN_REFRESHED':
+        case 'USER_UPDATED':
+          if (nextSession) {
+            setUser(nextSession.user)
+            setSession(nextSession)
+          }
+          break
+        case 'SIGNED_OUT':
+          setUser(null)
+          setSession(null)
+          break
+        default:
+          break
       }
       setIsLoading(false)
     })
 
-    return () => subscription.unsubscribe()
+    const handleOnline = () => setIsOnline(true)
+    const handleOffline = () => setIsOnline(false)
+    window.addEventListener('online', handleOnline)
+    window.addEventListener('offline', handleOffline)
+
+    return () => {
+      subscription.unsubscribe()
+      window.removeEventListener('online', handleOnline)
+      window.removeEventListener('offline', handleOffline)
+    }
   }, [])
 
   const initializeAuth = async () => {

@@ -6,7 +6,10 @@ import { Input } from "@/components/ui/input"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Label } from "@/components/ui/label"
 import { Eye, EyeOff, Mail, Lock, User, Shield } from "lucide-react"
-import { TermsOfService } from "./terms-of-service"
+import dynamic from "next/dynamic"
+const TermsOfService = dynamic(() => import("./terms-of-service").then(m => m.TermsOfService), { ssr: false })
+import { useRouter } from "next/navigation"
+import { useAuth } from "@/contexts/auth-context"
 
 export function RegisterForm() {
   const [name, setName] = useState("")
@@ -19,6 +22,8 @@ export function RegisterForm() {
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState("")
   const [showTerms, setShowTerms] = useState(false)
+  const router = useRouter()
+  const { signUp } = useAuth()
 
   const isPasswordValid = (password: string) => {
     return (
@@ -42,14 +47,13 @@ export function RegisterForm() {
     setError("")
 
     try {
-      // TODO: Implement Supabase registration
-      console.log("Registration attempt:", { name, email, password, acceptTerms })
-      
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000))
-      
-      // TODO: Redirect to login or dashboard after successful registration
-      console.log("Registration successful!")
+      const result = await signUp({ name, email, password })
+      if (!result.success) {
+        setError(result.error || "Registration failed. Please try again.")
+        return
+      }
+      // Redirect to login after successful sign up (confirmation email may be required)
+      router.push("/login")
       
     } catch (err) {
       setError("Registration failed. Please try again.")
@@ -257,7 +261,7 @@ export function RegisterForm() {
         <Button
           type="submit"
           disabled={isLoading || !isFormValid}
-          className="w-full bg-cyan-800 hover:bg-cyan-700 text-white py-3 text-lg font-medium transition-all hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="w-full bg-violet-500 hover:bg-violet-600 text-white py-3 text-lg font-medium transition-all hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {isLoading ? "Creating Account..." : "Create Account"}
         </Button>
@@ -268,7 +272,7 @@ export function RegisterForm() {
         <p className="text-slate-600">
           Already have an account?{" "}
           <a
-            href="#login"
+            href="/login"
             className="text-cyan-800 hover:text-cyan-600 font-medium transition-colors"
           >
             Sign in

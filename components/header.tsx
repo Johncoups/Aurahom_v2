@@ -3,9 +3,13 @@
 import { Button } from "@/components/ui/button"
 import { Menu, X } from "lucide-react"
 import { useState } from "react"
+import { useAuth } from "@/contexts/auth-context"
+import { useRouter } from "next/navigation"
 
 export function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
+  const { isAuthenticated, user, signOutUser } = useAuth()
+  const router = useRouter()
 
   return (
     <header className="bg-white border-b border-gray-100 sticky top-0 z-50">
@@ -47,13 +51,37 @@ export function Header() {
             <a href="#about" className="text-slate-600 hover:text-cyan-800 transition-colors">
               About
             </a>
-            <Button
-              variant="outline"
-              className="border-cyan-800 text-cyan-800 hover:bg-cyan-800 hover:text-white bg-transparent"
-            >
-              Sign In
-            </Button>
-            <Button className="bg-violet-500 hover:bg-violet-600 text-white">Get Started</Button>
+            {isAuthenticated ? (
+              <>
+                <span className="text-slate-700 hidden lg:inline">{user?.email}</span>
+                <Button
+                  onClick={async () => {
+                    await signOutUser()
+                    router.push("/")
+                  }}
+                  variant="outline"
+                  className="border-cyan-800 text-cyan-800 hover:bg-cyan-800 hover:text-white bg-transparent"
+                >
+                  Sign Out
+                </Button>
+                <Button asChild className="bg-violet-500 hover:bg-violet-600 text-white">
+                  <a href="/dashboard">Dashboard</a>
+                </Button>
+              </>
+            ) : (
+              <>
+                <Button
+                  asChild
+                  variant="outline"
+                  className="border-cyan-800 text-cyan-800 hover:bg-cyan-800 hover:text-white bg-transparent"
+                >
+                  <a href="/login">Sign In</a>
+                </Button>
+                <Button asChild className="bg-violet-500 hover:bg-violet-600 text-white">
+                  <a href="/register">Get Started</a>
+                </Button>
+              </>
+            )}
           </nav>
 
           {/* Mobile menu button */}
@@ -78,13 +106,32 @@ export function Header() {
                 About
               </a>
               <div className="flex flex-col space-y-2 px-3 pt-2">
-                <Button
-                  variant="outline"
-                  className="border-cyan-800 text-cyan-800 hover:bg-cyan-800 hover:text-white bg-transparent"
-                >
-                  Sign In
-                </Button>
-                <Button className="bg-violet-500 hover:bg-violet-600 text-white">Get Started</Button>
+                {isAuthenticated ? (
+                  <Button
+                    onClick={async () => {
+                      await signOutUser()
+                      setIsMenuOpen(false)
+                      router.push("/")
+                    }}
+                    variant="outline"
+                    className="border-cyan-800 text-cyan-800 hover:bg-cyan-800 hover:text-white bg-transparent"
+                  >
+                    Sign Out
+                  </Button>
+                ) : (
+                  <>
+                    <Button
+                      asChild
+                      variant="outline"
+                      className="border-cyan-800 text-cyan-800 hover:bg-cyan-800 hover:text-white bg-transparent"
+                    >
+                      <a href="/login">Sign In</a>
+                    </Button>
+                    <Button asChild className="bg-violet-500 hover:bg-violet-600 text-white">
+                      <a href="/register">Get Started</a>
+                    </Button>
+                  </>
+                )}
               </div>
             </div>
           </div>

@@ -89,54 +89,55 @@
 ## Phase 5: UI/UX & Styling 🎨
 
 ### Design Consistency
-- [ ] Match button styles with your current theme (violet-500, cyan-800)
-- [ ] Use consistent typography (serif fonts, proper sizing)
-- [ ] Apply consistent spacing and padding
-- [ ] Match border radius and shadow styles
+- [X] Match button styles with your current theme (violet-500, cyan-800)
+- [X] Use consistent typography (serif fonts, proper sizing)
+- [X] Apply consistent spacing and padding
+- [X] Match border radius and shadow styles
 
 ### Responsive Design
-- [ ] Ensure forms work on mobile devices
-- [ ] Test on different screen sizes
-- [ ] Optimize touch targets for mobile
+- [X] Ensure forms work on mobile devices
+- [X] Test on different screen sizes
+- [X] Optimize touch targets for mobile
 
 ### Accessibility
-- [ ] Add proper ARIA labels
-- [ ] Ensure keyboard navigation works
-- [ ] Add focus indicators
-- [ ] Test with screen readers
+- [X] Add proper ARIA labels
+- [X] Ensure keyboard navigation works
+- [X] Add focus indicators
+- [X] Test with screen readers
 
 ## Phase 6: Integration & Testing 🧪
 
 ### Page Integration
-- [ ] Create `/login` page route
-- [ ] Create `/register` page route
-- [ ] Create `/forgot-password` page route
-- [ ] Add navigation links in header/footer
-- [ ] Update header to show login/logout based on auth state
+- [X] Create `/login` page route
+- [X] Create `/register` page route
+- [X] Create `/forgot-password` page route
+- [X] Add navigation links in header/footer
+- [X] Update header to show login/logout based on auth state
 
 ### Testing
-- [ ] Test login flow with valid credentials
-- [ ] Test login flow with invalid credentials
-- [ ] Test registration flow
-- [ ] Test password reset flow
-- [ ] Test logout functionality
-- [ ] Test protected route access
+- [X] Test login flow with valid credentials
+- [X] Test login flow with invalid credentials
+- [X] Test registration flow
+- [X] Test password reset flow
+- [X] Test logout functionality
+- [X] Test protected route access
 
 ### Edge Cases
-- [ ] Handle expired sessions
-- [ ] Handle network disconnections
-- [ ] Handle browser refresh during auth
-- [ ] Test with different browsers
+- [X] Handle expired sessions
+- [X] Handle network disconnections
+- [X] Handle browser refresh during auth
+- [X] Test with different browsers
 
 ## Phase 7: Polish & Production 🚀
 
 ### Performance
-- [ ] Optimize bundle size
-- [ ] Add loading skeletons
-- [ ] Implement proper error boundaries
+- [X] Optimize bundle size (dynamic import for Terms modal)
+- [X] Add loading skeletons (auth forms, protected route)
+- [X] Implement proper error boundaries (global + dashboard)
 
 ### Security
-- [ ] Verify environment variables are secure
+- [X] Verify environment variables are secure
+- [X] Add baseline security headers (CSP, XFO, XCTO, Referrer, Permissions)
 - [ ] Test for common vulnerabilities
 - [ ] Ensure HTTPS in production
 

@@ -189,7 +189,7 @@ export function TermsOfService({ isOpen, onClose }: TermsOfServiceProps) {
           </div>
           <Button
             onClick={onClose}
-            className="bg-cyan-800 hover:bg-cyan-700 text-white"
+            className="bg-violet-500 hover:bg-violet-600 text-white"
           >
             I Understand
           </Button>

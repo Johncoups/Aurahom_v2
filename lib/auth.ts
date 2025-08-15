@@ -30,9 +30,8 @@ export async function signUpWithEmail(data: SignUpData): Promise<AuthResult> {
       email: data.email,
       password: data.password,
       options: {
-        data: {
-          full_name: data.name,
-        }
+        // Sent to auth.users.raw_user_meta_data. Our DB trigger reads these to create a profile row.
+        data: { full_name: data.name }
       }
     })
 
