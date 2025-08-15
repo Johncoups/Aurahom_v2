@@ -1,4 +1,6 @@
 /** @type {import('next').NextConfig} */
+const isProd = process.env.NODE_ENV === 'production'
+
 const nextConfig = {
   eslint: {
     ignoreDuringBuilds: true,
@@ -11,6 +13,9 @@ const nextConfig = {
     unoptimized: false,
   },
   async headers() {
+    if (!isProd) {
+      return []
+    }
     return [
       {
         source: '/:path*',
