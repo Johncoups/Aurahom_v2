@@ -6,7 +6,11 @@
     "build": "next build",
     "dev": "next dev",
     "lint": "next lint",
-    "start": "next start"
+    "start": "next start",
+    "scan:snyk": "npx snyk test",
+    "scan:audit": "npm audit --audit-level=high",
+    "check:lighthouse": "npx lighthouse http://localhost:3000 --preset=desktop --output html --output-path ./lighthouse-report.html",
+    "check:lhci": "npx lhci autorun"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",
@@ -37,6 +41,7 @@
     "@radix-ui/react-toggle": "1.1.1",
     "@radix-ui/react-toggle-group": "1.1.1",
     "@radix-ui/react-tooltip": "1.1.6",
+    "@supabase/supabase-js": "^2.55.0",
     "autoprefixer": "^10.4.20",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
