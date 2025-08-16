@@ -3,6 +3,7 @@ import type { Metadata } from "next"
 import { Space_Grotesk, DM_Sans } from "next/font/google"
 import "./globals.css"
 import { AuthProvider } from "@/contexts/auth-context"
+import { BidsProvider } from "@/contexts/bids-context"
 
 const spaceGrotesk = Space_Grotesk({
   subsets: ["latin"],
@@ -38,7 +39,9 @@ export default function RootLayout({
           Skip to main content
         </a>
         <AuthProvider>
-          <main id="main-content">{children}</main>
+          <BidsProvider>
+            <main id="main-content">{children}</main>
+          </BidsProvider>
         </AuthProvider>
       </body>
     </html>

@@ -57,7 +57,7 @@ export function Header() {
                 <Button
                   onClick={async () => {
                     await signOutUser()
-                    router.push("/")
+                    router.push("/login")
                   }}
                   variant="outline"
                   className="border-cyan-800 text-cyan-800 hover:bg-cyan-800 hover:text-white bg-transparent"
@@ -117,7 +117,7 @@ export function Header() {
                     onClick={async () => {
                       await signOutUser()
                       setIsMenuOpen(false)
-                      router.push("/")
+                      router.push("/login")
                     }}
                     variant="outline"
                     className="border-cyan-800 text-cyan-800 hover:bg-cyan-800 hover:text-white bg-transparent"
