@@ -2,6 +2,7 @@
 
 import { useState } from "react"
 import { Calendar } from "@/components/ui/calendar"
+import { useBids } from "@/contexts/bids-context"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -10,8 +11,20 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge"
 import { Clock, User, Plus, X, FileText, AlertCircle } from "lucide-react"
 
+type Category = "material" | "subcontractor" | "inspection" | "payment"
+type Activity = {
+  id: number
+  phase: string
+  task: string
+  vendor?: string
+  estimatedArrival?: string
+  duration?: string
+  status: string
+  category: Category
+}
+
 // Sample activity data
-const sampleActivities = {
+const sampleActivities: Record<string, Activity[]> = {
   "2024-01-15": [
     {
       id: 1,
@@ -21,6 +34,7 @@ const sampleActivities = {
       estimatedArrival: "8:00 AM",
       duration: "4 hours",
       status: "scheduled",
+      category: "material",
     },
   ],
   "2024-01-18": [
@@ -32,6 +46,7 @@ const sampleActivities = {
       estimatedArrival: "2:00 PM",
       duration: "1 hour",
       status: "scheduled",
+      category: "inspection",
     },
   ],
   "2024-01-22": [
@@ -43,6 +58,7 @@ const sampleActivities = {
       estimatedArrival: "7:00 AM",
       duration: "6 hours",
       status: "scheduled",
+      category: "subcontractor",
     },
   ],
   "2024-01-25": [
@@ -54,6 +70,7 @@ const sampleActivities = {
       estimatedArrival: "9:00 AM",
       duration: "8 hours",
       status: "scheduled",
+      category: "payment",
     },
   ],
 }
@@ -104,21 +121,24 @@ const ganttPhases = [
 
 export function SchedulePage() {
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date())
-  const [activities, setActivities] = useState(sampleActivities)
+  const [activities, setActivities] = useState<Record<string, Activity[]>>(sampleActivities)
   const [showAddForm, setShowAddForm] = useState(false)
+  const [formDate, setFormDate] = useState<string>("")
   const [newActivity, setNewActivity] = useState({
     phase: "",
     task: "",
     vendor: "",
     estimatedArrival: "",
     duration: "",
+    category: undefined as Category | undefined,
   })
+  const { selectedVendor } = useBids()
 
   const formatDateKey = (date: Date) => {
     return date.toISOString().split("T")[0]
   }
 
-  const getActivitiesForDate = (date: Date) => {
+  const getActivitiesForDate = (date: Date): Activity[] => {
     const dateKey = formatDateKey(date)
     return activities[dateKey] || []
   }
@@ -128,14 +148,31 @@ export function SchedulePage() {
     return activities[dateKey] && activities[dateKey].length > 0
   }
 
+  const getCategoryForDate = (date: Date): Category | null => {
+    const dateKey = formatDateKey(date)
+    const items = activities[dateKey] || []
+    if (items.length === 0) return null
+    // Priority: inspection > subcontractor > material > payment
+    if (items.some((a) => a.category === "inspection")) return "inspection"
+    if (items.some((a) => a.category === "subcontractor")) return "subcontractor"
+    if (items.some((a) => a.category === "material")) return "material"
+    if (items.some((a) => a.category === "payment")) return "payment"
+    return null
+  }
+
   const handleAddActivity = () => {
-    if (!selectedDate || !newActivity.phase || !newActivity.task) return
+    if (!selectedDate || !newActivity.phase || !newActivity.task || !newActivity.category) return
 
     const dateKey = formatDateKey(selectedDate)
-    const activity = {
+    const activity: Activity = {
       id: Date.now(),
-      ...newActivity,
+      phase: newActivity.phase,
+      task: newActivity.task,
+      vendor: newActivity.vendor,
+      estimatedArrival: newActivity.estimatedArrival,
+      duration: newActivity.duration,
       status: "scheduled",
+      category: newActivity.category,
     }
 
     setActivities((prev) => ({
@@ -149,210 +186,163 @@ export function SchedulePage() {
       vendor: "",
       estimatedArrival: "",
       duration: "",
+      category: undefined,
     })
     setShowAddForm(false)
   }
 
-  const selectedDateActivities = selectedDate ? getActivitiesForDate(selectedDate) : []
+  const selectedDateActivities: Activity[] = selectedDate ? getActivitiesForDate(selectedDate) : []
 
   return (
     <div className="max-w-7xl mx-auto p-6 space-y-8">
-      {/* Header */}
-      <div>
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">Project Schedule</h1>
-        <p className="text-gray-600">Manage your construction timeline and activities</p>
+      {/* Header with Add Event */}
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">Project Calendar</h1>
+          <p className="text-gray-600">Select a date to view its events.</p>
+        </div>
       </div>
 
-      {/* Calendar and Details Section */}
+      {/* Calendar, Events, and Important Notes - equal width */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Calendar with Activities Panel */}
-        <div className="lg:col-span-2">
+        {/* Calendar card */}
+        <div>
           <Card className="h-[400px]">
-            <CardHeader className="pb-2">
-              <CardTitle>Calendar View</CardTitle>
-            </CardHeader>
-            <CardContent className="h-[calc(100%-4rem)] px-6 pb-6 pt-4">
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-y-4 gap-x-0 h-full -mt-1">
-                {/* Calendar */}
-                <div className="flex items-start -mt-8">
-                  <Calendar
-                    mode="single"
-                    selected={selectedDate}
-                    onSelect={setSelectedDate}
-                    className="rounded-md border"
-                    modifiers={{
-                      hasActivity: (date) => hasActivities(date),
-                    }}
-                    modifiersStyles={{
-                      hasActivity: {
-                        backgroundColor: "#06b6d4",
-                        color: "white",
-                        fontWeight: "bold",
-                      },
-                    }}
-                  />
-                </div>
-
-                {/* Activity Details Panel */}
-                <div className="flex flex-col h-full lg:ml-12">
-                  <div className="border rounded-lg p-3 flex-1 flex flex-col min-h-0">
-                    <div className="flex items-center justify-between mb-3">
-                      <h3 className="font-semibold text-sm">
-                        {selectedDate ? `${selectedDate.toLocaleDateString()}` : "Select Date"}
-                      </h3>
-                      {selectedDate && selectedDateActivities.length === 0 && (
-                        <Button
-                          size="sm"
-                          onClick={() => setShowAddForm(true)}
-                          className="bg-cyan-600 hover:bg-cyan-700"
-                        >
-                          <Plus className="h-3 w-3" />
-                        </Button>
-                      )}
-                    </div>
-
-                    <div className="space-y-2 flex-1 overflow-y-auto min-h-0">
-                      {selectedDate && selectedDateActivities.length > 0 ? (
-                        selectedDateActivities.map((activity) => (
-                          <div key={activity.id} className="p-2 border rounded space-y-1">
-                            <Badge variant="outline" className="text-xs">
-                              {activity.phase}
-                            </Badge>
-                            <h4 className="font-medium text-sm">{activity.task}</h4>
-                            {activity.vendor && (
-                              <div className="flex items-center gap-1 text-xs text-gray-600">
-                                <User className="h-3 w-3" />
-                                {activity.vendor}
-                              </div>
-                            )}
-                            {activity.estimatedArrival && (
-                              <div className="flex items-center gap-1 text-xs text-gray-600">
-                                <Clock className="h-3 w-3" />
-                                {activity.estimatedArrival}
-                              </div>
-                            )}
-                          </div>
-                        ))
-                      ) : selectedDate && !showAddForm ? (
-                        <div className="text-center py-4 text-gray-500">
-                          <p className="text-sm">No activities</p>
-                          <Button
-                            size="sm"
-                            className="mt-2 bg-cyan-600 hover:bg-cyan-700"
-                            onClick={() => setShowAddForm(true)}
-                          >
-                            <Plus className="h-3 w-3 mr-1" />
-                            Add
-                          </Button>
-                        </div>
-                      ) : !selectedDate ? (
-                        <div className="text-center py-4 text-gray-500">
-                          <p className="text-sm">Select a date</p>
-                        </div>
-                      ) : null}
-
-                      {/* Add Activity Form */}
-                      {showAddForm && (
-                        <div className="p-2 border rounded bg-gray-50 space-y-2">
-                          <div className="flex items-center justify-between">
-                            <h4 className="font-medium text-sm">Add Activity</h4>
-                            <Button variant="ghost" size="sm" onClick={() => setShowAddForm(false)}>
-                              <X className="h-3 w-3" />
-                            </Button>
-                          </div>
-
-                          <div className="space-y-2">
-                            <div>
-                              <Label htmlFor="phase" className="text-xs">
-                                Phase
-                              </Label>
-                              <Select
-                                value={newActivity.phase}
-                                onValueChange={(value) => setNewActivity((prev) => ({ ...prev, phase: value }))}
-                              >
-                                <SelectTrigger className="h-7">
-                                  <SelectValue placeholder="Select phase" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                  <SelectItem value="Planning & Design">Planning & Design</SelectItem>
-                                  <SelectItem value="Foundation & Framing">Foundation & Framing</SelectItem>
-                                  <SelectItem value="Exterior & Interior Rough-in">
-                                    Exterior & Interior Rough-in
-                                  </SelectItem>
-                                  <SelectItem value="Interior Finishes">Interior Finishes</SelectItem>
-                                  <SelectItem value="Final Fixtures & Landscaping">
-                                    Final Fixtures & Landscaping
-                                  </SelectItem>
-                                </SelectContent>
-                              </Select>
-                            </div>
-
-                            <div>
-                              <Label htmlFor="task" className="text-xs">
-                                Task
-                              </Label>
-                              <Input
-                                id="task"
-                                className="h-7"
-                                value={newActivity.task}
-                                onChange={(e) => setNewActivity((prev) => ({ ...prev, task: e.target.value }))}
-                                placeholder="Task description"
-                              />
-                            </div>
-
-                            <div>
-                              <Label htmlFor="vendor" className="text-xs">
-                                Vendor
-                              </Label>
-                              <Input
-                                id="vendor"
-                                className="h-7"
-                                value={newActivity.vendor}
-                                onChange={(e) => setNewActivity((prev) => ({ ...prev, vendor: e.target.value }))}
-                                placeholder="Vendor name"
-                              />
-                            </div>
-
-                            <div>
-                              <Label htmlFor="eta" className="text-xs">
-                                ETA
-                              </Label>
-                              <Input
-                                id="eta"
-                                className="h-7"
-                                value={newActivity.estimatedArrival}
-                                onChange={(e) =>
-                                  setNewActivity((prev) => ({ ...prev, estimatedArrival: e.target.value }))
-                                }
-                                placeholder="9:00 AM"
-                              />
-                            </div>
-
-                            <div className="flex gap-2 pt-1">
-                              <Button
-                                size="sm"
-                                onClick={handleAddActivity}
-                                className="flex-1 bg-cyan-600 hover:bg-cyan-700 h-7"
-                                disabled={!newActivity.phase || !newActivity.task}
-                              >
-                                Add
-                              </Button>
-                              <Button size="sm" variant="outline" onClick={() => setShowAddForm(false)} className="h-7">
-                                Cancel
-                              </Button>
-                            </div>
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              </div>
+            <CardContent className="h-full p-4 flex items-center justify-center">
+              <Calendar
+                mode="single"
+                selected={selectedDate}
+                onSelect={setSelectedDate}
+                className="rounded-md border"
+                modifiers={{
+                  materialDay: (date) => getCategoryForDate(date) === "material",
+                  subcontractorDay: (date) => getCategoryForDate(date) === "subcontractor",
+                  inspectionDay: (date) => getCategoryForDate(date) === "inspection",
+                  paymentDay: (date) => getCategoryForDate(date) === "payment",
+                }}
+                modifiersStyles={{
+                  materialDay: { backgroundColor: "#f59e0b", color: "white", fontWeight: "bold" },
+                  subcontractorDay: { backgroundColor: "#06b6d4", color: "white", fontWeight: "bold" },
+                  inspectionDay: { backgroundColor: "#a855f7", color: "white", fontWeight: "bold" },
+                  paymentDay: { backgroundColor: "#10b981", color: "white", fontWeight: "bold" },
+                }}
+              />
             </CardContent>
           </Card>
         </div>
 
-        {/* Important Notes Section */}
+        {/* Events card */}
+        <div>
+          <Card className="h-[400px]">
+            <CardHeader className="pb-3 flex items-center justify-between">
+              <CardTitle className="flex items-center gap-2">
+                <FileText className="h-5 w-5" />
+                {selectedDate ? `Events for ${selectedDate.toLocaleDateString(undefined, { month: "short", day: "numeric" })}` : "Events"}
+              </CardTitle>
+              <Button size="sm" className="bg-cyan-600 hover:bg-cyan-700" onClick={() => { setShowAddForm(true) }}>
+                <Plus className="h-4 w-4 mr-1" />
+                Add Event
+              </Button>
+            </CardHeader>
+            <CardContent className="h-[calc(100%-4rem)] flex flex-col p-4">
+              {/* Inline Add Form when clicking Add Event */}
+              {showAddForm && (
+                <div className="p-3 border rounded bg-gray-50 space-y-2 mb-3 -mt-2">
+                  <div className="flex items-center justify-between">
+                    <h4 className="font-medium text-sm">Add Event</h4>
+                    <Button variant="ghost" size="sm" onClick={() => setShowAddForm(false)}>
+                      <X className="h-3 w-3" />
+                    </Button>
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    <div className="sm:col-span-2">
+                      <Label className="text-xs">Task</Label>
+                      <Input className="h-8" value={newActivity.task} onChange={(e) => setNewActivity((prev) => ({ ...prev, task: e.target.value }))} placeholder="Task description" />
+                    </div>
+                    <div>
+                      <Label className="text-xs">Phase</Label>
+                      <Select value={newActivity.phase} onValueChange={(value) => setNewActivity((prev) => ({ ...prev, phase: value }))}>
+                        <SelectTrigger className="h-8">
+                          <SelectValue placeholder="Select phase" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="Planning & Design">Planning & Design</SelectItem>
+                          <SelectItem value="Foundation & Framing">Foundation & Framing</SelectItem>
+                          <SelectItem value="Exterior & Interior Rough-in">Exterior & Interior Rough-in</SelectItem>
+                          <SelectItem value="Interior Finishes">Interior Finishes</SelectItem>
+                          <SelectItem value="Final Fixtures & Landscaping">Final Fixtures & Landscaping</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div>
+                      <Label className="text-xs">Category</Label>
+                      <Select value={newActivity.category} onValueChange={(value) => setNewActivity((prev) => ({ ...prev, category: value as Category }))}>
+                        <SelectTrigger className="h-8">
+                          <SelectValue placeholder="Select category" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="material">Material Delivery</SelectItem>
+                          <SelectItem value="subcontractor">Subcontractor On Site</SelectItem>
+                          <SelectItem value="inspection">Inspection</SelectItem>
+                          <SelectItem value="payment">Payment</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div>
+                      <Label className="text-xs">Vendor</Label>
+                      <Input className="h-8" value={newActivity.vendor} onChange={(e) => setNewActivity((prev) => ({ ...prev, vendor: e.target.value }))} placeholder="Vendor name"
+                        onFocus={() => {
+                          if (selectedVendor && !newActivity.vendor) {
+                            setNewActivity((prev) => ({ ...prev, vendor: selectedVendor.name }))
+                          }
+                        }}
+                      />
+                    </div>
+                    <div>
+                      <Label className="text-xs">ETA</Label>
+                      <Input className="h-8" value={newActivity.estimatedArrival} onChange={(e) => setNewActivity((prev) => ({ ...prev, estimatedArrival: e.target.value }))} placeholder="9:00 AM" />
+                    </div>
+                  </div>
+                  <div className="flex gap-2 pt-1">
+                    <Button size="sm" onClick={handleAddActivity} className="flex-1 bg-cyan-600 hover:bg-cyan-700 h-8" disabled={!newActivity.phase || !newActivity.task || !selectedDate}>
+                      Add
+                    </Button>
+                    <Button size="sm" variant="outline" onClick={() => setShowAddForm(false)} className="h-8">
+                      Cancel
+                    </Button>
+                  </div>
+                </div>
+              )}
+
+              <div className="flex-1 overflow-y-auto">
+                {selectedDate && selectedDateActivities.length > 0 ? (
+                  <div className="space-y-2">
+                    {selectedDateActivities.map((activity: Activity) => (
+                      <div key={activity.id} className="p-2 border rounded space-y-1">
+                        <Badge variant="outline" className="text-xs">{activity.phase}</Badge>
+                        <h4 className="font-medium text-sm">{activity.task}</h4>
+                        {activity.vendor && (
+                          <div className="flex items-center gap-1 text-xs text-gray-600">
+                            <User className="h-3 w-3" />
+                            {activity.vendor}
+                          </div>
+                        )}
+                        {activity.estimatedArrival && (
+                          <div className="flex items-center gap-1 text-xs text-gray-600">
+                            <Clock className="h-3 w-3" />
+                            {activity.estimatedArrival}
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-gray-500">No events for this day.</div>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
         <div>
           <Card className="h-[400px]">
             <CardHeader className="pb-3">

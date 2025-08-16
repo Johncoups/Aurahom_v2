@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { ChevronDown, ChevronRight, Edit2, Mail, Send, Phone, Star } from "lucide-react"
+import { useBids } from "@/contexts/bids-context"
 
 interface Vendor {
   id: string
@@ -40,6 +41,7 @@ interface Phase {
 }
 
 export function BidsPage() {
+  const { setSelectedVendor } = useBids()
   const [phases, setPhases] = useState<Phase[]>([
     {
       id: "phase1",
@@ -519,7 +521,16 @@ export function BidsPage() {
                                     </>
                                   )}
                                 </div>
-                                {getStatusBadge(vendor.status)}
+                                <div className="flex items-center justify-between">
+                                  {getStatusBadge(vendor.status)}
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => setSelectedVendor({ id: vendor.id, name: vendor.name, email: vendor.email, phone: vendor.phone })}
+                                  >
+                                    Use for Schedule
+                                  </Button>
+                                </div>
                               </div>
                             ))}
                           </div>
