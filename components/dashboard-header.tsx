@@ -1,8 +1,14 @@
+"use client"
+
 import { Button } from "@/components/ui/button"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { LogOut, Plus } from "lucide-react"
+import { useRouter } from "next/navigation"
+import { useAuth } from "@/contexts/auth-context"
 
 export function DashboardHeader() {
+  const { signOutUser } = useAuth()
+  const router = useRouter()
   // Mock user data - replace with actual user data later
   const user = {
     name: "John Doe",
@@ -34,7 +40,16 @@ export function DashboardHeader() {
           </Avatar>
 
           {/* Logout Button */}
-          <Button variant="ghost" size="sm" className="text-gray-600 hover:text-gray-900">
+          <Button
+            variant="ghost"
+            size="sm"
+            className="text-gray-600 hover:text-gray-900"
+            onClick={async () => {
+              await signOutUser()
+              router.push("/login")
+            }}
+            aria-label="Logout"
+          >
             <LogOut className="h-4 w-4 mr-2" />
             <span className="hidden sm:inline">Logout</span>
           </Button>
