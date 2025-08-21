@@ -23,8 +23,25 @@ export function RoadmapProvider({ children }: { children: ReactNode }) {
 		setIsLoading(true);
 		setProfile(p);
 		try {
-			const data = await generateRoadmap(p);
-			setRoadmap(data);
+			// Generate both roadmap and timeline estimates
+			const [roadmapData, timelineData] = await Promise.all([
+				generateRoadmap(p),
+				fetch('/api/generate-timeline-estimates', {
+					method: 'POST',
+					headers: { 'Content-Type': 'application/json' },
+					body: JSON.stringify({ userProfile: p })
+				}).then(res => res.json())
+			]);
+			
+			// Combine roadmap and timeline data
+			const combinedData = {
+				...roadmapData,
+				timelineEstimates: timelineData.success ? timelineData.timelines : []
+			};
+			
+			setRoadmap(combinedData);
+		} catch (error) {
+			console.error('❌ Error in setProfileAndGenerate:', error);
 		} finally {
 			setIsLoading(false);
 		}

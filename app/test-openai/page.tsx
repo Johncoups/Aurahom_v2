@@ -2,529 +2,539 @@
 
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
-import { generateRoadmap } from "@/app/actions/generateRoadmap"
-
 import type { OnboardingProfile, RoadmapData } from "@/lib/roadmap-types"
-import { getEnhancedTaskBreakdown } from "@/lib/enhanced-task-breakdown"
-import { getBuildingCodeRequirements, getInspectionRequirements } from "@/lib/building-codes-richmond-va"
 
 function TestOpenAIInner() {
   const [roadmap, setRoadmap] = useState<RoadmapData | null>(null)
-  const [profile, setProfile] = useState<OnboardingProfile | null>(null)
   const [isLoading, setIsLoading] = useState(false)
+  const [expandedPhases, setExpandedPhases] = useState<Set<string>>(new Set())
+  const [expandedTasks, setExpandedTasks] = useState<Set<string>>(new Set())
   
+  // Test Profile: Owner-builder with DIY experience
   const testProfile: OnboardingProfile = {
     role: "owner_plus_diy",
     experience: "diy_maintenance",
     subcontractorHelp: "yes",
     constructionMethod: "traditional-frame",
-    currentPhaseId: "foundation",
-    diyPhaseIds: ["interior-framing", "plumbing-rough", "electrical-rough", "flooring", "kitchen-bath"],
-    weeklyHourlyCommitment: "10-20",
-    cityState: "Chesterfield County, VA",
-    propertyAddress: "456 Oak Lane, Chesterfield County, VA 23832",
+    currentPhaseId: "pre-construction",
+    diyPhaseIds: ["exterior-framing", "interior-framing", "roofing", "exterior", "plumbing-rough", "electrical-rough", "hvac-rough", "insulation", "interior-framing-blocking", "drywall", "paint", "trim-carpentry", "flooring", "kitchen-bath"],
+    weeklyHourlyCommitment: "40",
+    cityState: "Faribault, MN",
+    propertyAddress: "123 Main Street, Faribault, MN 55021",
     houseSize: "2,400 sq ft",
-    foundationType: "crawlspace",
-    numberOfStories: "1-story",
+    foundationType: "slab-on-grade",
+    numberOfStories: "2-story",
+    targetStartDate: "2025-03-15", // Spring start for weather planning
     background: "Owner-builder with DIY experience, comfortable with power tools, built a deck and shed before"
   }
 
-  const licensedGCProfile: OnboardingProfile = {
-    role: "gc_plus_diy",
-    experience: "diy_permitting",
-    subcontractorHelp: "yes",
-    constructionMethod: "post-frame",
-    currentPhaseId: "pre-construction",
-    diyPhaseIds: ["interior-framing-post-frame", "plumbing-rough", "electrical-rough", "hvac-rough", "flooring", "kitchen-bath", "radiant-heat"],
-    weeklyHourlyCommitment: "20-30",
-    cityState: "Richmond City, VA",
-    propertyAddress: "123 Main Street, Richmond City, VA 23220",
-    houseSize: "3,200 sq ft",
-    foundationType: "slab-on-grade",
-    numberOfStories: "2-story",
-    background: "Licensed GC with DIY experience, testing OpenAI integration for roadmap generation with post-frame construction and DIY phases"
-  }
-
-  const handleTestGeneration = async () => {
-    try {
-      setIsLoading(true)
-      setProfile(testProfile)
-      
-      console.log('Starting roadmap generation...')
-      
-      // Add timeout to prevent hanging
-      const timeoutPromise = new Promise((_, reject) => 
-        setTimeout(() => reject(new Error('Request timed out after 60 seconds')), 60000)
-      )
-      
-      // Generate roadmap with timeout
-      const dataPromise = generateRoadmap(testProfile)
-      const data = await Promise.race([dataPromise, timeoutPromise]) as RoadmapData
-      
-      setRoadmap(data)
-      console.log('Roadmap generated successfully:', data)
-    } catch (error) {
-      console.error('Test generation failed:', error)
-      alert(`Generation failed: ${error instanceof Error ? error.message : 'Unknown error'}`)
-    } finally {
-      setIsLoading(false)
-    }
-  }
-
-  const handleDetailedDIYGeneration = async () => {
-    try {
-      setIsLoading(true)
-      setProfile(testProfile)
-      
-      console.log('Starting detailed DIY phases generation via API route...')
-      
-      // Call the new API route instead of client-side function
-      const response = await fetch('/api/generate-detailed-diy', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ userProfile: testProfile })
-      })
-      
-      if (!response.ok) {
-        const errorData = await response.json()
-        throw new Error(errorData.error || `HTTP ${response.status}`)
-      }
-      
-      const result = await response.json()
-      
-      if (result.success && result.phases) {
-        // Create a roadmap structure with the detailed phases
-        const detailedRoadmap: RoadmapData = {
-          phases: result.phases
-        }
-        
-        setRoadmap(detailedRoadmap)
-        console.log('Detailed DIY phases generated successfully via API route:', result.phases)
+  // Toggle phase expansion
+  const togglePhaseExpansion = (phaseId: string) => {
+    setExpandedPhases(prev => {
+      const newSet = new Set(prev)
+      if (newSet.has(phaseId)) {
+        newSet.delete(phaseId)
       } else {
-        throw new Error('API returned invalid response format')
+        newSet.add(phaseId)
       }
-    } catch (error) {
-      console.error('Detailed DIY generation failed:', error)
-      alert(`Detailed generation failed: ${error instanceof Error ? error.message : 'Unknown error'}`)
-    } finally {
-      setIsLoading(false)
-    }
+      return newSet
+    })
   }
+
+  // Toggle task expansion
+  const toggleTaskExpansion = (taskKey: string) => {
+    setExpandedTasks(prev => {
+      const newSet = new Set(prev)
+      if (newSet.has(taskKey)) {
+        newSet.delete(taskKey)
+      } else {
+        newSet.add(taskKey)
+      }
+      return newSet
+    })
+  }
+
+  // Format task content with better structure
+  const formatTaskContent = (content: string) => {
+    // Clean up markdown symbols and split content into lines
+    let cleanContent = content
+      .replace(/^#+\s*/gm, '') // Remove markdown headers (# ## ###)
+      .replace(/^\*\s*/gm, '') // Remove markdown bullets (*)
+      .replace(/^-\s*/gm, '') // Remove markdown dashes (-)
+      .replace(/\*\*(.*?)\*\*/g, '$1') // Remove bold markdown (**text**)
+      .replace(/\*(.*?)\*/g, '$1') // Remove italic markdown (*text*)
+      .replace(/`(.*?)`/g, '$1') // Remove code markdown (`text`)
+    
+    const lines = cleanContent.split('\n').filter(line => line.trim())
+    
+    return lines.map((line, index) => {
+      const trimmedLine = line.trim()
+      
+      // Check if line starts with a number
+      if (/^\d+\./.test(trimmedLine)) {
+        // Numbered list item - indented with blue left border
+        return (
+          <div key={index} className="mb-2 pl-6 border-l-2 border-blue-200">
+            <span className="text-gray-700">{trimmedLine}</span>
+          </div>
+        )
+      } else if (trimmedLine.toUpperCase() === trimmedLine && trimmedLine.length > 3 && !/^\d/.test(trimmedLine)) {
+        // Section headers (all caps, not numbers) - NO indentation
+        return (
+          <div key={index} className="mt-4 mb-2 font-semibold text-gray-800 text-sm uppercase tracking-wide">
+            {trimmedLine}
+          </div>
+        )
+      } else {
+        // Regular body text - indented for hierarchy
+        return (
+          <div key={index} className="mb-2 pl-4 text-gray-700">
+            {trimmedLine}
+          </div>
+        )
+      }
+    })
+  }
+
+  // Function to remove brackets from AI-generated text and redundant phase info
+  const cleanBrackets = (text: string): string => {
+    const cleaned = text
+      .split('\n')
+      .filter(line => {
+        const trimmedLine = line.trim();
+        // Remove redundant phase lines and mode headers
+        return !trimmedLine.startsWith('Phase:') && 
+               !trimmedLine.startsWith('**Phase:') &&
+               !trimmedLine.startsWith('🔨') &&
+               !trimmedLine.startsWith('🏗') &&
+               !trimmedLine.startsWith('DIY Phase') &&
+               !trimmedLine.startsWith('Contractor Phase');
+      })
+      .map(line => line
+        .replace(/\[(\d+)\]/g, '$1') // Remove brackets from numbers [X] -> X
+        .replace(/\[(\w+)\]\s*$/g, '$1') // Remove brackets from words [WORD] -> WORD
+        .replace(/\[([^\]]+)\]/g, '$1') // Remove any remaining brackets with content
+      )
+      .join('\n')
+      .trim(); // Remove leading/trailing whitespace
+    
+    console.log('cleanBrackets - Original:', text);
+    console.log('cleanBrackets - Cleaned:', cleaned);
+    
+    return cleaned;
+  };
+
+  // Function to remove redundant duration for contractor phases
+  const removeRedundantDuration = (text: string, isDIYPhase: boolean): string => {
+    if (isDIYPhase) {
+      return text; // Keep all duration info for DIY phases
+    } else {
+      // For contractor phases, remove redundant "Duration: X weeks" lines
+      const cleaned = text
+        .split('\n')
+        .filter(line => !line.trim().startsWith('Duration:'))
+        .join('\n')
+        .trim();
+      
+      console.log('removeRedundantDuration - Original:', text);
+      console.log('removeRedundantDuration - Cleaned:', cleaned);
+      console.log('Is DIY Phase:', isDIYPhase);
+      
+      return cleaned;
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gray-50 p-4">
       <div className="max-w-4xl mx-auto">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-4">OpenAI Roadmap Test</h1>
+          <h1 className="text-3xl font-bold text-gray-900 mb-4">Timeline Estimation Test</h1>
           <p className="text-gray-600 mb-6">
-            This page tests the OpenAI integration for generating construction roadmaps.
+            This page tests the duration-only timeline estimation functionality for construction phases using parallel processing.
           </p>
           
           <div className="bg-white rounded-lg border p-4 mb-6">
-            <h2 className="text-lg font-semibold mb-3">Test Profile</h2>
-            <div className="grid grid-cols-2 gap-4 text-sm">
-              <div>
-                <span className="font-medium">Role:</span> {testProfile.role === "gc_only" ? "Licensed General Contractor (hiring all subcontractors)" : 
-                  testProfile.role === "gc_plus_diy" ? "Licensed General Contractor (will self-perform some phases)" :
-                  "Owner-builder acting as General Contractor (will self-perform some phases)"}
-              </div>
-              <div>
-                <span className="font-medium">Construction Method:</span> {testProfile.constructionMethod === "" ? "Not selected" :
-                   testProfile.constructionMethod === "traditional-frame" ? "Traditional Wood Frame" :
-                   testProfile.constructionMethod === "post-frame" ? "Post Frame/Pole Barn" :
-                   testProfile.constructionMethod === "icf" ? "ICF (Insulated Concrete Forms)" :
-                   testProfile.constructionMethod === "sip" ? "SIP (Structural Insulated Panels)" :
-                   testProfile.constructionMethod === "modular" ? "Modular/Prefab" :
-                   testProfile.constructionMethod === "other" ? "Other" :
-                   "Not specified"}
-              </div>
-              <div>
-                <span className="font-medium">Experience:</span> {testProfile.experience === "" ? "Not selected" :
-                   testProfile.experience === "gc_experienced" ? "General contractor" : 
-                   testProfile.experience === "house_builder" ? "Has built a house before" :
-                   testProfile.experience === "trades_familiar" ? "Trades background, familiar with building process" :
-                   testProfile.experience === "diy_permitting" ? "DIY - Tackled large projects requiring permitting" :
-                   testProfile.experience === "diy_maintenance" ? "DIY - Maintenance tasks, no permits needed" :
-                   "Complete novice with tools and building"}
-              </div>
-              <div>
-                <span className="font-medium">Current Phase:</span> {testProfile.currentPhaseId === "" ? "Not selected" : testProfile.currentPhaseId}
-              </div>
-              <div>
-                <span className="font-medium">Weekly Commitment:</span> {testProfile.weeklyHourlyCommitment === "" ? "Not selected" : `${testProfile.weeklyHourlyCommitment} hours`}
-              </div>
-              <div>
-                <span className="font-medium">Location:</span> {testProfile.cityState === "" ? "Not provided" : testProfile.cityState}
-              </div>
-                             <div>
-                 <span className="font-medium">Property Address:</span> {testProfile.propertyAddress === "" ? "Not provided" : testProfile.propertyAddress}
-               </div>
-                               <div>
-                  <span className="font-medium">House Size:</span> {testProfile.houseSize === "" ? "Not provided" : testProfile.houseSize}
-                </div>
-                <div>
-                  <span className="font-medium">Foundation Type:</span> {testProfile.foundationType === "" ? "Not selected" :
-                     testProfile.foundationType === "slab-on-grade" ? "Slab on Grade" :
-                     testProfile.foundationType === "crawlspace" ? "Crawlspace" :
-                     testProfile.foundationType === "full-basement" ? "Full Basement" :
-                     testProfile.foundationType === "partial-basement" ? "Partial Basement" :
-                     testProfile.foundationType === "pier-and-beam" ? "Pier and Beam" :
-                     testProfile.foundationType === "other" ? "Other" :
-                     "Not specified"}
-                </div>
-                <div>
-                  <span className="font-medium">Number of Stories:</span> {testProfile.numberOfStories === "" ? "Not selected" :
-                     testProfile.numberOfStories === "1-story" ? "1 Story" :
-                     testProfile.numberOfStories === "1.5-story" ? "1.5 Story (Split Level)" :
-                     testProfile.numberOfStories === "2-story" ? "2 Story" :
-                     testProfile.numberOfStories === "2.5-story" ? "2.5 Story" :
-                     testProfile.numberOfStories === "3-story" ? "3 Story" :
-                     testProfile.numberOfStories === "other" ? "Other" :
-                     "Not specified"}
-                </div>
-                <div>
-                  <span className="font-medium">DIY Phases:</span> {testProfile.diyPhaseIds.length > 0 ?   
-                  testProfile.diyPhaseIds.map(id => {
-                    const phaseNames: { [key: string]: string } = {
-                      "interior-framing": "Interior Framing & Blocking",
-                      "plumbing-rough": "Plumbing Rough-In",
-                      "electrical-rough": "Electrical Rough-In", 
-                      "hvac-rough": "HVAC Rough-In",
-                      "flooring": "Flooring",
-                      "kitchen-bath": "Kitchen & Bath",
-                      "radiant-heat": "In-Floor Heat (Optional)"
-                    };
-                    return phaseNames[id] || id;
-                  }).join(", ") : "None"
-                }
-              </div>
-            </div>
-            <div className="mt-3">
-              <span className="font-medium">Background:</span> {testProfile.background}
-            </div>
-
-            {/* Enhanced Details Section */}
-            <div className="bg-white rounded-lg border p-4 mb-6">
-              <h2 className="text-lg font-semibold mb-3">Enhanced System Details</h2>
-              <div className="space-y-4">
-                <div>
-                  <h3 className="font-medium text-blue-600 mb-2">Building Code Requirements (Richmond City, VA)</h3>
-                  <div className="bg-gray-50 p-3 rounded text-sm">
-                    <div className="mb-2">
-                      <strong>Interior Framing:</strong>
-                      <pre className="whitespace-pre-wrap mt-1">{getBuildingCodeRequirements("interior-framing")}</pre>
-                    </div>
-                    <div className="mb-2">
-                      <strong>Inspection Requirements:</strong>
-                      <pre className="whitespace-pre-wrap mt-1">{getInspectionRequirements("interior-framing")}</pre>
-                    </div>
-                  </div>
+            <h2 className="text-lg font-semibold mb-3">Questionnaire Inputs Used</h2>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-3">
+                <div className="p-3 border rounded bg-blue-50">
+                  <h3 className="font-medium text-sm text-blue-800">Role & Experience</h3>
+                  <p className="text-xs text-blue-600">Role: {testProfile.role.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}</p>
+                  <p className="text-xs text-blue-600">Experience: {testProfile.experience.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}</p>
+                  <p className="text-xs text-blue-600">Subcontractor Help: {testProfile.subcontractorHelp === 'yes' ? 'Yes' : testProfile.subcontractorHelp === 'no' ? 'No' : 'Maybe'}</p>
                 </div>
                 
-                <div>
-                  <h3 className="font-medium text-green-600 mb-2">Enhanced Task Breakdown - Interior Framing</h3>
-                  <div className="bg-gray-50 p-3 rounded text-sm">
-                    <div className="mb-3">
-                      <strong>Layout Tasks:</strong>
-                      <ul className="list-disc list-inside mt-1 ml-4">
-                        {getEnhancedTaskBreakdown("interior-framing").layout?.map((task: string, index: number) => (
-                          <li key={index} className="text-xs">{task}</li>
-                        ))}
-                      </ul>
-                    </div>
-                    <div className="mb-3">
-                      <strong>Cutting Tasks:</strong>
-                      <ul className="list-disc list-inside mt-1 ml-4">
-                        {getEnhancedTaskBreakdown("interior-framing").cutting?.map((task: string, index: number) => (
-                          <li key={index} className="text-xs">{task}</li>
-                        ))}
-                      </ul>
-                    </div>
-                    <div className="mb-3">
-                      <strong>Assembly Tasks:</strong>
-                      <ul className="list-disc list-inside mt-1 ml-4">
-                        {getEnhancedTaskBreakdown("interior-framing").assembly?.map((task: string, index: number) => (
-                          <li key={index} className="text-xs">{task}</li>
-                        ))}
-                      </ul>
-                    </div>
-                    <div>
-                      <strong>Quality Control Tasks:</strong>
-                      <ul className="list-disc list-inside mt-1 ml-4">
-                        {getEnhancedTaskBreakdown("interior-framing").quality_control?.map((task: string, index: number) => (
-                          <li key={index} className="text-xs">{task}</li>
-                        ))}
-                      </ul>
-                    </div>
+                <div className="p-3 border rounded bg-green-50">
+                  <h3 className="font-medium text-sm text-green-800">Construction Details</h3>
+                  <p className="text-xs text-green-600">Method: {testProfile.constructionMethod.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}</p>
+                  <p className="text-xs text-green-600">Current Phase: {testProfile.currentPhaseId.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}</p>
+                  <p className="text-xs text-green-600">Foundation: {testProfile.foundationType.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}</p>
+                  <p className="text-xs text-green-600">Stories: {testProfile.numberOfStories.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}</p>
+                </div>
+              </div>
+              
+              <div className="space-y-3">
+                <div className="p-3 border rounded bg-purple-50">
+                  <h3 className="font-medium text-sm text-purple-800">Project Specifications</h3>
+                  <p className="text-xs text-purple-600">House Size: {testProfile.houseSize}</p>
+                  				<p className="text-xs text-purple-600">Weekly Commitment: {testProfile.weeklyHourlyCommitment} hours/week</p>
+                  <p className="text-xs text-purple-600">Target Start: {testProfile.targetStartDate ? new Date(testProfile.targetStartDate).toLocaleDateString() : 'Not specified'}</p>
+                  <p className="text-xs text-purple-600">Location: {testProfile.cityState}</p>
+                </div>
+                
+                <div className="p-3 border rounded bg-orange-50">
+                  <h3 className="font-medium text-sm text-orange-800">DIY Phases Selected</h3>
+                  <div className="text-xs text-orange-600">
+                    {testProfile.diyPhaseIds.map((phase, index) => (
+                      <div key={index} className="mb-1">
+                        • {phase.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
+                      </div>
+                    ))}
                   </div>
                 </div>
               </div>
             </div>
+            
+            {testProfile.background && (
+              <div className="mt-4 p-3 border rounded bg-gray-50">
+                <h3 className="font-medium text-sm text-gray-800">Additional Background</h3>
+                <p className="text-xs text-gray-600">{testProfile.background}</p>
+              </div>
+            )}
           </div>
           
-                     <div className="flex gap-4 mb-6 flex-wrap">
-            <Button 
-              onClick={handleTestGeneration} 
-              disabled={isLoading}
-            >
-              {isLoading ? "Generating Roadmap..." : "Generate Test Roadmap with OpenAI"}
-            </Button>
-            
-            <Button 
-              onClick={handleDetailedDIYGeneration}
-              disabled={isLoading}
-              variant="secondary"
-            >
-              {isLoading ? "Generating Detailed DIY..." : "Generate Detailed DIY Phases (Loop Approach)"}
-            </Button>
-            
+          <div className="flex gap-4 mb-6 flex-wrap">
             <Button 
               onClick={async () => {
-                try {
-                  setIsLoading(true)
-                  setProfile(licensedGCProfile)
+                                 try {
+                   setIsLoading(true)
+                   
+                   console.log('Starting timeline estimation generation...')
                   
-                  console.log('Starting licensed GC roadmap generation...')
+                  // Call the new timeline estimation API
+                  const response = await fetch('/api/generate-timeline-estimates', {
+                    method: 'POST',
+                    headers: {
+                      'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ userProfile: testProfile })
+                  })
                   
-                  // Add timeout to prevent hanging
-                  const timeoutPromise = new Promise((_, reject) => 
-                    setTimeout(() => reject(new Error('Request timed out after 60 seconds')), 60000)
-                  )
+                  if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`)
+                  }
                   
-                  // Generate roadmap with timeout
-                  const dataPromise = generateRoadmap(licensedGCProfile)
-                  const data = await Promise.race([dataPromise, timeoutPromise]) as RoadmapData
+                  const result = await response.json()
                   
-                  setRoadmap(data)
-                  console.log('Licensed GC roadmap generated successfully:', data)
+                  if (result.success && result.timelines) {
+                    console.log('Timeline estimation generated successfully:', result.timelines)
+                    
+                    // Display results in organized format
+                    const timelineRoadmap: RoadmapData = {
+                      phases: result.timelines.map((timeline: any, index: number) => ({
+                        id: `timeline-phase-${index}`,
+                        title: `${timeline.phaseTitle} - Timeline Estimate`,
+                        detailLevel: index === 0 ? 'high' as const : 'low' as const, // First phase expanded, others collapsed
+                        tasks: [{
+                          id: `timeline-details-${index}`,
+                          title: 'Timeline Details',
+                          status: 'todo' as const,
+                          notes: removeRedundantDuration(cleanBrackets(timeline.timeline), timeline.timeline.toLowerCase().includes('diy phase')),
+                          steps: [],
+                          qaChecks: [],
+                          vendorQuestions: [],
+                          vendorNeeds: []
+                        }]
+                      }))
+                    }
+                    
+                    // Set the first phase as expanded by default
+                    setExpandedPhases(new Set(['timeline-phase-0']))
+                    setExpandedTasks(new Set(['timeline-phase-0-timeline-details-0']))
+                    
+                    setRoadmap(timelineRoadmap)
+                    console.log('Timeline estimation completed successfully')
+                  } else {
+                    throw new Error(result.error || 'Failed to generate timeline estimates')
+                  }
+                  
                 } catch (error) {
-                  console.error('Licensed GC generation failed:', error)
-                  alert(`Licensed GC generation failed: ${error instanceof Error ? error.message : 'Unknown error'}`)
+                  console.error('Timeline estimation failed:', error)
+                  alert(`Timeline estimation failed: ${error instanceof Error ? error.message : 'Unknown error'}`)
                 } finally {
                   setIsLoading(false)
                 }
               }}
               disabled={isLoading}
-              variant="secondary"
+              variant="outline"
+              className="bg-blue-600 hover:bg-blue-700 text-white"
             >
-              {isLoading ? "Generating Licensed GC..." : "Test Licensed GC Profile"}
+              {isLoading ? "Generating..." : "⏱️ Generate Timeline Estimates (Parallel)"}
             </Button>
-            
-                         <Button 
-               onClick={async () => {
-                 try {
-                   setIsLoading(true)
-                   console.log('Testing simple OpenAI call...')
-                   
-                   const response = await fetch('/api/test-openai')
-                   const result = await response.json()
-                   console.log('Simple test result:', result)
-                   alert(`OpenAI test: ${result.success ? 'SUCCESS' : 'FAILED'} - ${result.response || result.error}`)
-                 } catch (error) {
-                   console.error('Simple test failed:', error)
-                   alert(`Test failed: ${error instanceof Error ? error.message : 'Unknown error'}`)
-                 } finally {
-                   setIsLoading(false)
-                 }
-               }}
-               disabled={isLoading}
-               variant="outline"
-             >
-               Test OpenAI API
-             </Button>
-             
-             <Button 
-               onClick={() => {
-                 if (roadmap) {
-                   // Create Markdown content
-                   let markdown = `# AI Generated Construction Roadmap\n\n`
-                   markdown += `Generated on: ${new Date().toLocaleString()}\n\n`
-                   
-                   roadmap.phases.forEach((phase, index) => {
-                     markdown += `## ${index + 1}. ${phase.title}\n\n`
-                     markdown += `**Detail Level:** ${phase.detailLevel}\n\n`
-                     
-                     phase.tasks.forEach((task, taskIndex) => {
-                       markdown += `### ${taskIndex + 1}. ${task.title}\n\n`
-                       if (task.notes) {
-                         markdown += `${task.notes}\n\n`
-                       }
-                       if (task.steps && task.steps.length > 0) {
-                         markdown += `**Steps:**\n`
-                         task.steps.forEach((step, stepIndex) => {
-                           markdown += `${stepIndex + 1}. ${step.description}\n`
-                         })
-                         markdown += `\n`
-                       }
-                     })
-                     markdown += `---\n\n`
-                   })
-                   
-                   // Create and download the file
-                   const blob = new Blob([markdown], { type: 'text/markdown' })
-                   const url = URL.createObjectURL(blob)
-                   const a = document.createElement('a')
-                   a.href = url
-                   a.download = `construction-roadmap-${new Date().toISOString().split('T')[0]}.md`
-                   document.body.appendChild(a)
-                   a.click()
-                   document.body.removeChild(a)
-                   URL.revokeObjectURL(url)
-                   
-                   alert('Markdown file downloaded successfully!')
-                 } else {
-                   alert('No roadmap data to export. Please generate a roadmap first.')
-                 }
-               }}
-               disabled={!roadmap}
-               variant="outline"
-               className="bg-green-50 text-green-700 border-green-200 hover:bg-green-100"
-             >
-               📥 Export to Markdown
-             </Button>
           </div>
-
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
-            <h3 className="font-semibold text-blue-900 mb-2">Testing Instructions:</h3>
-            <ol className="list-decimal list-inside space-y-1 text-sm text-blue-800">
-              <li>Click the button above to generate a roadmap using OpenAI</li>
-              <li>Check the console for any AI generation logs</li>
-              <li>Look for AI-generated notes in the roadmap tasks (marked with ✨)</li>
-              <li>Try the "Regenerate with AI" button on individual phases</li>
-              <li>Verify that the AI content is relevant to construction</li>
-            </ol>
-          </div>
-
-          {profile && (
-            <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-6">
-              <h3 className="font-semibold text-green-900 mb-2">Test Profile Loaded:</h3>
-              <p className="text-sm text-green-800">
-                Role: {profile.role === "gc_only" ? "Licensed General Contractor (hiring all subcontractors)" : 
-                  profile.role === "gc_plus_diy" ? "Licensed General Contractor (will self-perform some phases)" :
-                  "Owner-builder acting as General Contractor (will self-perform some phases)"} • 
-                Experience: {profile.experience === "" ? "Not selected" :
-                   profile.experience === "gc_experienced" ? "General contractor" : 
-                   profile.experience === "house_builder" ? "Has built a house before" :
-                   profile.experience === "trades_familiar" ? "Trades background, familiar with building process" :
-                   profile.experience === "diy_permitting" ? "DIY - Tackled large projects requiring permitting" :
-                   profile.experience === "diy_maintenance" ? "DIY - Maintenance tasks, no permits needed" :
-                   "Complete novice with tools and building"} •  
-                Current Phase: {profile.currentPhaseId === "" ? "Not selected" : profile.currentPhaseId} • 
-                Weekly Commitment: {profile.weeklyHourlyCommitment === "" ? "Not selected" : `${profile.weeklyHourlyCommitment} hours`} • 
-                Location: {profile.cityState === "" ? "Not provided" : profile.cityState}
-              </p>
-              {profile.diyPhaseIds && profile.diyPhaseIds.length > 0 && (
-                <p className="text-sm text-green-800 mt-2">
-                                     <strong>DIY Phases:</strong> {profile.diyPhaseIds.map(id => {
-                     const phaseNames: { [key: string]: string } = {
-                       "interior-framing": "Interior Framing & Blocking",
-                       "interior-framing-post-frame": "Interior Framing & Blocking",
-                       "interior-framing-icf": "Interior Framing & Blocking",
-                       "plumbing-rough": "Plumbing Rough-In",
-                       "electrical-rough": "Electrical Rough-In", 
-                       "hvac-rough": "HVAC Rough-In",
-                       "flooring": "Flooring",
-                       "kitchen-bath": "Kitchen & Bath",
-                       "radiant-heat": "In-Floor Heat (Optional)"
-                     };
-                     return phaseNames[id] || id;
-                   }).join(", ")}
-                </p>
-              )}
-            </div>
-          )}
         </div>
 
         {/* Display the generated roadmap */}
         {roadmap && (
           <div className="bg-white rounded-lg border p-4 mb-6">
-            <h2 className="text-xl font-semibold mb-4">Generated Roadmap</h2>
+            <h2 className="text-xl font-semibold mb-4">Generated Timeline Estimates</h2>
             <p className="text-sm text-gray-600 mb-4">
-              AI-enhanced roadmap with {roadmap.phases.length} phases
+              {roadmap.phases[0]?.id?.startsWith('timeline-phase-')
+                ? '⏱️ Duration-Only Timeline Estimation - All phases processed in parallel for speed'
+                : `AI-enhanced roadmap with ${roadmap.phases.length} phases`}
             </p>
+            
+            {/* Duration Summary */}
+            <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-4">
+              <h3 className="text-sm font-semibold text-green-800 mb-2">Project Duration Summary</h3>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-green-700">
+                    {(() => {
+                      let totalWeeks = 0;
+                      roadmap.phases.forEach(phase => {
+                        const timelineText = phase.tasks[0]?.notes || '';
+                        const isDIYPhase = testProfile.diyPhaseIds.some(diyPhase => {
+                          const diyPhaseFormatted = diyPhase.replace(/-/g, ' ').toLowerCase();
+                          return phase.title.toLowerCase().includes(diyPhaseFormatted);
+                        });
+                        
+                        if (isDIYPhase) {
+                          const durationPattern = /.*\*\*Duration\*\*:\s*(\d+)\s*weeks/;
+                          const durationMatch = timelineText.match(durationPattern);
+                          if (durationMatch) {
+                            totalWeeks += parseInt(durationMatch[1]);
+                          }
+                        } else {
+                          const contractorPattern = /.*\*\*Contractor Duration\*\*:\s*(\d+)\s*weeks/;
+                          const contractorMatch = timelineText.match(contractorPattern);
+                          if (contractorMatch) {
+                            totalWeeks += parseInt(contractorMatch[1]);
+                          }
+                        }
+                      });
+                      return totalWeeks;
+                    })()}
+                  </div>
+                  <div className="text-xs text-green-600">Total Weeks</div>
+                </div>
+                
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-blue-700">
+                    {(() => {
+                      let diyWeeks = 0;
+                      roadmap.phases.forEach(phase => {
+                        const timelineText = phase.tasks[0]?.notes || '';
+                        const isDIYPhase = testProfile.diyPhaseIds.some(diyPhase => {
+                          const diyPhaseFormatted = diyPhase.replace(/-/g, ' ').toLowerCase();
+                          return phase.title.toLowerCase().includes(diyPhaseFormatted);
+                        });
+                        
+                        if (isDIYPhase) {
+                          const durationPattern = /.*\*\*Duration\*\*:\s*(\d+)\s*weeks/;
+                          const durationMatch = timelineText.match(durationPattern);
+                          if (durationMatch) {
+                            diyWeeks += parseInt(durationMatch[1]);
+                          }
+                        }
+                      });
+                      return diyWeeks;
+                    })()}
+                  </div>
+                  <div className="text-xs text-blue-600">DIY Weeks</div>
+                </div>
+                
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-purple-700">
+                    {(() => {
+                      let contractorWeeks = 0;
+                      roadmap.phases.forEach(phase => {
+                        const timelineText = phase.tasks[0]?.notes || '';
+                        const isDIYPhase = testProfile.diyPhaseIds.some(diyPhase => {
+                          const diyPhaseFormatted = diyPhase.replace(/-/g, ' ').toLowerCase();
+                          return phase.title.toLowerCase().includes(diyPhaseFormatted);
+                        });
+                        
+                        if (!isDIYPhase) {
+                          const contractorPattern = /.*\*\*Contractor Duration\*\*:\s*(\d+)\s*weeks/;
+                          const contractorMatch = timelineText.match(contractorPattern);
+                          if (contractorMatch) {
+                            contractorWeeks += parseInt(contractorMatch[1]);
+                          }
+                        }
+                      });
+                      return contractorWeeks;
+                    })()}
+                  </div>
+                  <div className="text-xs text-purple-600">Contractor Weeks</div>
+                </div>
+              </div>
+            </div>
             
             {/* Custom Roadmap Display */}
             <div className="space-y-4">
-              {roadmap.phases.map((phase) => (
-                <div key={phase.id} className="border border-gray-200 rounded-lg p-4">
-                  <div className="flex items-center justify-between mb-3">
-                    <h3 className="text-lg font-semibold text-gray-900">{phase.title}</h3>
-                    <span className="text-sm bg-blue-100 text-blue-700 px-2 py-1 rounded">
-                      {phase.detailLevel} detail
-                    </span>
-                  </div>
-                  
-                  <div className="space-y-3">
-                    {phase.tasks.map((task) => (
-                      <div key={task.id} className="border border-gray-100 rounded-lg p-3">
-                        <div className="flex items-start gap-3 mb-2">
-                          <div className="w-4 h-4 rounded border-2 border-gray-300 flex items-center justify-center mt-0.5">
-                            <span className="text-gray-400 text-xs">○</span>
-                          </div>
-                          <div className="flex-1">
-                            <h5 className="font-medium text-gray-700">{task.title}</h5>
-                                                         {task.notes && (
-                               <div className="mt-1 bg-purple-50 p-3 rounded">
-                                 <div className="flex items-center gap-2 mb-2">
-                                   <span className="text-purple-600">✨</span>
-                                   <span className="text-sm font-medium text-purple-800">AI Generated Detailed Guide:</span>
-                                 </div>
-                                 <pre className="text-xs text-purple-700 whitespace-pre-wrap font-mono bg-white p-3 rounded border overflow-auto max-h-96">
-                                   {task.notes}
-                                 </pre>
-                               </div>
-                             )}
-                          </div>
-                        </div>
-
-                        {/* Task Steps */}
-                        {task.steps && task.steps.length > 0 && (
-                          <div className="ml-7 space-y-2">
-                            {task.steps.map((step, index) => (
-                              <div key={step.id} className="flex items-center gap-2 text-sm text-gray-600">
-                                <span className="text-gray-400 text-xs">{index + 1}.</span>
-                                {step.description}
-                              </div>
-                            ))}
-                          </div>
-                        )}
-
-                        {/* QA Checks */}
-                        {task.qaChecks && task.qaChecks.length > 0 && (
-                          <div className="ml-7 mt-3">
-                            <h6 className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-2">Quality Checks</h6>
-                            <div className="space-y-1">
-                              {task.qaChecks.map((check, index) => (
-                                <div key={index} className="flex items-center gap-2 text-sm text-gray-600">
-                                  <span className="text-gray-400 text-xs">✓</span>
-                                  {check}
-                                </div>
-                              ))}
-                            </div>
-                          </div>
-                        )}
-
-                        {/* Vendor Questions */}
-                        {task.vendorQuestions && task.vendorQuestions.length > 0 && (
-                          <div className="ml-7 mt-3">
-                            <h6 className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-2">Questions for Vendors</h6>
-                            <div className="space-y-1">
-                              {task.vendorQuestions.map((question, index) => (
-                                <div key={index} className="flex items-center gap-2 text-sm text-gray-600">
-                                  <span className="text-gray-400 text-xs">?</span>
-                                  {question}
-                                </div>
-                              ))}
-                            </div>
-                          </div>
-                        )}
+              {roadmap.phases.map((phase) => {
+                const isExpanded = expandedPhases.has(phase.id)
+                return (
+                  <div key={phase.id} className="border border-gray-200 rounded-lg">
+                    {/* Phase Header - Clickable for accordion */}
+                    <div 
+                      className="flex items-center justify-between p-4 cursor-pointer hover:bg-gray-50 transition-colors"
+                      onClick={() => togglePhaseExpansion(phase.id)}
+                    >
+                      <h3 className="text-lg font-semibold text-gray-900">{phase.title}</h3>
+                      <div className="flex items-center gap-3">
+                        {/* Duration Display */}
+                        <span className={`text-sm px-3 py-1 rounded font-medium ${
+                          (() => {
+                            // Check if this phase is a DIY phase by looking at the phase title
+                            const phaseTitle = phase.title.toLowerCase();
+                            const isDIYPhase = testProfile.diyPhaseIds.some(diyPhase => {
+                              const diyPhaseFormatted = diyPhase.replace(/-/g, ' ').toLowerCase();
+                              return phaseTitle.includes(diyPhaseFormatted);
+                            });
+                            
+                            return isDIYPhase 
+                              ? 'bg-blue-100 text-blue-700' 
+                              : 'bg-purple-100 text-purple-700';
+                          })()
+                        }`}>
+                          {(() => {
+                            // Check if this phase is a DIY phase by looking at the phase title
+                            const phaseTitle = phase.title.toLowerCase();
+                            console.log(`Checking phase: "${phase.title}"`);
+                            console.log(`Phase title lowercase: "${phaseTitle}"`);
+                            console.log(`DIY phase IDs: ${testProfile.diyPhaseIds.join(', ')}`);
+                            
+                            const isDIYPhase = testProfile.diyPhaseIds.some(diyPhase => {
+                              const diyPhaseFormatted = diyPhase.replace(/-/g, ' ').toLowerCase();
+                              const matches = phaseTitle.includes(diyPhaseFormatted);
+                              console.log(`Checking "${diyPhaseFormatted}" against "${phaseTitle}": ${matches}`);
+                              return matches;
+                            });
+                            
+                            console.log(`Is DIY phase: ${isDIYPhase}`);
+                            
+                            const timelineText = phase.tasks[0]?.notes || '';
+                            const weeklyCommitment = parseInt(testProfile.weeklyHourlyCommitment);
+                            
+                            console.log(`Phase: ${phase.title}`);
+                            console.log(`Is DIY Phase: ${isDIYPhase}`);
+                            console.log(`Timeline text: "${timelineText}"`);
+                            console.log(`Phase ID: ${phase.id}`);
+                            console.log(`DIY Phase IDs: [${testProfile.diyPhaseIds.join(', ')}]`);
+                            console.log(`Is ${phase.id} in DIY list? ${testProfile.diyPhaseIds.includes(phase.id)}`);
+                            
+                            if (isDIYPhase) {
+                              // For DIY phases, look for duration in clean format (brackets already removed)
+                              const durationPattern = /.*\*\*Duration\*\*:\s*(\d+)\s*weeks/;
+                              const durationMatch = timelineText.match(durationPattern);
+                              
+                              if (durationMatch) {
+                                return `Duration: ${durationMatch[1]} weeks`;
+                              }
+                              
+                              // Fallback: look for DIY hours and calculate weeks
+                              const hoursPattern = /.*\*\*DIY Hours\*\*:\s*(\d+)\s*hours/;
+                              const hoursMatch = timelineText.match(hoursPattern);
+                              
+                              if (hoursMatch) {
+                                const totalHours = parseInt(hoursMatch[1]);
+                                const calculatedWeeks = Math.ceil(totalHours / weeklyCommitment);
+                                return `Duration: ${calculatedWeeks} weeks`;
+                              }
+                              
+                              // Additional fallback: look for old calculation format (if AI still outputs it)
+                              const oldCalculationPattern = /.*Duration:\s*(\d+)\s*hours\/\d+\s*=\s*(\d+)\s*weeks/;
+                              const oldCalculationMatch = timelineText.match(oldCalculationPattern);
+                              
+                              if (oldCalculationMatch) {
+                                return `Duration: ${oldCalculationMatch[2]} weeks`;
+                              }
+                            } else {
+                              // For contractor phases, only look for Contractor Duration
+                              console.log(`Parsing contractor phase: ${phase.title}`);
+                              console.log(`Timeline text for parsing: "${timelineText}"`);
+                              
+                              const contractorPattern = /.*\*\*Contractor Duration\*\*:\s*(\d+)\s*weeks/;
+                              const contractorMatch = timelineText.match(contractorPattern);
+                              
+                              console.log(`Contractor pattern match:`, contractorMatch);
+                              
+                              if (contractorMatch) {
+                                return `Duration: ${contractorMatch[1]} weeks`;
+                              }
+                              
+                              // If no contractor duration found, show error
+                              return `Error: No contractor duration found`;
+                            }
+                            
+                            // If we still can't extract, show the raw text for debugging
+                            console.log(`Could not extract duration for phase: ${phase.title}`);
+                            console.log(`Timeline text: ${timelineText}`);
+                            console.log(`Is DIY phase: ${isDIYPhase}`);
+                            console.log(`DIY phase IDs: ${testProfile.diyPhaseIds.join(', ')}`);
+                            
+                            // Show the raw text in the UI for debugging
+                            return `Debug: ${timelineText.substring(0, 50)}...`;
+                          })()}
+                        </span>
+                        
+                        {/* Expand/Collapse Icon */}
+                        <svg 
+                          className={`w-5 h-5 text-gray-500 transition-transform ${isExpanded ? 'rotate-180' : ''}`}
+                          fill="none" 
+                          stroke="currentColor" 
+                          viewBox="0 0 24 24"
+                        >
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                        </svg>
                       </div>
-                    ))}
+                    </div>
+                    
+                    {/* Phase Content - Expandable */}
+                    {isExpanded && (
+                      <div className="px-4 pb-4 space-y-3">
+                        {phase.tasks.map((task) => (
+                          <div key={task.id} className="border border-gray-200 rounded-lg">
+                            {/* Task Header */}
+                            <div 
+                              className="flex items-center justify-between p-3 cursor-pointer hover:bg-gray-50 transition-colors"
+                              onClick={() => toggleTaskExpansion(`${phase.id}-${task.id}`)}
+                            >
+                              <h4 className="font-medium text-gray-900">{task.title}</h4>
+                              <div className="flex items-center gap-2">
+                                <span className="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded">
+                                  {expandedTasks.has(`${phase.id}-${task.id}`) ? 'Expanded' : 'Collapsed'}
+                                </span>
+                                {/* Expand/Collapse Icon */}
+                                <svg 
+                                  className={`w-4 h-4 text-gray-500 transition-transform ${expandedTasks.has(`${phase.id}-${task.id}`) ? 'rotate-180' : ''}`}
+                                  fill="none" 
+                                  stroke="currentColor" 
+                                  viewBox="0 0 24 24"
+                                >
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                                </svg>
+                              </div>
+                            </div>
+                            
+                            {/* Task Content - Expandable */}
+                            {expandedTasks.has(`${phase.id}-${task.id}`) && (
+                              <div className="px-3 pb-3">
+                                                                 <div className="bg-gray-50 p-3 rounded text-sm">
+                                   {task.notes ? formatTaskContent(task.notes) : 'No content available'}
+                                 </div>
+                              </div>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    )}
                   </div>
-                </div>
-              ))}
+                )
+              })}
             </div>
           </div>
         )}
@@ -533,6 +543,6 @@ function TestOpenAIInner() {
   )
 }
 
-export default function TestOpenAIPage() {
+export default function TestOpenAI() {
   return <TestOpenAIInner />
 }

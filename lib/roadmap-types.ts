@@ -4,7 +4,7 @@ export type ExperienceLevel = "" | "gc_experienced" | "house_builder" | "trades_
 
 export type SubcontractorHelp = "yes" | "no" | "maybe";
 
-export type WeeklyHourlyCommitment = "" | "5-10" | "10-20" | "20-30" | "30-40" | "40+";
+export type WeeklyHourlyCommitment = string;
 
 export type ConstructionMethod = "" | "traditional-frame" | "post-frame" | "icf" | "sip" | "modular" | "other";
 
@@ -22,10 +22,11 @@ export interface OnboardingProfile {
   weeklyHourlyCommitment: WeeklyHourlyCommitment;
   cityState: string;
   propertyAddress?: string;
-  houseSize: string; // Actual or estimated size in sq ft
-  foundationType: FoundationType;
-  numberOfStories: NumberOfStories;
-  background?: string;
+  	houseSize: string; // Actual or estimated size in sq ft
+	foundationType: FoundationType;
+	numberOfStories: NumberOfStories;
+	targetStartDate?: string; // Optional target start date
+	background?: string;
 }
 
 export interface RoadmapTaskStep {
@@ -53,6 +54,14 @@ export interface RoadmapPhase {
 
 export interface RoadmapData {
 	phases: RoadmapPhase[];
+	timelineEstimates?: TimelineEstimate[];
+}
+
+export interface TimelineEstimate {
+	phaseId: string;
+	phaseTitle: string;
+	timeline: string;
+	error?: string;
 }
 
 export interface BaselineTaskSpec {

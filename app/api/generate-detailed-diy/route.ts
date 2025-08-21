@@ -37,7 +37,7 @@ async function generateDetailedDIYPhaseRoadmap(
   const prompt = `
 ${expertPrompt}
 
-You are standing right next to the user, providing EXTREMELY DETAILED, step-by-step guidance for ${phaseId} that leaves no room for questions.
+You are standing right next to the user, providing HIGH-LEVEL project planning guidance for ${phaseId} that helps users understand what they need to plan for, research, and prepare.
 
 ## USER PROFILE
 - Role: ${userProfile.role === "gc_only" ? "Licensed General Contractor (hiring all subcontractors)" : 
@@ -65,54 +65,45 @@ ${buildingCodeRequirements}
 ## INSPECTION REQUIREMENTS:
 ${inspectionRequirements}
 
-## ENHANCED TASK BREAKDOWN REFERENCE:
-${Object.entries(enhancedTasks).map(([category, tasks]) => 
-  `**${category.charAt(0).toUpperCase() + category.slice(1)} Tasks:**\n${(tasks as string[]).map(task => `- ${task}`).join('\n')}`
-).join('\n\n')}
+## PROJECT PLANNING REQUIREMENTS
 
-## DETAILED REQUIREMENTS
+Provide HIGH-LEVEL project planning guidance for this specific phase including:
 
-Provide EXTREMELY DETAILED guidance for this specific phase including:
+### 1. PHASE OVERVIEW
+- What this phase accomplishes and why it's important
+- Key decisions that need to be made
+- What to consider before starting
 
-### 1. EXACT SPECIFICATIONS
-- Precise measurements, tolerances, and material specifications
-- Exact tool requirements and sizes
-- Specific material grades and standards
+### 2. PLANNING CONSIDERATIONS
+- What to research and learn about
+- Key questions to ask professionals
+- Important factors to consider for your specific project
 
-### 2. STEP-BY-STEP BREAKDOWN
-- Detailed sequence of operations
-- Critical checkpoints and quality control steps
-- Safety procedures and PPE requirements
-
-### 3. SAFETY REQUIREMENTS
-- Specific safety protocols for each task
-- Required safety equipment and training
-- Hazard identification and mitigation
-
-### 4. CODE COMPLIANCE
+### 3. SAFETY & CODE COMPLIANCE
+- High-level safety considerations
 - Richmond City, VA specific requirements
-- Inspection checkpoints and documentation
-- Common violations to avoid
+- Inspection checkpoints and documentation needed
 
-### 5. QUALITY CONTROL
-- Specific quality standards and measurements
-- Testing and verification procedures
-- Acceptance criteria for each step
+### 4. QUALITY STANDARDS
+- What quality looks like for this phase
+- Key things to watch out for
+- When to call in professionals
 
-### 6. TIMELINE BREAKDOWN
-- Total time estimate for the entire phase
-- Detailed time estimates for each task
+### 5. TIMELINE & LOGISTICS
+- **Total time estimate for the entire phase** (REQUIRED for ALL phases)
+- **For DIY phases**: Convert hours to weeks based on user's weekly commitment
 - Critical path dependencies
-- Weather and seasonal considerations
+- **Weather and seasonal considerations** (how Richmond weather affects this phase)
+- **Seasonal timing recommendations** (best/worst times to start this phase)
 
-### 7. TRADE-SPECIFIC DETAILS
-- Professional techniques and best practices
-- Common mistakes and how to avoid them
-- Industry standards and expectations
+### 6. PROFESSIONAL GUIDANCE
+- When to hire professionals vs. DIY
+- What to look for when hiring
+- Questions to ask contractors
 
 ## IMPORTANT NOTES
 
-**IMPORTANT**: Since this is a DIY phase, provide EXTRA DETAILED guidance that a complete beginner could follow. Include specific measurements, tool requirements, material specifications, and step-by-step procedures that leave no room for interpretation.
+**IMPORTANT**: Since this is a DIY phase, provide HIGH-LEVEL project planning guidance that helps users understand what they need to plan for, research, and prepare. Focus on planning considerations and quality control tasks, but avoid detailed step-by-step execution procedures.
 
 **Richmond City, VA Specific Requirements:**
 - All work must comply with IRC 2021 with local amendments
@@ -122,44 +113,48 @@ Provide EXTREMELY DETAILED guidance for this specific phase including:
 
 ## OUTPUT FORMAT
 
-Format your response as a COMPREHENSIVE, DETAILED checklist for this specific phase. This should be detailed enough that someone could complete the work without asking a single question.
+Format your response as a COMPREHENSIVE PROJECT PLANNING GUIDE that helps users understand what they need to plan for each phase. Focus on high-level planning, not detailed execution steps.
 
 Structure your response as:
-1. **Phase Overview** - Brief description and key considerations
-2. **Detailed Task Breakdown** - Step-by-step procedures
-3. **Quality Control** - Specific standards and checkpoints
-4. **Safety & Code Compliance** - Requirements and procedures
-5. **Timeline Breakdown** - Total time estimate and task-by-task timing
+1. **Phase Overview** - What this phase accomplishes and key considerations
+2. **Planning Checklist** - What to research, decide, and prepare
+3. **Quality & Safety** - Standards to understand and requirements to meet
+4. **Timeline & Logistics** - **Total time estimate (REQUIRED for every phase)** and what to prepare for next
+5. **Professional Guidance** - When to hire vs. DIY and what to look for
 6. **Next Phase Preparation** - What to prepare for the following phase
 
-Each task should include:
-- Exact specifications and measurements
-- Required tools and materials
-- Step-by-step procedures
-- Quality control checkpoints
-- Safety considerations
-- Code compliance requirements
+**CRITICAL**: Every single phase must include a total time estimate. For DIY phases, show both hours AND weeks based on the user's weekly commitment.
+
+Each phase should include:
+- High-level understanding of what's involved
+- Key decisions that need to be made
+- What to research and learn about
+- **Total time estimate (REQUIRED)** - For DIY phases: show both hours AND weeks
+- Timeline expectations with weather considerations
+- When to call in professionals
+- Richmond City, VA specific requirements
+- Seasonal timing recommendations
 `;
 
   try {
     console.log(`Generating detailed roadmap for DIY phase: ${phaseId}`);
     const startTime = Date.now();
     
-    const completion = await client.chat.completions.create({
-      model: "gpt-4o-mini",
-      messages: [
-        {
-          role: "system",
-          content: "You are a MASTER residential construction expert with 30+ years of experience. Provide extremely detailed, step-by-step guidance that leaves no room for questions."
-        },
-        {
-          role: "user",
-          content: prompt
-        }
-      ],
-      max_tokens: 8000, // Increased for more detailed responses
-      temperature: 0.3
-    });
+         const completion = await client.chat.completions.create({
+       model: "gpt-4o-mini",
+       messages: [
+         {
+           role: "system",
+           content: "You are a MASTER residential construction expert with 30+ years of experience. Provide HIGH-LEVEL project planning guidance that helps users understand what they need to plan for, research, and prepare."
+         },
+         {
+           role: "user",
+           content: prompt
+         }
+       ],
+       max_tokens: 4000, // Reduced for faster responses
+       temperature: 0.3
+     });
 
     const endTime = Date.now();
     console.log(`DIY phase ${phaseId} generated in ${endTime - startTime}ms`);
@@ -218,16 +213,10 @@ async function generateDetailedDIYPhasesRoadmap(
 ): Promise<RoadmapPhase[]> {
   console.log(`Generating detailed roadmaps for ${userProfile.diyPhaseIds.length} DIY phases`);
   
-  const detailedPhases: RoadmapPhase[] = [];
-  
-  // Generate detailed roadmap for each DIY phase
-  for (const phaseId of userProfile.diyPhaseIds) {
+  // Generate all phases in parallel instead of sequentially
+  const phasePromises = userProfile.diyPhaseIds.map(async (phaseId) => {
     try {
-      const detailedPhase = await generateDetailedDIYPhaseRoadmap(userProfile, phaseId);
-      detailedPhases.push(detailedPhase);
-      
-      // Add a small delay between calls to avoid rate limiting
-      await new Promise(resolve => setTimeout(resolve, 100));
+      return await generateDetailedDIYPhaseRoadmap(userProfile, phaseId);
     } catch (error) {
       console.error(`Failed to generate detailed roadmap for phase ${phaseId}:`, error);
       
@@ -250,9 +239,12 @@ async function generateDetailedDIYPhasesRoadmap(
         ]
       };
       
-      detailedPhases.push(fallbackPhase);
+      return fallbackPhase;
     }
-  }
+  });
+  
+  // Wait for all phases to complete simultaneously
+  const detailedPhases = await Promise.all(phasePromises);
   
   console.log(`Generated detailed roadmaps for ${detailedPhases.length} DIY phases`);
   return detailedPhases;

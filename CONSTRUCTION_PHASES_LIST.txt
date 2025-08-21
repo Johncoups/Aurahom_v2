@@ -1,0 +1,289 @@
+CONSTRUCTION PHASES - COMPLETE LIST
+====================================
+
+This document contains all available construction phases organized by construction method.
+Each phase includes its ID, title, order, and description for reference.
+
+================================================================================
+TRADITIONAL FRAME CONSTRUCTION PHASES (22 phases)
+================================================================================
+
+NOTE: There are two "Interior Framing & Blocking" phases (7 and 16) in Traditional Frame construction.
+This is intentional - phase 7 handles initial interior framing, while phase 16 handles additional
+blocking and framing after insulation is installed.
+
+1.  PRE-CONSTRUCTION PLANNING
+    ID: pre-construction
+    Description: Initial planning, financing, and legal setup before breaking ground
+
+2.  SITE PREPARATION
+    ID: site-prep
+    Description: Site clearing, grading, and utility preparation
+
+3.  UTILITIES & SEPTIC
+    ID: utilities-septic
+    Description: Installation of water, sewer, and utility systems
+
+4.  EXCAVATION & EARTHWORK
+    ID: excavation
+    Description: Foundation excavation and site drainage
+
+5.  FOUNDATION
+    ID: foundation
+    Description: Concrete foundation walls, footings, and slabs
+
+6.  EXTERIOR FRAMING (SHELL)
+    ID: exterior-framing
+    Description: Structural framing of floors, exterior walls, and roof - the house shell
+
+7.  INTERIOR FRAMING & BLOCKING
+    ID: interior-framing
+    Description: Interior walls, blocking, and soundproofing
+
+8.  ROOFING
+    ID: roofing
+    Description: Roof installation and weatherproofing
+
+9.  EXTERIOR FINISHES
+    ID: exterior
+    Description: Exterior siding, trim, and weather protection
+
+10. PLUMBING ROUGH-IN
+    ID: plumbing-rough
+    Description: Underground and wall plumbing installation
+
+11. ELECTRICAL ROUGH-IN
+    ID: electrical-rough
+    Description: Electrical wiring and panel installation
+
+12. HVAC ROUGH-IN
+    ID: hvac-rough
+    Description: Heating, ventilation, and air conditioning installation
+
+13. IN-FLOOR RADIANT HEAT
+    ID: radiant-heat
+    Description: Sub-slab radiant heating system
+
+14. CONCRETE SLABS & FLATWORK
+    ID: concrete-slabs
+    Description: Interior slabs, garage, and exterior concrete
+
+15. INSULATION & AIR SEALING
+    ID: insulation
+    Description: Thermal and sound insulation installation
+
+16. INTERIOR FRAMING & BLOCKING (SECOND PASS)
+    ID: interior-framing-blocking
+    Description: Interior walls, blocking, and soundproofing (second phase)
+
+17. DRYWALL
+    ID: drywall
+    Description: Interior wall and ceiling finishing
+
+18. PAINT
+    ID: paint
+    Description: Interior and exterior painting
+
+19. TRIM CARPENTRY
+    ID: trim-carpentry
+    Description: Interior trim, doors, and hardware
+
+20. FLOORING
+    ID: flooring
+    Description: Floor covering installation
+
+21. KITCHEN & BATH
+    ID: kitchen-bath
+    Description: Kitchen and bathroom finishing
+
+22. FINAL TOUCHES & PUNCH LIST
+    ID: final-touches
+    Description: Final details and project completion
+
+================================================================================
+POST-FRAME CONSTRUCTION PHASES (19 phases)
+================================================================================
+
+1.  PRE-CONSTRUCTION PLANNING
+    ID: pre-construction
+    Description: Initial planning, financing, and legal setup before breaking ground
+
+2.  SITE PREPARATION
+    ID: site-prep
+    Description: Site clearing, grading, and utility preparation
+
+3.  UTILITIES & SEPTIC
+    ID: utilities-septic
+    Description: Installation of water, sewer, and utility systems
+
+4.  FOUNDATION
+    ID: foundation
+    Description: Concrete foundation walls, footings, and slabs
+
+5.  POST FRAME STRUCTURE
+    ID: post-frame-structure
+    Description: Post frame construction with trusses, metal siding, windows, exterior doors, and roof
+
+6.  EXTERIOR FINISHES
+    ID: exterior
+    Description: Exterior siding, trim, and weather protection
+
+7.  PLUMBING ROUGH-IN
+    ID: plumbing-rough
+    Description: Underground and wall plumbing installation
+
+8.  IN-FLOOR HEAT (OPTIONAL)
+    ID: radiant-heat
+    Description: Sub-slab radiant heating system
+
+9.  ELECTRICAL ROUGH-IN
+    ID: electrical-rough
+    Description: Underground electrical wiring and panel installation
+
+10. SLAB AND FLATWORK
+    ID: concrete-slabs
+    Description: Interior slabs, garage, and exterior concrete
+
+11. INSULATION & AIR SEALING
+    ID: insulation
+    Description: Thermal and sound insulation installation
+
+12. INTERIOR FRAMING & BLOCKING
+    ID: interior-framing-post-frame
+    Description: Interior walls, blocking, and soundproofing
+
+13. HVAC ROUGH-IN
+    ID: hvac-rough
+    Description: Heating, ventilation, and air conditioning installation
+
+14. DRYWALL
+    ID: drywall
+    Description: Interior wall and ceiling finishing
+
+15. PAINT
+    ID: paint
+    Description: Interior and exterior painting
+
+16. TRIM CARPENTRY
+    ID: trim-carpentry
+    Description: Interior trim, doors, and hardware
+
+17. FLOORING
+    ID: flooring
+    Description: Floor covering installation
+
+18. KITCHEN & BATH
+    ID: kitchen-bath
+    Description: Kitchen and bathroom finishing
+
+19. FINAL TOUCHES & PUNCH LIST
+    ID: final-touches
+    Description: Final details and project completion
+
+================================================================================
+ICF (INSULATED CONCRETE FORMS) CONSTRUCTION PHASES (20 phases)
+================================================================================
+
+1.  PRE-CONSTRUCTION PLANNING
+    ID: pre-construction
+    Description: Initial planning, financing, and legal setup before breaking ground
+
+2.  SITE PREPARATION
+    ID: site-prep
+    Description: Site clearing, grading, and utility preparation
+
+3.  UTILITIES & SEPTIC
+    ID: utilities-septic
+    Description: Installation of water, sewer, and utility systems
+
+4.  EXCAVATION & EARTHWORK
+    ID: excavation
+    Description: Foundation excavation and site drainage
+
+5.  ICF FOUNDATION & WALLS
+    ID: icf-foundation-walls
+    Description: ICF forms, concrete, and wall construction
+
+6.  ROOFING
+    ID: roofing
+    Description: Roof installation and weatherproofing
+
+7.  EXTERIOR FINISHES
+    ID: exterior
+    Description: Exterior siding, trim, and weather protection
+
+8.  PLUMBING ROUGH-IN
+    ID: plumbing-rough
+    Description: Underground and wall plumbing installation
+
+9.  ELECTRICAL ROUGH-IN
+    ID: electrical-rough
+    Description: Electrical wiring and panel installation
+
+10. HVAC ROUGH-IN
+    ID: hvac-rough
+    Description: Heating, ventilation, and air conditioning installation
+
+11. IN-FLOOR RADIANT HEAT
+    ID: radiant-heat
+    Description: Sub-slab radiant heating system
+
+12. CONCRETE SLABS & FLATWORK
+    ID: concrete-slabs
+    Description: Interior slabs, garage, and exterior concrete
+
+13. INSULATION & AIR SEALING
+    ID: insulation
+    Description: Thermal and sound insulation installation
+
+14. INTERIOR FRAMING & BLOCKING
+    ID: interior-framing-icf
+    Description: Interior walls, blocking, and soundproofing
+
+15. DRYWALL
+    ID: drywall
+    Description: Interior wall and ceiling finishing
+
+16. PAINT
+    ID: paint
+    Description: Interior and exterior painting
+
+17. TRIM CARPENTRY
+    ID: trim-carpentry
+    Description: Interior trim, doors, and hardware
+
+18. FLOORING
+    ID: flooring
+    Description: Floor covering installation
+
+19. KITCHEN & BATH
+    ID: kitchen-bath
+    Description: Kitchen and bathroom finishing
+
+20. FINAL TOUCHES & PUNCH LIST
+    ID: final-touches
+    Description: Final details and project completion
+
+================================================================================
+NOTES
+================================================================================
+
+- SIP (Structural Insulated Panels) construction uses the same phases as Post-Frame
+- Modular construction uses the same phases as Traditional Frame
+- Each construction method has different phase sequences and dependencies
+- Phase IDs are used in the system for identification and relationships
+- The order field indicates the recommended construction sequence
+- Dependencies show which phases must be completed before others can begin
+
+================================================================================
+USAGE IN SYSTEM
+================================================================================
+
+These phase IDs are used in:
+- Timeline estimation prompts
+- DIY phase selection
+- Construction sequence planning
+- Phase dependency mapping
+- Progress tracking
+
+================================================================================

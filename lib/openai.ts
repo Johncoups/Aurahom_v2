@@ -141,6 +141,10 @@ export async function generateRoadmapContent(
     weeklyHourlyCommitment: string;
     cityState: string;
     propertyAddress?: string;
+    houseSize?: string;
+    foundationType?: string;
+    numberOfStories?: string;
+    targetStartDate?: string;
     background?: string;
   },
   phaseDetails: string
@@ -154,8 +158,8 @@ export async function generateRoadmapContent(
   // Find the current phase and get remaining phases
   const currentPhaseIndex = constructionPhases.findIndex(p => p.id === userProfile.currentPhase);
   const remainingPhases = currentPhaseIndex >= 0 
-    ? constructionPhases.slice(currentPhaseIndex).map(p => `${p.order}. ${p.title}`)
-    : ['Phase information not available'];
+    ? constructionPhases.slice(currentPhaseIndex)
+    : [];
   
   // Get the current phase ID to determine if we need a specialized prompt
   const currentPhase = constructionPhases.find(p => p.id === userProfile.currentPhase);
@@ -163,23 +167,23 @@ export async function generateRoadmapContent(
   
   // Use specialized expert prompt for DIY phases, general expert prompt for others
   const expertPrompt = isDIYPhase ? getPhaseExpertPrompt(userProfile.currentPhase) : 
-    `You are a MASTER residential construction expert with 30+ years of experience in ${userProfile.constructionMethod} construction.`;
+    `You are a MASTER residential construction expert with 30+ years of experience in residential construction.`;
   
   // Get Richmond City, VA specific building code requirements
   const buildingCodeRequirements = getBuildingCodeRequirements(userProfile.currentPhase);
   const inspectionRequirements = getInspectionRequirements(userProfile.currentPhase);
   
+  // Timeline estimates are now handled separately by the context
+  // No need to call timeline API here
+  
   const prompt = `
 ${expertPrompt}
 
-You are standing right next to the user, providing EXTREMELY DETAILED, step-by-step guidance that leaves no room for questions.
+You are standing right next to the user, providing HIGH-LEVEL project planning guidance that helps users understand what they need to plan for, research, and prepare.
 
 Based on the user's profile and current phase, provide COMPREHENSIVE, TRADE-SPECIFIC guidance for their construction project.
 
-User Profile:
-- Role: ${userProfile.role === "gc_only" ? "Licensed General Contractor (hiring all subcontractors)" : 
-         userProfile.role === "gc_plus_diy" ? "Licensed General Contractor (will self-perform some phases)" :
-         "Owner-builder acting as General Contractor (will self-perform some phases)"}
+**PROJECT CONTEXT FOR ESTIMATING:**
 - Construction Method: ${userProfile.constructionMethod === "traditional-frame" ? "Traditional Wood Frame" :
     userProfile.constructionMethod === "post-frame" ? "Post Frame/Pole Barn" :
     userProfile.constructionMethod === "icf" ? "ICF (Insulated Concrete Forms)" :
@@ -187,12 +191,33 @@ User Profile:
     userProfile.constructionMethod === "modular" ? "Modular/Prefab" :
     userProfile.constructionMethod === "other" ? "Other Construction Method" :
     "Not specified"}
+- Foundation Type: ${userProfile.foundationType === "slab-on-grade" ? "Slab on Grade" :
+    userProfile.foundationType === "crawlspace" ? "Crawlspace" :
+    userProfile.foundationType === "full-basement" ? "Full Basement" :
+    userProfile.foundationType === "partial-basement" ? "Partial Basement" :
+    userProfile.foundationType === "pier-and-beam" ? "Pier and Beam" :
+    userProfile.foundationType === "other" ? "Other Foundation Type" :
+    "Not specified"}
+- House Size: ${userProfile.houseSize || "Not specified"}
+- Number of Stories: ${userProfile.numberOfStories === "1-story" ? "1 Story" :
+    userProfile.numberOfStories === "1.5-story" ? "1.5 Story (Split Level)" :
+    userProfile.numberOfStories === "2-story" ? "2 Story" :
+    userProfile.numberOfStories === "2.5-story" ? "2.5 Story" :
+    userProfile.numberOfStories === "3-story" ? "3 Story" :
+    userProfile.numberOfStories === "other" ? "Other" :
+    "Not specified"}
+- Target Start Date: ${userProfile.targetStartDate ? new Date(userProfile.targetStartDate).toLocaleDateString() : "Not specified"}
+
+User Profile:
+- Role: ${userProfile.role === "gc_only" ? "Licensed General Contractor (hiring all subcontractors)" : 
+         userProfile.role === "gc_plus_diy" ? "Licensed General Contractor (will self-perform some phases)" :
+         "Owner-builder acting as General Contractor (will self-perform some phases)"}
 - Experience Level: ${userProfile.experience === "gc_experienced" ? "General contractor" :
     userProfile.experience === "house_builder" ? "Person who has built a house before" :
     userProfile.experience === "trades_familiar" ? "Person in the trades familiar with building process" :
     userProfile.experience === "diy_permitting" ? "DIY enthusiast who has tackled large projects requiring permitting" :
     userProfile.experience === "diy_maintenance" ? "DIY enthusiast who does maintenance tasks but never needed permits" :
-    "Complete novice at building houses and using power tools"}
+    "Complete novice with tools and building"}
 - Current Phase: ${userProfile.currentPhase}
 - Weekly Time Commitment: ${userProfile.weeklyHourlyCommitment}
 - Location: ${userProfile.cityState}
@@ -210,61 +235,72 @@ ${buildingCodeRequirements}
 ${inspectionRequirements}
 
 Remaining Phases (in order):
-${remainingPhases.join('\n')}
+${remainingPhases.map(p => `${p.order}. ${p.title}`).join('\n')}
 
-For EACH phase, provide EXTREMELY DETAILED guidance including:
+**INDIVIDUAL PHASE TIMELINE ESTIMATES:**
+${remainingPhases.map(p => `${p.order}. ${p.title}: Timeline estimates will be provided separately`).join('\n')}
 
-1. **EXACT SPECIFICATIONS:**
-   - Precise measurements and tolerances (e.g., "2x6 studs 16" on center, not 24")
-   - Specific tool requirements (e.g., "Use 18-gauge brad nailer with 2" brads")
-   - Material specifications (e.g., "5/8" Type X drywall, not 1/2")
-   - Brand recommendations where critical
+**OVERALL PROJECT TIMELINE ESTIMATE:**
+Provide a HIGH-LEVEL estimate of the total project duration from current phase to completion, considering:
+- Total estimated time for all remaining phases
+- Critical path and dependencies between phases
+- Seasonal considerations and weather impacts
+- Buffer time for unexpected delays
 
-2. **STEP-BY-STEP BREAKDOWN:**
-   - Break each task into 5-10 specific steps
-   - Include exact measurements for each step
-   - Specify tool settings and techniques
-   - Add quality checkpoints after each step
+For EACH phase, provide HIGH-LEVEL project planning guidance including:
 
-3. **SAFETY REQUIREMENTS:**
-   - Required PPE for each task
-   - Safety procedures and warnings
-   - Emergency procedures
-   - Tool safety guidelines
+1. **PHASE OVERVIEW:**
+   - What this phase accomplishes and why it's important
+   - Key decisions that need to be made
+   - What to consider before starting
 
-4. **CODE COMPLIANCE:**
+2. **PLANNING CONSIDERATIONS:**
+   - What to research and learn about
+   - Key questions to ask professionals
+   - Important factors to consider for your specific project
+
+3. **SAFETY & CODE COMPLIANCE:**
+   - High-level safety considerations
    - Specific building code requirements for ${userProfile.cityState}
    - Inspection checkpoints and requirements
    - Common code violations to avoid
-   - Permit requirements and timelines
 
-5. **QUALITY CONTROL:**
-   - Inspection checklist for each phase
-   - Acceptable tolerances and measurements
-   - Common mistakes and how to fix them
-   - Professional finish standards
+4. **QUALITY STANDARDS:**
+   - What quality looks like for this phase
+   - Key things to watch out for
+   - When to call in professionals
 
-6. **TIMELINE BREAKDOWN:**
-   - Day-by-day or week-by-week schedule
-   - Critical path items
-   - Weather-dependent tasks
-   - Dependencies between tasks
+5. **TIMELINE & LOGISTICS:**
+   - **Total time estimate for the entire phase** (REQUIRED for ALL phases)
+   - Critical path dependencies
+   - Weather and seasonal considerations
+   - Seasonal timing recommendations
 
-7. **COST ESTIMATES:**
-   - Material costs with quantities
-   - Tool rental costs
-   - Permit fees
-   - Contingency amounts
+6. **PROFESSIONAL GUIDANCE:**
+   - When to hire professionals vs. DIY
+   - What to look for when hiring
+   - Questions to ask contractors
 
-8. **TRADE-SPECIFIC DETAILS:**
-   - Professional techniques and tricks
-   - Industry best practices
-   - Common shortcuts (safe vs. unsafe)
-   - Professional finish standards
+7. **NEXT PHASE PREPARATION:**
+   - What to prepare for the following phase
 
-**IMPORTANT**: Since this is a DIY phase, provide EXTRA DETAILED guidance that a complete beginner could follow. Include specific measurements, tool requirements, material specifications, and step-by-step procedures that leave no room for interpretation.
+**IMPORTANT**: Since this is a DIY phase, provide HIGH-LEVEL project planning guidance that helps users understand what they need to plan for, research, and prepare. Focus on planning considerations and quality control tasks, but avoid detailed step-by-step execution procedures.
 
-Format your response as a COMPREHENSIVE, DETAILED checklist that a professional tradesperson would use. This should be detailed enough that someone could complete the work without asking a single question.
+Format your response as a COMPREHENSIVE PROJECT PLANNING GUIDE that helps users understand what they need to plan for each phase. Focus on high-level planning, not detailed execution steps.
+
+Structure your response as:
+1. **OVERALL PROJECT TIMELINE** - High-level estimate from current phase to completion
+2. **INDIVIDUAL PHASE TIMELINES** - Use the provided timeline estimates for each phase
+3. **Phase Overview** - What this phase accomplishes and key considerations
+4. **Planning Checklist** - What to research, decide, and prepare
+5. **Quality & Safety** - Standards to understand and requirements to meet
+6. **Timeline & Logistics** - **Total time estimate (REQUIRED for every phase)**, weather considerations, and seasonal timing
+7. **Professional Guidance** - When to hire vs. DIY and what to look for
+8. **Next Phase Preparation** - What to prepare for the following phase
+
+**CRITICAL**: Every single phase must include a total time estimate. For contractor phases, provide total time estimate in weeks/months.
+
+**IMPORTANT**: Timeline estimates for each phase will be provided separately based on your specific project details including construction method, foundation type, house size, number of stories, and target start date.
 `;
 
   return generateText(prompt, OPENAI_MODELS.GPT4OMINI, { temperature: 0.3 });
@@ -292,12 +328,36 @@ ${expertPrompt}
 
 You are standing right next to the user, providing EXTREMELY DETAILED, step-by-step guidance for ${phaseId} that leaves no room for questions.
 
+**PROJECT CONTEXT FOR ESTIMATING:**
+- Construction Method: ${userProfile.constructionMethod === "traditional-frame" ? "Traditional Wood Frame" :
+    userProfile.constructionMethod === "post-frame" ? "Post Frame/Pole Barn" :
+    userProfile.constructionMethod === "icf" ? "ICF (Insulated Concrete Forms)" :
+    userProfile.constructionMethod === "sip" ? "SIP (Structural Insulated Panels)" :
+    userProfile.constructionMethod === "modular" ? "Modular/Prefab" :
+    userProfile.constructionMethod === "other" ? "Other Construction Method" :
+    "Not specified"}
+- Foundation Type: ${userProfile.foundationType === "slab-on-grade" ? "Slab on Grade" :
+    userProfile.foundationType === "crawlspace" ? "Crawlspace" :
+    userProfile.foundationType === "full-basement" ? "Full Basement" :
+    userProfile.foundationType === "partial-basement" ? "Partial Basement" :
+    userProfile.foundationType === "pier-and-beam" ? "Pier and Beam" :
+    userProfile.foundationType === "other" ? "Other Foundation Type" :
+    "Not specified"}
+- House Size: ${userProfile.houseSize || "Not specified"}
+- Number of Stories: ${userProfile.numberOfStories === "1-story" ? "1 Story" :
+    userProfile.numberOfStories === "1.5-story" ? "1.5 Story (Split Level)" :
+    userProfile.numberOfStories === "2-story" ? "2 Story" :
+    userProfile.numberOfStories === "2.5-story" ? "2.5 Story" :
+    userProfile.numberOfStories === "3-story" ? "3 Story" :
+    userProfile.numberOfStories === "other" ? "Other" :
+    "Not specified"}
+- Target Start Date: ${userProfile.targetStartDate ? new Date(userProfile.targetStartDate).toLocaleDateString() : "Not specified"}
+
 ## USER PROFILE
 - Role: ${userProfile.role === "gc_only" ? "Licensed General Contractor (hiring all subcontractors)" : 
          userProfile.role === "gc_plus_diy" ? "Licensed General Contractor (will self-perform some phases)" :
          "Owner-builder acting as General Contractor (will self-perform some phases)"}
 - Experience Level: ${userProfile.experience}
-- Construction Method: ${userProfile.constructionMethod}
 - Weekly Time Commitment: ${userProfile.weeklyHourlyCommitment} hours
 - Location: ${userProfile.cityState}
 - Property Address: ${userProfile.propertyAddress || "Not specified"}
@@ -307,7 +367,6 @@ You are standing right next to the user, providing EXTREMELY DETAILED, step-by-s
 **${phaseId}**
 - This is a DIY phase the user will self-perform
 - User has ${userProfile.experience} experience level
-- Construction method: ${userProfile.constructionMethod}
 
 ## RICHMOND CITY, VA BUILDING CODE REQUIREMENTS FOR THIS PHASE:
 ${buildingCodeRequirements}
@@ -315,58 +374,52 @@ ${buildingCodeRequirements}
 ## INSPECTION REQUIREMENTS:
 ${inspectionRequirements}
 
-## ENHANCED TASK BREAKDOWN REFERENCE:
-${Object.entries(enhancedTasks).map(([category, tasks]) => 
-  `**${category.charAt(0).toUpperCase() + category.slice(1)} Tasks:**\n${(tasks as string[]).map(task => `- ${task}`).join('\n')}`
-).join('\n\n')}
+## PROJECT PLANNING REQUIREMENTS
 
-## DETAILED REQUIREMENTS
+**OVERALL PROJECT TIMELINE CONTEXT:**
+Provide a HIGH-LEVEL estimate of the total project duration from this phase to completion, considering:
+- Total estimated time for all remaining phases after this one
+- Critical path and dependencies between phases
+- Seasonal considerations and weather impacts
+- Buffer time for unexpected delays
 
-Provide EXTREMELY DETAILED guidance for this specific phase including:
+Provide HIGH-LEVEL project planning guidance for this specific phase including:
 
-### 1. EXACT SPECIFICATIONS
-- Precise measurements, tolerances, and material specifications
-- Exact tool requirements and sizes
-- Specific material grades and standards
+### 1. PHASE OVERVIEW
+- What this phase accomplishes and why it's important
+- Key decisions that need to be made
+- What to consider before starting
 
-### 2. STEP-BY-STEP BREAKDOWN
-- Detailed sequence of operations
-- Critical checkpoints and quality control steps
-- Safety procedures and PPE requirements
+### 2. PLANNING CONSIDERATIONS
+- What to research and learn about
+- Key questions to ask professionals
+- Important factors to consider for your specific project
 
-### 3. SAFETY REQUIREMENTS
-- Specific safety protocols for each task
-- Required safety equipment and training
-- Hazard identification and mitigation
-
-### 4. CODE COMPLIANCE
+### 3. SAFETY & CODE COMPLIANCE
+- High-level safety considerations
 - Richmond City, VA specific requirements
-- Inspection checkpoints and documentation
-- Common violations to avoid
+- Inspection checkpoints and documentation needed
 
-### 5. QUALITY CONTROL
-- Specific quality standards and measurements
-- Testing and verification procedures
-- Acceptance criteria for each step
+### 4. QUALITY STANDARDS
+- What quality looks like for this phase
+- Key things to watch out for
+- When to call in professionals
 
-### 6. TIMELINE BREAKDOWN
-- Detailed time estimates for each task
+### 5. TIMELINE & LOGISTICS
+- **Total time estimate for the entire phase** (REQUIRED for ALL phases)
+- **For DIY phases**: Convert hours to weeks based on user's weekly commitment
 - Critical path dependencies
-- Weather and seasonal considerations
+- **Weather and seasonal considerations** (how Richmond weather affects this phase)
+- **Seasonal timing recommendations** (best/worst times to start this phase)
 
-### 7. COST ESTIMATES
-- Material costs with current pricing
-- Labor time estimates
-- Equipment rental costs if applicable
-
-### 8. TRADE-SPECIFIC DETAILS
-- Professional techniques and best practices
-- Common mistakes and how to avoid them
-- Industry standards and expectations
+### 6. PROFESSIONAL GUIDANCE
+- When to hire professionals vs. DIY
+- What to look for when hiring
+- Questions to ask contractors
 
 ## IMPORTANT NOTES
 
-**IMPORTANT**: Since this is a DIY phase, provide EXTRA DETAILED guidance that a complete beginner could follow. Include specific measurements, tool requirements, material specifications, and step-by-step procedures that leave no room for interpretation.
+**IMPORTANT**: Since this is a DIY phase, provide HIGH-LEVEL project planning guidance that helps users understand what they need to plan for, research, and prepare. Focus on planning considerations and quality control tasks, but avoid detailed step-by-step execution procedures.
 
 **Richmond City, VA Specific Requirements:**
 - All work must comply with IRC 2021 with local amendments
@@ -376,23 +429,28 @@ Provide EXTREMELY DETAILED guidance for this specific phase including:
 
 ## OUTPUT FORMAT
 
-Format your response as a COMPREHENSIVE, DETAILED checklist for this specific phase. This should be detailed enough that someone could complete the work without asking a single question.
+Format your response as a COMPREHENSIVE PROJECT PLANNING GUIDE that helps users understand what they need to plan for each phase. Focus on high-level planning, not detailed execution steps.
 
 Structure your response as:
-1. **Phase Overview** - Brief description and key considerations
-2. **Detailed Task Breakdown** - Step-by-step procedures
-3. **Quality Control** - Specific standards and checkpoints
-4. **Safety & Code Compliance** - Requirements and procedures
-5. **Timeline & Cost Estimates** - Realistic expectations
-6. **Next Phase Preparation** - What to prepare for the following phase
+1. **OVERALL PROJECT TIMELINE** - High-level estimate from this phase to completion
+2. **Phase Overview** - What this phase accomplishes and key considerations
+3. **Planning Checklist** - What to research, decide, and prepare
+4. **Quality & Safety** - Standards to understand and requirements to meet
+5. **Timeline & Logistics** - **Total time estimate (REQUIRED for every phase)**, weather considerations, and seasonal timing
+6. **Professional Guidance** - When to hire vs. DIY and what to look for
+7. **Next Phase Preparation** - What to prepare for the following phase
 
-Each task should include:
-- Exact specifications and measurements
-- Required tools and materials
-- Step-by-step procedures
-- Quality control checkpoints
-- Safety considerations
-- Code compliance requirements
+**CRITICAL**: Every single phase must include a total time estimate. For DIY phases, show both hours AND weeks based on the user's weekly commitment.
+
+Each phase should include:
+- High-level understanding of what's involved
+- Key decisions that need to be made
+- What to research and learn about
+- **Total time estimate (REQUIRED)** - For DIY phases: show both hours AND weeks
+- Timeline expectations with weather considerations
+- When to call in professionals
+- Richmond City, VA specific requirements
+- Seasonal timing recommendations
 `;
 
   try {
@@ -404,7 +462,7 @@ Each task should include:
       messages: [
         {
           role: "system",
-          content: "You are a MASTER residential construction expert with 30+ years of experience. Provide extremely detailed, step-by-step guidance that leaves no room for questions."
+          content: "You are a MASTER residential construction expert with 30+ years of experience. Provide HIGH-LEVEL project planning guidance that helps users understand what they need to plan for, research, and prepare."
         },
         {
           role: "user",

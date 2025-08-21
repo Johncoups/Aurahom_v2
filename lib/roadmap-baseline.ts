@@ -13,7 +13,6 @@ export const baselineRoadmapData: RoadmapData = {
 					status: "todo",
 					steps: [
 						{ id: "pc-1-1", description: "Complete project kickoff questionnaire" },
-						{ id: "pc-1-2", description: "Set up project management system" },
 						{ id: "pc-1-3", description: "Establish budget and cost tracking" }
 					],
 					qaChecks: [
@@ -170,6 +169,7 @@ export const baselineRoadmapData: RoadmapData = {
 				{
 					id: "r-1",
 					title: "Roof Installation",
+					status: "todo",
 					steps: [
 						{ id: "r-1-1", description: "Install underlayment and flashing" },
 						{ id: "r-1-2", description: "Install roofing material" },

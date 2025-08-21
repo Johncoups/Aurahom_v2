@@ -1,27 +1,19 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
-import { RoadmapProvider, useRoadmap } from "@/contexts/roadmap-context";
+import { useRoadmap } from "@/contexts/roadmap-context";
 import type { OnboardingProfile } from "@/lib/roadmap-types";
 import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
 import { getPhasesForDropdownByMethod, getPhasesForMethod } from "@/lib/roadmap-phases";
 
-// PHASES will be set dynamically based on construction method
+interface OnboardingWizardProps {
+	onComplete: () => void;
+}
 
-function WizardInner() {
-	console.log('🔍 WizardInner function starting');
-	
-	const router = useRouter();
-	console.log('🔍 Router created');
-	
+export function OnboardingWizard({ onComplete }: OnboardingWizardProps) {
 	const { setProfileAndGenerate, isLoading } = useRoadmap();
-	console.log('🔍 useRoadmap hook called');
 	
-	console.log('🔍 WizardInner render - setProfileAndGenerate exists:', !!setProfileAndGenerate);
-	console.log('🔍 WizardInner render - isLoading:', isLoading);
-				const [role, setRole] = useState<"gc_only" | "gc_plus_diy" | "owner_plus_diy">("gc_only");
+	const [role, setRole] = useState<"gc_only" | "gc_plus_diy" | "owner_plus_diy">("gc_only");
 	const [experience, setExperience] = useState<"" | "gc_experienced" | "house_builder" | "trades_familiar" | "diy_permitting" | "diy_maintenance" | "complete_novice">("");
 	const [subcontractorHelp, setSubcontractorHelp] = useState<"yes" | "no" | "maybe">("yes");
 	const [constructionMethod, setConstructionMethod] = useState<"" | "traditional-frame" | "post-frame" | "icf" | "sip" | "modular" | "other">("");
@@ -37,59 +29,29 @@ function WizardInner() {
 	const [background, setBackground] = useState("");
 
 	async function handleSubmit() {
-		alert('Form submitted! Check console for details.');
-		console.log('🚀 handleSubmit function called!');
-		console.log('🚀 Onboarding form submitted!');
-		console.log('📝 Form data:', { role, experience, subcontractorHelp, constructionMethod, currentPhaseId, diyPhaseIds, weeklyHourlyCommitment, cityState, propertyAddress, houseSize, foundationType, numberOfStories, targetStartDate, background });
-		
 		const profile: OnboardingProfile = { role, experience, subcontractorHelp, constructionMethod, currentPhaseId, diyPhaseIds, weeklyHourlyCommitment, cityState, propertyAddress, houseSize, foundationType, numberOfStories, targetStartDate, background };
-		
-		console.log('👤 Profile object created:', profile);
-		console.log('🔄 Calling setProfileAndGenerate...');
-		
-		// Also show the data on the page for debugging
-		const debugDiv = document.createElement('div');
-		debugDiv.innerHTML = `
-			<div style="position: fixed; top: 20px; right: 20px; background: white; border: 2px solid red; padding: 20px; z-index: 9999; max-width: 400px;">
-				<h3>Debug Info:</h3>
-				<p><strong>Profile created:</strong> ${JSON.stringify(profile, null, 2)}</p>
-				<p><strong>setProfileAndGenerate exists:</strong> ${!!setProfileAndGenerate}</p>
-			</div>
-		`;
-		document.body.appendChild(debugDiv);
 		
 		try {
 			await setProfileAndGenerate(profile);
-			console.log('✅ setProfileAndGenerate completed successfully');
-			router.push("/dashboard");
+			onComplete(); // Switch to roadmap view
 		} catch (error) {
-			console.error('❌ Error in setProfileAndGenerate:', error);
-			// Show error on page too
-			debugDiv.innerHTML += `<p style="color: red;"><strong>Error:</strong> ${error}</p>`;
+			console.error('Error in setProfileAndGenerate:', error);
 		}
 	}
 
 	return (
 		<div className="max-w-2xl mx-auto p-4 space-y-6">
-			<div className="flex items-center justify-between">
+			<div className="text-center">
 				<h1 className="text-2xl font-semibold">Project Onboarding</h1>
-				<Button
-					variant="outline"
-					size="sm"
-					className="text-gray-700 hover:text-gray-900 hover:bg-gray-50 border-gray-300 hover:border-gray-400 w-8 h-8 p-0 flex items-center justify-center text-lg font-semibold"
-					onClick={() => router.push("/dashboard")}
-					aria-label="Go to dashboard"
-				>
-					✕
-				</Button>
+				<p className="text-gray-600 mt-2">Complete this questionnaire to generate your personalized construction roadmap</p>
 			</div>
+			
 			<div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
 				<p className="text-sm text-blue-800">
 					<strong>Note:</strong> This is the beginning of the construction process. This questionnaire may feel overwhelming, but these are questions you will need to find answers to during your project planning. Take your time and answer what you can - you can always update your profile later.
 				</p>
 			</div>
 			
-
 			<div className="space-y-2">
 				<label className="font-medium">Your role</label>
 				<div className="space-y-2">
@@ -98,6 +60,7 @@ function WizardInner() {
 					<label className="flex items-center gap-2"><input type="radio" checked={role==="owner_plus_diy"} onChange={() => setRole("owner_plus_diy")} /> I am an owner-builder acting as general contractor and will self-perform some phases</label>
 				</div>
 			</div>
+			
 			<div className="space-y-2">
 				<label className="font-medium">Experience level</label>
 				<select className="border rounded p-2" value={experience} onChange={(e)=>setExperience(e.target.value as any)}>
@@ -113,6 +76,7 @@ function WizardInner() {
 					<p className="text-sm text-red-600 mt-1">Please select your experience level</p>
 				)}
 			</div>
+			
 			<div className="space-y-2">
 				<label className="font-medium">Foundation Type</label>
 				<select className="border rounded p-2" value={foundationType} onChange={(e)=>setFoundationType(e.target.value as any)}>
@@ -128,6 +92,7 @@ function WizardInner() {
 					<p className="text-sm text-red-600 mt-1">Please select your foundation type</p>
 				)}
 			</div>
+			
 			<div className="space-y-2">
 				<label className="font-medium">Construction Method</label>
 				<select className="border rounded p-2" value={constructionMethod} onChange={(e)=>setConstructionMethod(e.target.value as any)}>
@@ -143,6 +108,7 @@ function WizardInner() {
 					<p className="text-sm text-red-600 mt-1">Please select your construction method</p>
 				)}
 			</div>
+			
 			<div className="space-y-2">
 				<label className="font-medium">Would you like help with a list of subcontractors?</label>
 				<select className="border rounded p-2" value={subcontractorHelp} onChange={(e)=>setSubcontractorHelp(e.target.value as any)}>
@@ -156,6 +122,7 @@ function WizardInner() {
 					users who have utilized them in the application along with reviews from external sites.
 				</p>
 			</div>
+			
 			<div className="space-y-2">
 				<label className="font-medium">Current phase</label>
 				<select className="border rounded p-2" value={currentPhaseId} onChange={(e)=>setCurrentPhaseId(e.target.value)}>
@@ -166,6 +133,7 @@ function WizardInner() {
 					<p className="text-sm text-red-600 mt-1">Please select your current phase</p>
 				)}
 			</div>
+			
 			<div className="space-y-2">
 				<label className="font-medium">Weekly estimated hourly commitment</label>
 				<input 
@@ -195,6 +163,7 @@ function WizardInner() {
 					<p className="text-sm text-red-600 mt-1">Weekly commitment must be between 0 and 168 hours</p>
 				)}
 			</div>
+			
 			<div className="space-y-2">
 				<label className="font-medium">Location: [County/City/Township], [State]</label>
 				<input 
@@ -212,6 +181,7 @@ function WizardInner() {
 					<p className="text-sm text-red-600 mt-1">Please enter your location</p>
 				)}
 			</div>
+			
 			<div className="space-y-2">
 				<label className="font-medium">House Size (Square Feet)</label>
 				<input 
@@ -228,6 +198,7 @@ function WizardInner() {
 					<p className="text-sm text-red-600 mt-1">Please enter the house size</p>
 				)}
 			</div>
+			
 			<div className="space-y-2">
 				<label className="font-medium">Number of Stories</label>
 				<select className="border rounded p-2" value={numberOfStories} onChange={(e)=>setNumberOfStories(e.target.value as any)}>
@@ -243,6 +214,7 @@ function WizardInner() {
 					<p className="text-sm text-red-600 mt-1">Please select the number of stories</p>
 				)}
 			</div>
+			
 			<div className="space-y-2">
 				<label className="font-medium">Target Start Date (optional)</label>
 				<input 
@@ -255,6 +227,7 @@ function WizardInner() {
 					This helps us consider weather impacts and seasonal constraints on your timeline
 				</p>
 			</div>
+			
 			<div className="space-y-2">
 				<label className="font-medium">Property Address (optional)</label>
 				<input 
@@ -268,6 +241,7 @@ function WizardInner() {
 					If you know your property address, please include it. This helps with zoning, flood zones, soil conditions, and other site-specific factors.
 				</p>
 			</div>
+			
 			{(role === "gc_plus_diy" || role === "owner_plus_diy") && constructionMethod && currentPhaseId && (
 				<div className="space-y-2">
 					<label className="font-medium">Phases you will self-perform</label>
@@ -311,6 +285,7 @@ function WizardInner() {
 					)}
 				</div>
 			)}
+			
 			<div className="space-y-2">
 				<label className="font-medium">Additional background information (optional)</label>
 				<textarea 
@@ -320,6 +295,7 @@ function WizardInner() {
 					onChange={(e) => setBackground(e.target.value)}
 				/>
 			</div>
+			
 			<div>
 				<Button 
 					onClick={handleSubmit} 
@@ -351,7 +327,7 @@ function WizardInner() {
 							: ""
 					}
 				>
-					{isLoading ? "Generating..." : "Continue"}
+					{isLoading ? "Generating..." : "Generate Roadmap"}
 				</Button>
 				{(experience === "" || constructionMethod === "" || currentPhaseId === "" || weeklyHourlyCommitment === "" || parseInt(weeklyHourlyCommitment) < 0 || parseInt(weeklyHourlyCommitment) > 168 || cityState === "" || houseSize === "" || foundationType === "" || numberOfStories === "") && (
 					<p className="text-sm text-red-600 mt-2">Please complete all required fields with valid values before continuing</p>
@@ -360,11 +336,3 @@ function WizardInner() {
 		</div>
 	);
 }
-
-export default function OnboardingPage() {
-	console.log('🚀 OnboardingPage component rendering');
-	
-	return <WizardInner />;
-}
-
-
