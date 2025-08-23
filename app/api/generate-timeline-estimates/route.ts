@@ -1,7 +1,56 @@
 import { NextRequest, NextResponse } from 'next/server';
 import OpenAI from 'openai';
+import { createClient } from '@supabase/supabase-js';
 import type { OnboardingProfile } from '@/lib/roadmap-types';
-import { baselineRoadmapData } from '@/lib/roadmap-baseline';
+
+// Initialize Supabase client for server-side operations with error handling
+function getSupabaseClient() {
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  
+  if (!supabaseUrl || !supabaseKey) {
+    console.error('Missing Supabase environment variables:', {
+      url: supabaseUrl ? 'present' : 'missing',
+      key: supabaseKey ? 'present' : 'missing'
+    });
+    throw new Error('Supabase configuration is incomplete. Please check environment variables.');
+  }
+  
+  return createClient(supabaseUrl, supabaseKey);
+}
+
+// Function to fetch baseline phases from database
+async function getBaselinePhases(): Promise<any> {
+  try {
+    const supabase = getSupabaseClient();
+    
+    const { data, error } = await supabase
+      .from('baseline_construction_phases')
+      .select('phases')
+      .eq('is_active', true)
+      .single();
+    
+    if (error) {
+      console.error('Error fetching baseline phases:', error);
+      throw error;
+    }
+    
+    // Handle the double-nested structure from the database
+    // Database has: { phases: { phases: [...] } }
+    // We need to extract the inner phases array
+    const phasesData = data?.phases;
+    if (phasesData && phasesData.phases) {
+      return { phases: phasesData.phases };
+    }
+    
+    // Fallback to direct phases if structure is different
+    return data?.phases || { phases: [] };
+  } catch (error) {
+    console.error('Failed to fetch baseline phases:', error);
+    // Return empty phases as fallback
+    return { phases: [] };
+  }
+}
 
 // Available models
 const OPENAI_MODELS = {
@@ -302,12 +351,20 @@ async function generateAllPhaseTimelines(
   console.log(`Generating timeline estimates for all phases`);
   
   // Use the same phases as the roadmap system
-  const roadmapPhases = baselineRoadmapData.phases;
+  const roadmapPhases = await getBaselinePhases();
+  
+  // Validate that we have phases data
+  if (!roadmapPhases || !roadmapPhases.phases || !Array.isArray(roadmapPhases.phases)) {
+    console.error('Invalid baseline phases data structure:', roadmapPhases);
+    throw new Error('Failed to fetch valid baseline phases data from database');
+  }
+  
+  console.log(`Processing ${roadmapPhases.phases.length} baseline phases for timeline estimation`);
   
   // Find the current phase and get remaining phases (INCLUDE current phase)
-  const currentPhaseIndex = roadmapPhases.findIndex(p => p.id === userProfile.currentPhaseId);
+  const currentPhaseIndex = roadmapPhases.phases.findIndex(p => p.id === userProfile.currentPhaseId);
   const remainingPhases = currentPhaseIndex >= 0 
-    ? roadmapPhases.slice(currentPhaseIndex)  // Include current phase and all future phases
+    ? roadmapPhases.phases.slice(currentPhaseIndex)  // Include current phase and all future phases
     : [];
   
   // Ensure current phase is included for timeline estimation
@@ -321,7 +378,7 @@ async function generateAllPhaseTimelines(
   
   // Generate all phase timelines in parallel
   const timelinePromises = remainingPhases.map(async (phase) => {
-    return await generatePhaseTimeline(phase, userProfile, roadmapPhases);
+    return await generatePhaseTimeline(phase, userProfile, roadmapPhases.phases);
   });
   
   // Wait for all phases to complete simultaneously

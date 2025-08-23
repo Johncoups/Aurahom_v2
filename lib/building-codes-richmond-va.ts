@@ -134,8 +134,7 @@ export function getBuildingCodeRequirements(phaseId: string): string {
   const phaseMap: { [key: string]: string } = {
     "pre-construction": "foundation",
     "foundation": "foundation",
-    "exterior-framing": "framing",
-    "interior-framing": "framing",
+    "rough-framing": "framing",
     "electrical-rough": "electrical",
     "plumbing-rough": "plumbing",
     "hvac-rough": "hvac",
@@ -178,8 +177,7 @@ export function getBuildingCodeRequirements(phaseId: string): string {
 export function getInspectionRequirements(phaseId: string): string {
   const inspectionMap: { [key: string]: string } = {
     "foundation": "Foundation inspection required before concrete pour",
-    "exterior-framing": "Framing inspection required after rough-in, before insulation",
-    "interior-framing": "Framing inspection required after rough-in, before insulation",
+    "rough-framing": "Framing inspection required after rough-in, before insulation",
     "electrical-rough": "Electrical inspection required after rough-in, before drywall",
     "plumbing-rough": "Plumbing inspection required after rough-in, before drywall",
     "hvac-rough": "HVAC inspection required after rough-in, before drywall",

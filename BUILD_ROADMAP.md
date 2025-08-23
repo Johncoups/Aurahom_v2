@@ -17,10 +17,10 @@ Use this file to plan, execute, and UAT your build. Check items off by editing `
 - [Phase 5: Plumbing (Rough-In)](#phase-5-plumbing-rough-in)
 - [Phase 6: Electrical (Rough-In)](#phase-6-electrical-rough-in)
 - [Phase 7: HVAC (Rough-In)](#phase-7-hvac-rough-in)
-- [Phase 8: In-Floor Radiant Heat](#phase-8-in-floor-radiant-heat)
+- [Phase 8: Foundation (includes In-Floor Radiant Heat)](#phase-8-foundation-includes-in-floor-radiant-heat)
 - [Phase 9: Concrete (Slabs & Flatwork)](#phase-9-concrete-slabs--flatwork)
 - [Phase 10: Insulation & Air Sealing](#phase-10-insulation--air-sealing)
-- [Phase 11: Interior Framing & Blocking](#phase-11-interior-framing--blocking)
+- [Phase 11: Rough Framing](#phase-11-rough-framing)
 - [Phase 12: Drywall](#phase-12-drywall)
 - [Phase 13: Paint](#phase-13-paint)
 - [Phase 14: Trim Carpentry](#phase-14-trim-carpentry)
@@ -181,7 +181,7 @@ Provide to vendors
 
 ---
 
-## Phase 8: In-Floor Radiant Heat
+## Phase 8: Foundation (includes In-Floor Radiant Heat)
 
 Tasks
 - [ ] Zone map; manifolds; control strategy
@@ -233,7 +233,7 @@ Provide to vendors
 
 ---
 
-## Phase 11: Interior Framing & Blocking
+## Phase 11: Rough Framing
 
 Tasks
 - [ ] Blocking for cabinets/vanities/handrails/grab bars

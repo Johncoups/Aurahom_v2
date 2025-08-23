@@ -67,13 +67,12 @@ const testProfile = {
   constructionMethod: "post-frame",
   currentPhaseId: "pre-construction",
   diyPhaseIds: [
-    "interior-framing", 
+    "rough-framing", 
     "plumbing-rough", 
     "electrical-rough", 
     "hvac-rough", 
     "flooring", 
-    "kitchen-bath", 
-    "radiant-heat"
+    "kitchen-bath"
   ],
   weeklyHourlyCommitment: "20-30",
   cityState: "Richmond City, VA",

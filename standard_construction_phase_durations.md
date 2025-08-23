@@ -2,34 +2,31 @@
 
 *Note: Durations are typical ranges for average residential construction (2,000-3,500 sq ft). Actual times vary based on house size, complexity, crew size, weather, and local conditions.*
 
-## Traditional Frame Construction Phases (22 phases)
+## Traditional Frame Construction Phases (19 phases)
 
 | Phase | Duration | Notes |
 |-------|----------|-------|
-| 1. Pre-Construction Planning | 2-8 weeks | Varies greatly by complexity, permits, financing |
-| 2. Site Preparation | 3-7 days | Weather dependent, site conditions vary |
-| 3. Utilities & Septic | 1-2 weeks | May overlap with site prep, inspection delays possible |
-| 4. Excavation & Earthwork | 2-5 days | Weather dependent, soil conditions vary |
-| 5. Foundation | 1-3 weeks | Includes cure time, weather dependent |
-| 6. Exterior Framing (Shell) | 2-6 weeks | House size dependent, crew size critical |
-| 7. Interior Framing & Blocking | 1-3 weeks | Complexity of interior layout affects timing |
-| 8. Roofing | 1-2 weeks | Weather dependent, roof complexity varies |
-| 9. Exterior Finishes | 2-4 weeks | Siding type and architectural details affect timing |
-| 10. Plumbing Rough-in | 3-5 days | House size and bathroom count dependent |
-| 11. Electrical Rough-in | 2-4 days | Electrical complexity and smart home features add time |
-| 12. HVAC Rough-in | 2-5 days | System complexity and ductwork extent varies |
-| 13. In-Floor Radiant Heat | 1-3 days | Area coverage dependent |
-| 14. Concrete Slabs & Flatwork | 3-7 days | Includes cure time, weather dependent |
-| 15. Insulation & Air Sealing | 2-4 days | House size and insulation type dependent |
-| 16. Interior Framing & Blocking (Second Pass) | 2-5 days | Additional blocking and adjustments |
-| 17. Drywall | 1-2 weeks | House size dependent, includes texture and finish |
-| 18. Paint | 1-2 weeks | Number of coats and color changes affect timing |
-| 19. Trim Carpentry | 1-3 weeks | Architectural detail level varies significantly |
-| 20. Flooring | 3-7 days | Flooring type and area coverage dependent |
-| 21. Kitchen & Bath | 2-4 weeks | Complexity and custom work varies greatly |
-| 22. Final Touches & Punch List | 1-2 weeks | Quality standards and initial construction quality dependent |
+| 1. Pre-Construction Planning | 2-8 weeks | Financing, permits, design, contractor selection |
+| 2. Site Preparation | 1-3 weeks | Clearing, grading, erosion control, access roads |
+| 3. Utilities & Septic | 2-6 weeks | Well/septic design, installation, inspections |
+| 4. Excavation & Earthwork | 1-3 weeks | Foundation excavation, drainage, backfill |
+| 5. Foundation | 3-6 weeks | **Combined phase**: footings, walls, waterproofing, inspections, AND in-floor radiant heat system |
+| 6. Rough Framing | 4-8 weeks | **Combined phase**: floors, walls, roof, interior partitions |
+| 7. Roofing | 1-3 weeks | Underlayment, shingles, flashing, gutters |
+| 8. Exterior Finishes | 2-5 weeks | Siding, windows, doors, trim, paint |
+| 9. Plumbing Rough-In | 1-2 weeks | Underground and wall plumbing systems |
+| 10. Electrical Rough-In | 1-2 weeks | Wiring, panels, outlets, switches |
+| 11. HVAC Rough-In | 1-3 weeks | Ductwork, refrigerant lines, controls |
+| 12. Concrete Slabs & Flatwork | 1-2 weeks | Interior slabs, garage, driveways |
+| 13. Insulation & Air Sealing | 1-2 weeks | Wall, attic insulation, air sealing |
+| 14. Drywall | 2-4 weeks | Hanging, taping, mudding, sanding |
+| 15. Paint | 1-3 weeks | Interior and exterior painting |
+| 16. Trim Carpentry | 2-4 weeks | Doors, trim, cabinets, hardware |
+| 17. Flooring | 3-7 days | Flooring type and area coverage dependent |
+| 18. Kitchen & Bath | 2-4 weeks | Complexity and custom work varies greatly |
+| 19. Final Touches & Punch List | 1-2 weeks | Quality standards and initial construction quality dependent |
 
-**Total Traditional Frame: 16-26 weeks (4-6.5 months)**
+**Total Traditional Frame: 15-25 weeks (3.75-6.25 months)**
 
 ## Post-Frame Construction Phases (19 phases)
 

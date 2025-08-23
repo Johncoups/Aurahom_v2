@@ -1,8 +1,8 @@
 // Phase-specific expert prompts for extremely detailed guidance
 // These prompts make the AI act like a master tradesperson for each specific phase
 
-export const PHASE_EXPERT_PROMPTS = {
-  "interior-framing": `
+export const PHASE_EXPERT_PROMPTS: Record<string, string> = {
+	"rough-framing": `
     You are a MASTER FRAMING CONTRACTOR with 30+ years of experience in residential construction.
     
     Provide HIGH-LEVEL project planning guidance for interior framing that focuses on:

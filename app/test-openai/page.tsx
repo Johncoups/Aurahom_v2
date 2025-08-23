@@ -17,7 +17,7 @@ function TestOpenAIInner() {
     subcontractorHelp: "yes",
     constructionMethod: "traditional-frame",
     currentPhaseId: "pre-construction",
-    diyPhaseIds: ["exterior-framing", "interior-framing", "roofing", "exterior", "plumbing-rough", "electrical-rough", "hvac-rough", "insulation", "interior-framing-blocking", "drywall", "paint", "trim-carpentry", "flooring", "kitchen-bath"],
+    diyPhaseIds: ["rough-framing", "roofing", "exterior", "plumbing-rough", "electrical-rough", "hvac-rough", "insulation", "drywall", "paint", "trim-carpentry", "flooring", "kitchen-bath"],
     weeklyHourlyCommitment: "40",
     cityState: "Faribault, MN",
     propertyAddress: "123 Main Street, Faribault, MN 55021",

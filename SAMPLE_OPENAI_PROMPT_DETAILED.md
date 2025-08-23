@@ -11,7 +11,7 @@ const testProfile = {
   subcontractorHelp: "yes",
   constructionMethod: "post-frame",
   currentPhaseId: "pre-construction",
-  diyPhaseIds: ["interior-framing-post-frame", "plumbing-rough", "electrical-rough", "hvac-rough", "flooring", "kitchen-bath", "radiant-heat"],
+  diyPhaseIds: ["rough-framing-post-frame", "plumbing-rough", "electrical-rough", "hvac-rough", "flooring", "kitchen-bath"],
   weeklyHourlyCommitment: "20-30",
   cityState: "Richmond City, VA",
   propertyAddress: "123 Main Street, Richmond City, VA 23220",
@@ -213,7 +213,7 @@ Each phase should include:
 2. **Added House Details**: House size, foundation type, and number of stories are now included in the user profile
 3. **Updated Role Definitions**: Clarified the difference between licensed GCs and owner-builders
 4. **Enhanced Timeline Focus**: Changed from "Timeline & Cost Estimates" to "Timeline Breakdown" with emphasis on total time
-5. **Unique Phase IDs**: Fixed duplicate phase IDs by using construction-method-specific identifiers (e.g., "interior-framing-post-frame")
+5. **Unique Phase IDs**: Fixed duplicate phase IDs by using construction-method-specific identifiers (e.g., "rough-framing-post-frame")
 6. **Simplified Requirements**: Changed from detailed execution steps to high-level project planning focus
 
 ## Why Detail Level Might Not Be Increasing

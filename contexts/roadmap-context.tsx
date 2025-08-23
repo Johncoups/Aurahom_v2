@@ -24,9 +24,21 @@ export function RoadmapProvider({ children }: { children: ReactNode }) {
 		setIsLoading(true);
 		setProfile(p);
 		try {
+			console.log('🔄 Starting roadmap generation...');
 			// Generate both roadmap and timeline estimates
 			const [roadmapData, timelineData] = await Promise.all([
-				generateRoadmap(p),
+				generateRoadmap(p).then(data => {
+					console.log('✅ Roadmap generated:', data);
+					console.log('🔍 Roadmap phases structure:', data.phases);
+					if (data.phases && data.phases.length > 0) {
+						console.log('🔍 First phase structure:', data.phases[0]);
+						console.log('🔍 First phase tasks:', data.phases[0].tasks);
+					}
+					return data;
+				}).catch(error => {
+					console.error('❌ Roadmap generation failed:', error);
+					throw error;
+				}),
 				fetch('/api/generate-timeline-estimates', {
 					method: 'POST',
 					headers: { 'Content-Type': 'application/json' },
