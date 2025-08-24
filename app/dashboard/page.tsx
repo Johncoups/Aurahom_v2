@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { ProtectedRoute } from "@/components/auth/protected-route"
 import { DashboardHeader } from "@/components/dashboard-header"
 import { FeatureNavigation } from "@/components/feature-navigation"
@@ -18,8 +18,15 @@ import { OnboardingWizard } from "@/components/onboarding-wizard"
 
 function DashboardInner() {
 	const [currentView, setCurrentView] = useState<string>("dashboard")
-	const { profile, roadmap, isLoading, regeneratePhase } = useRoadmap()
+	const { profile, roadmap, isLoading, regeneratePhase, hasExistingProject, isCheckingProject } = useRoadmap()
 	const router = useRouter()
+
+	// Auto-switch to roadmap view when roadmap data becomes available
+	useEffect(() => {
+		if (currentView === "roadmap" && roadmap && !isLoading) {
+			// Roadmap is loaded and ready, view will automatically show it
+		}
+	}, [currentView, roadmap, isLoading])
 
 	const handleFeatureClick = (feature: string) => {
 		if (feature === "timeline") {
@@ -32,25 +39,33 @@ function DashboardInner() {
 	const renderCurrentView = () => {
 		switch (currentView) {
 			case "dashboard":
-				if (!profile) {
-					return <OnboardingWizard onComplete={() => setCurrentView("roadmap")} />
-				}
-				return <DashboardContent />
-			case "roadmap":
-				if (!profile) {
+				// Show loading while checking for existing projects
+				if (isCheckingProject) {
 					return (
 						<div className="max-w-2xl mx-auto p-8 text-center">
-							<h2 className="text-xl font-semibold mb-4">No Roadmap Yet</h2>
-							<p className="text-gray-600 mb-6">Complete onboarding to generate your personalized construction roadmap.</p>
-							<Button onClick={() => setCurrentView("dashboard")}>Start Onboarding</Button>
+							<div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+							<p className="text-gray-600">Loading your dashboard...</p>
 						</div>
 					)
 				}
+				// Show welcome screen for new users, dashboard for existing users
+				if (!hasExistingProject) {
+					return (
+						<div className="max-w-2xl mx-auto p-8 text-center">
+							<h2 className="text-2xl font-bold mb-4">Welcome to Aurahom!</h2>
+							<p className="text-gray-600 mb-6">Start building your construction roadmap by completing the onboarding process.</p>
+							<Button onClick={() => setCurrentView("roadmap")}>Get Started</Button>
+						</div>
+					)
+				}
+				return <DashboardContent />
+			case "roadmap":
 				if (isLoading) {
 					return <div className="max-w-2xl mx-auto p-8 text-center">Generating roadmap...</div>
 				}
 				if (!roadmap) {
-					return <div className="max-w-2xl mx-auto p-8 text-center">Error generating roadmap. Please try onboarding again.</div>
+					// Show OnboardingWizard if no roadmap exists
+					return <OnboardingWizard onComplete={() => setCurrentView("roadmap")} />
 				}
 				return <RoadmapView data={roadmap} onRegeneratePhase={regeneratePhase} />
 			case "schedule":

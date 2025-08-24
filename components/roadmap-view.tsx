@@ -24,103 +24,10 @@ export function RoadmapView({ data }: RoadmapViewProps) {
 			Object.entries(data.parsedTimelineEstimates).slice(0, 2) : 'No parsed data'
 	});
 
-	// Debug function to manually trigger data dump
-	const triggerDebugDump = () => {
-		const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
-		const filename = `roadmap-view-debug-${timestamp}.txt`;
-		
-		const debugData = {
-			timestamp: new Date().toISOString(),
-			profile: profile,
-			roadmapData: {
-				phases: data.phases?.map(p => ({ id: p.id, title: p.title })) || [],
-				hasTimelineEstimates: !!data.timelineEstimates,
-				timelineEstimatesCount: data.timelineEstimates?.length || 0,
-				hasParsedEstimates: !!data.parsedTimelineEstimates,
-				parsedEstimatesKeys: data.parsedTimelineEstimates ? Object.keys(data.parsedTimelineEstimates) : []
-			},
-			phaseMatching: {
-				roadmapPhaseIds: data.phases?.map(p => p.id) || [],
-				parsedEstimatesPhaseIds: data.parsedTimelineEstimates ? Object.keys(data.parsedTimelineEstimates) : [],
-				matchingPhases: data.phases?.filter(p => 
-					data.parsedTimelineEstimates?.[p.id]
-				).map(p => p.id) || [],
-				missingPhases: data.phases?.filter(p => 
-					!data.parsedTimelineEstimates?.[p.id]
-				).map(p => p.id) || []
-			},
-			sampleData: {
-				samplePhase: data.phases?.[0] ? {
-					id: data.phases[0].id,
-					title: data.phases[0].title,
-					hasParsedData: !!data.parsedTimelineEstimates?.[data.phases[0].id],
-					parsedData: data.parsedTimelineEstimates?.[data.phases[0].id] || 'No parsed data'
-				} : 'No phases available',
-				sampleParsedEstimate: data.parsedTimelineEstimates ? 
-					Object.entries(data.parsedTimelineEstimates).slice(0, 3) : 'No parsed estimates'
-			}
-		};
-		
-		const debugText = `=== ROADMAP VIEW DEBUG DUMP ===
-Generated: ${debugData.timestamp}
 
-=== USER PROFILE ===
-${JSON.stringify(debugData.profile, null, 2)}
-
-=== ROADMAP DATA ===
-${JSON.stringify(debugData.roadmapData, null, 2)}
-
-=== PHASE MATCHING ANALYSIS ===
-${JSON.stringify(debugData.phaseMatching, null, 2)}
-
-=== SAMPLE DATA ===
-${JSON.stringify(debugData.sampleData, null, 2)}
-
-=== FULL ROADMAP PHASES ===
-${JSON.stringify(data.phases, null, 2)}
-
-=== FULL PARSED TIMELINE ESTIMATES ===
-${JSON.stringify(data.parsedTimelineEstimates, null, 2)}
-`;
-		
-		const blob = new Blob([debugText], { type: 'text/plain' });
-		const url = URL.createObjectURL(blob);
-		const a = document.createElement('a');
-		a.href = url;
-		a.download = filename;
-		document.body.appendChild(a);
-		a.click();
-		document.body.removeChild(a);
-		URL.revokeObjectURL(url);
-		
-		console.log(`✅ Roadmap view debug data dumped to file: ${filename}`);
-		console.log('🔍 Debug data structure:', debugData);
-	};
 
 	return (
 		<div className="max-w-6xl mx-auto p-4 space-y-6">
-			{/* Debug Button */}
-			<div className="flex justify-end">
-				<button
-					onClick={triggerDebugDump}
-					className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 text-sm"
-				>
-					🐛 Debug: Dump Data to File
-				</button>
-			</div>
-			
-			{/* Data Debug Display */}
-			<div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6">
-				<h3 className="font-semibold text-yellow-800 mb-2">🔍 Data Debug Info</h3>
-				<div className="text-sm text-yellow-700 space-y-1">
-					<div><strong>Has phases:</strong> {data.phases ? 'Yes' : 'No'} ({data.phases?.length || 0} phases)</div>
-					<div><strong>Has timelineEstimates:</strong> {data.timelineEstimates ? 'Yes' : 'No'} ({data.timelineEstimates?.length || 0} estimates)</div>
-					<div><strong>Has parsedTimelineEstimates:</strong> {data.parsedTimelineEstimates ? 'Yes' : 'No'}</div>
-					<div><strong>Parsed estimates keys:</strong> {data.parsedTimelineEstimates ? Object.keys(data.parsedTimelineEstimates).join(', ') : 'None'}</div>
-					<div><strong>Sample parsed data:</strong> {data.parsedTimelineEstimates && Object.keys(data.parsedTimelineEstimates).length > 0 ? 
-						JSON.stringify(data.parsedTimelineEstimates[Object.keys(data.parsedTimelineEstimates)[0]], null, 2) : 'None'}</div>
-				</div>
-			</div>
 			
 			{/* Timeline Summary Section */}
 			{data.timelineEstimates && data.timelineEstimates.length > 0 && (

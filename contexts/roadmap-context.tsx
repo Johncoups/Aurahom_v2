@@ -9,9 +9,12 @@ interface RoadmapContextType {
 	profile: OnboardingProfile | null;
 	roadmap: RoadmapData | null;
 	isLoading: boolean;
+	hasExistingProject: boolean;
+	isCheckingProject: boolean;
 	setProfileAndGenerate: (p: OnboardingProfile) => Promise<void>;
 	regeneratePhase: (phaseId: string, detailLevel: "low" | "standard" | "high") => Promise<void>;
 	loadStoredRoadmap: () => Promise<void>;
+	checkExistingProject: () => Promise<void>;
 }
 
 const RoadmapContext = createContext<RoadmapContextType | undefined>(undefined);
@@ -20,9 +23,48 @@ export function RoadmapProvider({ children }: { children: ReactNode }) {
 	const [profile, setProfile] = useState<OnboardingProfile | null>(null);
 	const [roadmap, setRoadmap] = useState<RoadmapData | null>(null);
 	const [isLoading, setIsLoading] = useState(false);
+	const [hasExistingProject, setHasExistingProject] = useState(false);
+	const [isCheckingProject, setIsCheckingProject] = useState(true);
 
-	// Load stored roadmap when component mounts
+	// Check if user has an existing project
+	async function checkExistingProject() {
+		try {
+			setIsCheckingProject(true);
+			const { data: { user }, error: userError } = await supabase.auth.getUser();
+			
+			if (userError || !user?.id) {
+				setHasExistingProject(false);
+				return;
+			}
+			
+			// Check if user has any projects
+			const { data: projects, error: projectError } = await supabase
+				.from('projects')
+				.select('id')
+				.eq('user_id', user.id)
+				.limit(1);
+			
+			if (projectError) {
+				console.error('❌ Error checking existing projects:', projectError);
+				setHasExistingProject(false);
+				return;
+			}
+			
+			const hasProject = projects && projects.length > 0;
+			setHasExistingProject(hasProject);
+			console.log(`✅ User ${hasProject ? 'has' : 'does not have'} existing project`);
+			
+		} catch (error) {
+			console.error('❌ Error checking existing project:', error);
+			setHasExistingProject(false);
+		} finally {
+			setIsCheckingProject(false);
+		}
+	}
+
+	// Load stored roadmap and check for existing project when component mounts
 	useEffect(() => {
+		checkExistingProject();
 		loadStoredRoadmap();
 	}, []); // Empty dependency array means this runs once on mount
 
@@ -74,8 +116,8 @@ export function RoadmapProvider({ children }: { children: ReactNode }) {
 			
 			// Now generate timeline estimates with user and project IDs
 			const timelineResponse = await fetch('/api/generate-timeline-estimates', {
-				method: 'POST',
-				headers: { 'Content-Type': 'application/json' },
+					method: 'POST',
+					headers: { 'Content-Type': 'application/json' },
 				body: JSON.stringify({ 
 					userProfile: p,
 					userId: user.id,
@@ -164,104 +206,6 @@ export function RoadmapProvider({ children }: { children: ReactNode }) {
 		}
 	}
 
-	// Function to dump API response data to a text file for troubleshooting
-	async function dumpApiResponseToFile(profile: OnboardingProfile, roadmapData: RoadmapData, timelineData: any) {
-		try {
-			const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
-			const filename = `api-response-debug-${timestamp}.txt`;
-			
-			// Create comprehensive debug data
-			const debugData = {
-				timestamp: new Date().toISOString(),
-				profile: profile,
-				roadmapData: {
-					phases: roadmapData.phases?.map(p => ({ id: p.id, title: p.title })) || [],
-					hasTimelineEstimates: !!roadmapData.timelineEstimates,
-					timelineEstimatesCount: roadmapData.timelineEstimates?.length || 0,
-					hasParsedEstimates: !!roadmapData.parsedTimelineEstimates,
-					parsedEstimatesKeys: roadmapData.parsedTimelineEstimates ? Object.keys(roadmapData.parsedTimelineEstimates) : []
-				},
-				timelineData: {
-					success: timelineData.success,
-					userId: timelineData.userId,
-					projectId: timelineData.projectId,
-					hasTimelines: !!timelineData.timelines,
-					timelineCount: timelineData.timelines?.length || 0,
-					hasRawResponses: !!timelineData.rawOpenAIResponses,
-					hasParsedEstimates: !!timelineData.parsedTimelineEstimates,
-					rawResponsesKeys: timelineData.rawOpenAIResponses ? Object.keys(timelineData.rawOpenAIResponses) : [],
-					parsedEstimatesKeys: timelineData.parsedTimelineEstimates ? Object.keys(timelineData.parsedTimelineEstimates) : []
-				},
-				phaseMatching: {
-					roadmapPhaseIds: roadmapData.phases?.map(p => p.id) || [],
-					parsedEstimatesPhaseIds: roadmapData.parsedTimelineEstimates ? Object.keys(roadmapData.parsedTimelineEstimates) : [],
-					matchingPhases: roadmapData.phases?.filter(p => 
-						roadmapData.parsedTimelineEstimates?.[p.id]
-					).map(p => p.id) || [],
-					missingPhases: roadmapData.phases?.filter(p => 
-						!roadmapData.parsedTimelineEstimates?.[p.id]
-					).map(p => p.id) || []
-				},
-				sampleData: {
-					samplePhase: roadmapData.phases?.[0] ? {
-						id: roadmapData.phases[0].id,
-						title: roadmapData.phases[0].title,
-						hasParsedData: !!roadmapData.parsedTimelineEstimates?.[roadmapData.phases[0].id],
-						parsedData: roadmapData.parsedTimelineEstimates?.[roadmapData.phases[0].id] || 'No parsed data'
-					} : 'No phases available',
-					sampleParsedEstimate: roadmapData.parsedTimelineEstimates ? 
-						Object.entries(roadmapData.parsedTimelineEstimates).slice(0, 2) : 'No parsed estimates'
-				}
-			};
-			
-			// Convert to formatted text
-			const debugText = `=== API RESPONSE DEBUG DUMP ===
-Generated: ${debugData.timestamp}
-
-=== USER PROFILE ===
-${JSON.stringify(debugData.profile, null, 2)}
-
-=== ROADMAP DATA ===
-${JSON.stringify(debugData.roadmapData, null, 2)}
-
-=== TIMELINE DATA ===
-${JSON.stringify(debugData.timelineData, null, 2)}
-
-=== PHASE MATCHING ANALYSIS ===
-${JSON.stringify(debugData.phaseMatching, null, 2)}
-
-=== SAMPLE DATA ===
-${JSON.stringify(debugData.sampleData, null, 2)}
-
-=== FULL ROADMAP PHASES ===
-${JSON.stringify(roadmapData.phases, null, 2)}
-
-=== FULL PARSED TIMELINE ESTIMATES ===
-${JSON.stringify(roadmapData.parsedTimelineEstimates, null, 2)}
-
-=== FULL TIMELINE DATA ===
-${JSON.stringify(timelineData, null, 2)}
-`;
-			
-			// Create and download the file
-			const blob = new Blob([debugText], { type: 'text/plain' });
-			const url = URL.createObjectURL(blob);
-			const a = document.createElement('a');
-			a.href = url;
-			a.download = filename;
-			document.body.appendChild(a);
-			a.click();
-			document.body.removeChild(a);
-			URL.revokeObjectURL(url);
-			
-			console.log(`✅ Debug data dumped to file: ${filename}`);
-			console.log('🔍 Debug data structure:', debugData);
-			
-		} catch (error) {
-			console.error('❌ Failed to dump debug data:', error);
-		}
-	}
-
 	// Store roadmap data in Supabase
 	async function storeRoadmapInSupabase(profile: OnboardingProfile, roadmapData: RoadmapData, timelineData: any) {
 		try {
@@ -269,8 +213,7 @@ ${JSON.stringify(timelineData, null, 2)}
 			console.log('🔍 Profile:', profile);
 			console.log('🔍 Roadmap data:', roadmapData);
 			
-			// DUMP API RESPONSE TO FILE FOR TROUBLESHOOTING
-			await dumpApiResponseToFile(profile, roadmapData, timelineData);
+
 			
 			// Get current user from auth context
 			const { data: { user }, error: userError } = await supabase.auth.getUser();
@@ -482,8 +425,47 @@ ${JSON.stringify(timelineData, null, 2)}
 						parsedTimelineEstimates: storedRoadmap.raw_api_response?.parsedTimelineEstimates || {}
 					};
 					
+					// Restore the roadmap
 					setRoadmap(reconstructedRoadmap);
 					console.log('✅ Roadmap restored from database');
+					
+					// Now fetch the profile from the projects table using project_id
+					if (storedRoadmap.project_id) {
+						try {
+							const { data: projectData, error: projectError } = await supabase
+								.from('projects')
+								.select('*')
+								.eq('id', storedRoadmap.project_id)
+								.single();
+							
+							if (projectError) {
+								console.error('❌ Error loading project profile:', projectError);
+							} else if (projectData) {
+								// Convert project data to OnboardingProfile format
+								const profileData: OnboardingProfile = {
+									role: projectData.role || 'owner_plus_diy',
+									experience: projectData.experience || 'diy_permitting',
+									subcontractorHelp: projectData.subcontractor_help || 'yes',
+									constructionMethod: projectData.construction_method || 'post-frame',
+									currentPhaseId: projectData.current_phase_id || 'just-starting',
+									diyPhaseIds: projectData.diy_phase_ids || [],
+									weeklyHourlyCommitment: projectData.weekly_hourly_commitment || '25',
+									cityState: projectData.city_state || '',
+									propertyAddress: projectData.property_address || '',
+									houseSize: projectData.house_size || '',
+									foundationType: projectData.foundation_type || 'pier-and-beam',
+									numberOfStories: projectData.number_of_stories || '2-story',
+									targetStartDate: projectData.target_start_date || '',
+									background: projectData.background || ''
+								};
+								
+								setProfile(profileData);
+								console.log('✅ Profile restored from projects table');
+							}
+						} catch (error) {
+							console.error('❌ Error fetching project profile:', error);
+						}
+					}
 				} else {
 					console.log('✅ Current session data preserved, not overwriting with stored data');
 				}
@@ -517,10 +499,13 @@ ${JSON.stringify(timelineData, null, 2)}
 		profile, 
 		roadmap, 
 		isLoading, 
+		hasExistingProject,
+		isCheckingProject,
 		setProfileAndGenerate,
 		regeneratePhase,
-		loadStoredRoadmap
-	}), [profile, roadmap, isLoading, regeneratePhase, loadStoredRoadmap])
+		loadStoredRoadmap,
+		checkExistingProject
+	}), [profile, roadmap, isLoading, hasExistingProject, isCheckingProject])
 
 	return <RoadmapContext.Provider value={value}>{children}</RoadmapContext.Provider>;
 }
