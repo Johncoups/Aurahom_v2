@@ -7,6 +7,13 @@ import { generateRoadmapContent, generateStructuredContent } from "@/lib/openai"
 // Helper functions to provide phase-specific content
 function getQAChecksForPhase(phaseId: string): string[] {
 	const qaChecks: Record<string, string[]> = {
+		'just-starting': [
+			'Is project scope clearly defined?',
+			'Are project goals documented?',
+			'Is budget range established?',
+			'Are construction method options researched?',
+			'Are local building codes reviewed?'
+		],
 		'pre-construction': [
 			'Are all permits obtained and displayed?',
 			'Are architectural plans finalized and approved?',
@@ -75,6 +82,13 @@ function getQAChecksForPhase(phaseId: string): string[] {
 
 function getVendorQuestionsForPhase(phaseId: string): string[] {
 	const vendorQuestions: Record<string, string[]> = {
+		'just-starting': [
+			'What is your experience with project planning and assessment?',
+			'Can you help define project scope and requirements?',
+			'What construction methods do you recommend for my situation?',
+			'How do you handle budget planning and cost estimation?',
+			'What is your process for code compliance research?'
+		],
 		'pre-construction': [
 			'What is your experience with this type of project?',
 			'Can you provide references from similar projects?',
@@ -144,6 +158,13 @@ function getVendorQuestionsForPhase(phaseId: string): string[] {
 
 function getVendorNeedsForPhase(phaseId: string): string[] {
 	const vendorNeeds: Record<string, string[]> = {
+		'just-starting': [
+			'Project goals and vision description',
+			'Budget constraints and financial situation',
+			'Property information and site details',
+			'Timeline preferences and constraints',
+			'Construction method preferences or questions'
+		],
 		'pre-construction': [
 			'Complete project specifications and plans',
 			'Permit documentation and approvals',

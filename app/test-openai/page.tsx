@@ -212,14 +212,18 @@ function TestOpenAIInner() {
                    
                    console.log('Starting timeline estimation generation...')
                   
-                  // Call the new timeline estimation API
-                  const response = await fetch('/api/generate-timeline-estimates', {
-                    method: 'POST',
-                    headers: {
-                      'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({ userProfile: testProfile })
-                  })
+                                     // Call the new timeline estimation API
+                   const response = await fetch('/api/generate-timeline-estimates', {
+                     method: 'POST',
+                     headers: {
+                       'Content-Type': 'application/json',
+                     },
+                     body: JSON.stringify({ 
+                       userProfile: testProfile,
+                       userId: 'test-user-id-123', // Mock user ID for testing
+                       projectId: 'test-project-id-456' // Mock project ID for testing
+                     })
+                   })
                   
                   if (!response.ok) {
                     throw new Error(`HTTP error! status: ${response.status}`)
@@ -301,13 +305,13 @@ function TestOpenAIInner() {
                         });
                         
                         if (isDIYPhase) {
-                          const durationPattern = /.*\*\*Duration\*\*:\s*(\d+)\s*weeks/;
+                          const durationPattern = /\*\*Duration\*\*:\s*(\d+)\s*weeks?/i;
                           const durationMatch = timelineText.match(durationPattern);
                           if (durationMatch) {
                             totalWeeks += parseInt(durationMatch[1]);
                           }
                         } else {
-                          const contractorPattern = /.*\*\*Contractor Duration\*\*:\s*(\d+)\s*weeks/;
+                          const contractorPattern = /\*\*Contractor Duration\*\*:\s*(\d+)\s*weeks?/i;
                           const contractorMatch = timelineText.match(contractorPattern);
                           if (contractorMatch) {
                             totalWeeks += parseInt(contractorMatch[1]);
@@ -332,7 +336,7 @@ function TestOpenAIInner() {
                         });
                         
                         if (isDIYPhase) {
-                          const durationPattern = /.*\*\*Duration\*\*:\s*(\d+)\s*weeks/;
+                          const durationPattern = /\*\*Duration\*\*:\s*(\d+)\s*weeks?/i;
                           const durationMatch = timelineText.match(durationPattern);
                           if (durationMatch) {
                             diyWeeks += parseInt(durationMatch[1]);
@@ -357,7 +361,7 @@ function TestOpenAIInner() {
                         });
                         
                         if (!isDIYPhase) {
-                          const contractorPattern = /.*\*\*Contractor Duration\*\*:\s*(\d+)\s*weeks/;
+                          const contractorPattern = /\*\*Contractor Duration\*\*:\s*(\d+)\s*weeks?/i;
                           const contractorMatch = timelineText.match(contractorPattern);
                           if (contractorMatch) {
                             contractorWeeks += parseInt(contractorMatch[1]);
@@ -428,7 +432,8 @@ function TestOpenAIInner() {
                             
                             if (isDIYPhase) {
                               // For DIY phases, look for duration in clean format (brackets already removed)
-                              const durationPattern = /.*\*\*Duration\*\*:\s*(\d+)\s*weeks/;
+                              // Updated regex to match the actual format: "**Duration**: X weeks"
+                              const durationPattern = /\*\*Duration\*\*:\s*(\d+)\s*weeks?/i;
                               const durationMatch = timelineText.match(durationPattern);
                               
                               if (durationMatch) {
@@ -436,7 +441,7 @@ function TestOpenAIInner() {
                               }
                               
                               // Fallback: look for DIY hours and calculate weeks
-                              const hoursPattern = /.*\*\*DIY Hours\*\*:\s*(\d+)\s*hours/;
+                              const hoursPattern = /\*\*DIY Hours\*\*:\s*(\d+)\s*hours?/i;
                               const hoursMatch = timelineText.match(hoursPattern);
                               
                               if (hoursMatch) {
@@ -457,7 +462,8 @@ function TestOpenAIInner() {
                               console.log(`Parsing contractor phase: ${phase.title}`);
                               console.log(`Timeline text for parsing: "${timelineText}"`);
                               
-                              const contractorPattern = /.*\*\*Contractor Duration\*\*:\s*(\d+)\s*weeks/;
+                              // Updated regex to match the actual format: "**Contractor Duration**: X weeks"
+                              const contractorPattern = /\*\*Contractor Duration\*\*:\s*(\d+)\s*weeks?/i;
                               const contractorMatch = timelineText.match(contractorPattern);
                               
                               console.log(`Contractor pattern match:`, contractorMatch);

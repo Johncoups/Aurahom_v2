@@ -47,6 +47,24 @@ export interface DurationOverride {
 // Traditional frame construction phases (current sequence)
 export const TRADITIONAL_FRAME_PHASES: ConstructionPhase[] = [
   {
+    id: "just-starting",
+    title: "Just Starting",
+    order: 0,
+    description: "Project initiation and initial assessment phase",
+    subtasks: [
+      "Complete initial project assessment",
+      "Determine project scope and goals",
+      "Research construction methods and options",
+      "Assess budget and financing needs",
+      "Identify potential challenges and solutions",
+      "Begin gathering project requirements",
+      "Research local building codes and regulations",
+      "Consider timeline and scheduling needs"
+    ],
+    dependencies: [],
+    constructionMethods: ["traditional-frame", "icf", "sip", "modular", "other"]
+  },
+  {
     id: "pre-construction",
     title: "Pre-Construction Planning",
     order: 1,
@@ -440,6 +458,24 @@ export const TRADITIONAL_FRAME_PHASES: ConstructionPhase[] = [
 // Post-frame construction phases (different sequence)
 export const POST_FRAME_PHASES: ConstructionPhase[] = [
   {
+    id: "just-starting",
+    title: "Just Starting",
+    order: 0,
+    description: "Project initiation and initial assessment phase",
+    subtasks: [
+      "Complete initial project assessment",
+      "Determine project scope and goals",
+      "Research construction methods and options",
+      "Assess budget and financing needs",
+      "Identify potential challenges and solutions",
+      "Begin gathering project requirements",
+      "Research local building codes and regulations",
+      "Consider timeline and scheduling needs"
+    ],
+    dependencies: [],
+    constructionMethods: ["post-frame"]
+  },
+  {
     id: "pre-construction",
     title: "Pre-Construction Planning",
     order: 1,
@@ -455,10 +491,10 @@ export const POST_FRAME_PHASES: ConstructionPhase[] = [
       "Establish budget and cost tracking",
       "Schedule pre-construction meeting with trades"
     ],
-         dependencies: [],
+    dependencies: [],
      constructionMethods: ["post-frame"],
      estimatedDuration: "2-4 weeks"
-   },
+  },
   {
     id: "site-prep",
     title: "Site Preparation",
@@ -817,6 +853,24 @@ export const POST_FRAME_PHASES: ConstructionPhase[] = [
 
 // ICF construction phases
 export const ICF_PHASES: ConstructionPhase[] = [
+  {
+    id: "just-starting",
+    title: "Just Starting",
+    order: 0,
+    description: "Project initiation and initial assessment phase",
+    subtasks: [
+      "Complete initial project assessment",
+      "Determine project scope and goals",
+      "Research construction methods and options",
+      "Assess budget and financing needs",
+      "Identify potential challenges and solutions",
+      "Begin gathering project requirements",
+      "Research local building codes and regulations",
+      "Consider timeline and scheduling needs"
+    ],
+    dependencies: [],
+    constructionMethods: ["icf"]
+  },
   {
     id: "pre-construction",
     title: "Pre-Construction Planning",
@@ -1196,6 +1250,24 @@ export const ICF_PHASES: ConstructionPhase[] = [
 // SIP (Structural Insulated Panel) construction phases
 export const SIP_PHASES: ConstructionPhase[] = [
   {
+    id: "just-starting",
+    title: "Just Starting",
+    order: 0,
+    description: "Project initiation and initial assessment phase",
+    subtasks: [
+      "Complete initial project assessment",
+      "Determine project scope and goals",
+      "Research construction methods and options",
+      "Assess budget and financing needs",
+      "Identify potential challenges and solutions",
+      "Begin gathering project requirements",
+      "Research local building codes and regulations",
+      "Consider timeline and scheduling needs"
+    ],
+    dependencies: [],
+    constructionMethods: ["sip"]
+  },
+  {
     id: "pre-construction",
     title: "Pre-Construction Planning",
     order: 1,
@@ -1551,6 +1623,24 @@ export const SIP_PHASES: ConstructionPhase[] = [
 
 // Modular construction phases (similar to traditional but with factory assembly)
 export const MODULAR_PHASES: ConstructionPhase[] = [
+  {
+    id: "just-starting",
+    title: "Just Starting",
+    order: 0,
+    description: "Project initiation and initial assessment phase",
+    subtasks: [
+      "Complete initial project assessment",
+      "Determine project scope and goals",
+      "Research construction methods and options",
+      "Assess budget and financing needs",
+      "Identify potential challenges and solutions",
+      "Begin gathering project requirements",
+      "Research local building codes and regulations",
+      "Consider timeline and scheduling needs"
+    ],
+    dependencies: [],
+    constructionMethods: ["modular"]
+  },
   {
     id: "pre-construction",
     title: "Pre-Construction Planning",

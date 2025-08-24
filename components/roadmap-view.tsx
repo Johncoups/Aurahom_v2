@@ -1,8 +1,6 @@
 "use client"
 
-
 import type { RoadmapData, RoadmapPhase } from "@/lib/roadmap-types"
-
 import { getPhaseById, getPhasesForMethod } from "@/lib/roadmap-phases"
 import { useRoadmap } from "@/contexts/roadmap-context"
 
@@ -12,10 +10,118 @@ interface RoadmapViewProps {
 
 export function RoadmapView({ data }: RoadmapViewProps) {
 	const { profile } = useRoadmap();
+	
+	// Debug logging when component renders
+	console.log('🔍 RoadmapView rendered with data:', {
+		hasData: !!data,
+		hasPhases: !!data?.phases,
+		phaseCount: data?.phases?.length || 0,
+		hasTimelineEstimates: !!data?.timelineEstimates,
+		timelineCount: data?.timelineEstimates?.length || 0,
+		hasParsedEstimates: !!data?.parsedTimelineEstimates,
+		parsedEstimatesKeys: data?.parsedTimelineEstimates ? Object.keys(data.parsedTimelineEstimates) : [],
+		sampleParsedData: data?.parsedTimelineEstimates ? 
+			Object.entries(data.parsedTimelineEstimates).slice(0, 2) : 'No parsed data'
+	});
 
+	// Debug function to manually trigger data dump
+	const triggerDebugDump = () => {
+		const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+		const filename = `roadmap-view-debug-${timestamp}.txt`;
+		
+		const debugData = {
+			timestamp: new Date().toISOString(),
+			profile: profile,
+			roadmapData: {
+				phases: data.phases?.map(p => ({ id: p.id, title: p.title })) || [],
+				hasTimelineEstimates: !!data.timelineEstimates,
+				timelineEstimatesCount: data.timelineEstimates?.length || 0,
+				hasParsedEstimates: !!data.parsedTimelineEstimates,
+				parsedEstimatesKeys: data.parsedTimelineEstimates ? Object.keys(data.parsedTimelineEstimates) : []
+			},
+			phaseMatching: {
+				roadmapPhaseIds: data.phases?.map(p => p.id) || [],
+				parsedEstimatesPhaseIds: data.parsedTimelineEstimates ? Object.keys(data.parsedTimelineEstimates) : [],
+				matchingPhases: data.phases?.filter(p => 
+					data.parsedTimelineEstimates?.[p.id]
+				).map(p => p.id) || [],
+				missingPhases: data.phases?.filter(p => 
+					!data.parsedTimelineEstimates?.[p.id]
+				).map(p => p.id) || []
+			},
+			sampleData: {
+				samplePhase: data.phases?.[0] ? {
+					id: data.phases[0].id,
+					title: data.phases[0].title,
+					hasParsedData: !!data.parsedTimelineEstimates?.[data.phases[0].id],
+					parsedData: data.parsedTimelineEstimates?.[data.phases[0].id] || 'No parsed data'
+				} : 'No phases available',
+				sampleParsedEstimate: data.parsedTimelineEstimates ? 
+					Object.entries(data.parsedTimelineEstimates).slice(0, 3) : 'No parsed estimates'
+			}
+		};
+		
+		const debugText = `=== ROADMAP VIEW DEBUG DUMP ===
+Generated: ${debugData.timestamp}
+
+=== USER PROFILE ===
+${JSON.stringify(debugData.profile, null, 2)}
+
+=== ROADMAP DATA ===
+${JSON.stringify(debugData.roadmapData, null, 2)}
+
+=== PHASE MATCHING ANALYSIS ===
+${JSON.stringify(debugData.phaseMatching, null, 2)}
+
+=== SAMPLE DATA ===
+${JSON.stringify(debugData.sampleData, null, 2)}
+
+=== FULL ROADMAP PHASES ===
+${JSON.stringify(data.phases, null, 2)}
+
+=== FULL PARSED TIMELINE ESTIMATES ===
+${JSON.stringify(data.parsedTimelineEstimates, null, 2)}
+`;
+		
+		const blob = new Blob([debugText], { type: 'text/plain' });
+		const url = URL.createObjectURL(blob);
+		const a = document.createElement('a');
+		a.href = url;
+		a.download = filename;
+		document.body.appendChild(a);
+		a.click();
+		document.body.removeChild(a);
+		URL.revokeObjectURL(url);
+		
+		console.log(`✅ Roadmap view debug data dumped to file: ${filename}`);
+		console.log('🔍 Debug data structure:', debugData);
+	};
 
 	return (
 		<div className="max-w-6xl mx-auto p-4 space-y-6">
+			{/* Debug Button */}
+			<div className="flex justify-end">
+				<button
+					onClick={triggerDebugDump}
+					className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 text-sm"
+				>
+					🐛 Debug: Dump Data to File
+				</button>
+			</div>
+			
+			{/* Data Debug Display */}
+			<div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6">
+				<h3 className="font-semibold text-yellow-800 mb-2">🔍 Data Debug Info</h3>
+				<div className="text-sm text-yellow-700 space-y-1">
+					<div><strong>Has phases:</strong> {data.phases ? 'Yes' : 'No'} ({data.phases?.length || 0} phases)</div>
+					<div><strong>Has timelineEstimates:</strong> {data.timelineEstimates ? 'Yes' : 'No'} ({data.timelineEstimates?.length || 0} estimates)</div>
+					<div><strong>Has parsedTimelineEstimates:</strong> {data.parsedTimelineEstimates ? 'Yes' : 'No'}</div>
+					<div><strong>Parsed estimates keys:</strong> {data.parsedTimelineEstimates ? Object.keys(data.parsedTimelineEstimates).join(', ') : 'None'}</div>
+					<div><strong>Sample parsed data:</strong> {data.parsedTimelineEstimates && Object.keys(data.parsedTimelineEstimates).length > 0 ? 
+						JSON.stringify(data.parsedTimelineEstimates[Object.keys(data.parsedTimelineEstimates)[0]], null, 2) : 'None'}</div>
+				</div>
+			</div>
+			
 			{/* Timeline Summary Section */}
 			{data.timelineEstimates && data.timelineEstimates.length > 0 && (
 				<div className="p-6 bg-white rounded-lg border shadow-sm">
@@ -23,21 +129,22 @@ export function RoadmapView({ data }: RoadmapViewProps) {
 					<div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
 						<div className="text-center p-4 bg-green-50 border border-green-200 rounded-lg">
 							<div className="text-2xl font-bold text-green-700">
-								{data.timelineEstimates.reduce((total, phase) => {
-									// Check if this is a DIY phase by looking at the phase title
-									const isDIYPhase = phase.phaseTitle.toLowerCase().includes('diy');
+								{data.phases.reduce((total, phase) => {
+									if (phase.id === "just-starting") return total;
 									
-									if (isDIYPhase) {
-										// For DIY phases, look for duration
-										const durationPattern = /.*\*\*Duration\*\*:\s*(\d+)\s*weeks/;
-										const durationMatch = phase.timeline.match(durationPattern);
-										return total + (durationMatch ? parseInt(durationMatch[1]) : 0);
-									} else {
-										// For contractor phases, look for Contractor Duration
-										const contractorPattern = /.*\*\*Contractor Duration\*\*:\s*(\d+)\s*weeks/;
-										const contractorMatch = phase.timeline.match(contractorPattern);
-										return total + (contractorMatch ? parseInt(contractorMatch[1]) : 0);
+									const parsedData = data.parsedTimelineEstimates?.[phase.id];
+									if (parsedData) {
+										const isDIYPhase = profile?.diyPhaseIds.includes(phase.id);
+										
+										if (isDIYPhase && parsedData.diyDuration) {
+											const weeks = parseInt(parsedData.diyDuration.match(/\d+/)?.[0] || '0');
+											return total + weeks;
+										} else if (parsedData.contractorDuration) {
+											const weeks = parseInt(parsedData.contractorDuration.match(/\d+/)?.[0] || '0');
+											return total + weeks;
+										}
 									}
+									return total;
 								}, 0)}
 							</div>
 							<div className="text-sm text-green-600">Total Weeks</div>
@@ -45,13 +152,16 @@ export function RoadmapView({ data }: RoadmapViewProps) {
 						
 						<div className="text-center p-4 bg-blue-50 border border-blue-200 rounded-lg">
 							<div className="text-2xl font-bold text-blue-700">
-								{data.timelineEstimates.reduce((total, phase) => {
-									// Only count DIY phases
-									const isDIYPhase = phase.phaseTitle.toLowerCase().includes('diy');
+								{data.phases.reduce((total, phase) => {
+									if (phase.id === "just-starting") return total;
+									
+									const isDIYPhase = profile?.diyPhaseIds.includes(phase.id);
 									if (isDIYPhase) {
-										const durationPattern = /.*\*\*Duration\*\*:\s*(\d+)\s*weeks/;
-										const durationMatch = phase.timeline.match(durationPattern);
-										return total + (durationMatch ? parseInt(durationMatch[1]) : 0);
+										const parsedData = data.parsedTimelineEstimates?.[phase.id];
+										if (parsedData?.diyDuration) {
+											const weeks = parseInt(parsedData.diyDuration.match(/\d+/)?.[0] || '0');
+											return total + weeks;
+										}
 									}
 									return total;
 								}, 0)}
@@ -61,81 +171,21 @@ export function RoadmapView({ data }: RoadmapViewProps) {
 						
 						<div className="text-center p-4 bg-purple-50 border border-purple-200 rounded-lg">
 							<div className="text-2xl font-bold text-purple-700">
-								{data.timelineEstimates.reduce((total, phase) => {
-									// Only count contractor phases
-									const isDIYPhase = phase.phaseTitle.toLowerCase().includes('diy');
+								{data.phases.reduce((total, phase) => {
+									if (phase.id === "just-starting") return total;
+									
+									const isDIYPhase = profile?.diyPhaseIds.includes(phase.id);
 									if (!isDIYPhase) {
-										const contractorPattern = /.*\*\*Contractor Duration\*\*:\s*(\d+)\s*weeks/;
-										const contractorMatch = phase.timeline.match(contractorPattern);
-										return total + (contractorMatch ? parseInt(contractorMatch[1]) : 0);
+										const parsedData = data.parsedTimelineEstimates?.[phase.id];
+										if (parsedData?.contractorDuration) {
+											const weeks = parseInt(parsedData.contractorDuration.match(/\d+/)?.[0] || '0');
+											return total + weeks;
+										}
 									}
 									return total;
 								}, 0)}
 							</div>
 							<div className="text-sm text-purple-700">Contractor Weeks</div>
-						</div>
-					</div>
-					
-					{/* Detailed Timeline Breakdown */}
-					<div className="mt-6">
-						<h3 className="text-lg font-semibold text-gray-800 mb-4">Detailed Timeline Breakdown</h3>
-						<div className="space-y-4">
-							{data.timelineEstimates.map((phase, index) => {
-								const phaseTitle = phase.phaseTitle.replace(' - Timeline Estimate', '');
-								
-								return (
-									<div key={index} className="border border-gray-200 rounded-lg">
-										<div className="flex items-center justify-between p-4 cursor-pointer hover:bg-gray-50 transition-colors">
-											<h4 className="text-lg font-semibold text-gray-900">{phaseTitle}</h4>
-											<div className="flex items-center gap-3">
-												{/* Duration Badge */}
-												<span className="text-sm px-3 py-1 rounded font-medium bg-blue-100 text-blue-700 border-blue-200">
-													{(() => {
-														const durationMatch = phase.timeline.match(/.*\*\*Duration\*\*:\s*(\d+)\s*weeks/);
-														const contractorMatch = phase.timeline.match(/.*\*\*Contractor Duration\*\*:\s*(\d+)\s*weeks/);
-														
-														if (durationMatch) return `${durationMatch[1]} weeks`;
-														if (contractorMatch) return `${contractorMatch[1]} weeks`;
-														return 'Duration not available';
-													})()}
-												</span>
-											</div>
-										</div>
-										
-										{/* Timeline Details */}
-										<div className="px-4 pb-4">
-											<div className="bg-gray-50 p-3 rounded text-sm">
-												{phase.timeline.split('\n').map((line, lineIndex) => {
-													const trimmedLine = line.trim();
-													
-													// Check if line starts with a number
-													if (/^\d+\./.test(trimmedLine)) {
-														return (
-															<div key={lineIndex} className="mb-2 pl-6 border-l-2 border-blue-200">
-																<span className="text-gray-700">{trimmedLine}</span>
-															</div>
-														);
-													} else if (trimmedLine.toUpperCase() === trimmedLine && trimmedLine.length > 3 && !/^\d/.test(trimmedLine)) {
-														// Section headers (all caps, not numbers)
-														return (
-															<div key={lineIndex} className="mt-4 mb-2 font-semibold text-gray-800 text-sm uppercase tracking-wide">
-																{trimmedLine}
-															</div>
-														);
-													} else {
-														// Regular body text
-														return (
-															<div key={lineIndex} className="mb-2 pl-4 text-gray-700">
-																{trimmedLine}
-															</div>
-														);
-													}
-												})}
-											</div>
-										</div>
-									</div>
-								);
-							})}
 						</div>
 					</div>
 				</div>
@@ -155,64 +205,49 @@ export function RoadmapView({ data }: RoadmapViewProps) {
 								)}
 							</div>
 							
-
-							
 							{/* Duration Display - Moved to right side */}
-							{(() => {
-								// Safely access timeline text with proper null checks
-								const timelineText = phase.tasks && phase.tasks.length > 0 && phase.tasks[0]?.notes ? phase.tasks[0].notes : '';
-								
-								if (timelineText && profile) {
-									// Check if this phase is a DIY phase by looking at the phase title
-									const phaseTitle = phase.title.toLowerCase();
-									const isDIYPhase = profile.diyPhaseIds.some(diyPhase => {
-										const diyPhaseFormatted = diyPhase.replace(/-/g, ' ').toLowerCase();
-										return phaseTitle.includes(diyPhaseFormatted);
+							{/* Hide duration for "Just Starting" phase */}
+							{phase.id !== "just-starting" && (() => {
+								// Priority 1: Check for parsed timeline data from API
+								if (data.parsedTimelineEstimates && profile) {
+									const parsedData = data.parsedTimelineEstimates[phase.id];
+									
+									// Enhanced debugging for this specific phase
+									console.log(`🔍 Phase "${phase.title}" (ID: ${phase.id}):`, {
+										hasParsedEstimates: !!data.parsedTimelineEstimates,
+										parsedEstimatesKeys: Object.keys(data.parsedTimelineEstimates || {}),
+										lookingForPhaseId: phase.id,
+										foundParsedData: !!parsedData,
+										parsedData: parsedData,
+										isDIYPhase: profile.diyPhaseIds.includes(phase.id),
+										diyPhaseIds: profile.diyPhaseIds
 									});
 									
-									if (isDIYPhase) {
-										// For DIY phases, look for duration in clean format (brackets already removed)
-										const durationPattern = /.*\*\*Duration\*\*:\s*(\d+)\s*weeks/;
-										const durationMatch = timelineText.match(durationPattern);
+									if (parsedData) {
+										// Check if this phase is marked as DIY by the user
+										const isDIYPhase = profile.diyPhaseIds.includes(phase.id);
 										
-										if (durationMatch) {
+										if (isDIYPhase && parsedData.diyDuration) {
+											// Priority 1: DIY Duration from API
 											return (
 												<span className="text-base px-3 py-1 rounded font-medium bg-blue-50 text-blue-800 border-blue-200">
-													{`${durationMatch[1]} weeks`}
+													{parsedData.diyDuration}
 												</span>
 											);
 										}
 										
-										// Fallback: look for DIY hours and calculate weeks
-										const hoursPattern = /.*\*\*DIY Hours\*\*:\s*(\d+)\s*hours/;
-										const hoursMatch = timelineText.match(hoursPattern);
-										
-										if (hoursMatch) {
-											const totalHours = parseInt(hoursMatch[1]);
-											const weeklyCommitment = parseInt(profile.weeklyHourlyCommitment);
-											const calculatedWeeks = Math.ceil(totalHours / weeklyCommitment);
-											return (
-												<span className="text-base px-3 py-1 rounded font-medium bg-blue-50 text-blue-800 border-blue-200">
-													{`${calculatedWeeks} weeks`}
-												</span>
-											);
-										}
-									} else {
-										// For contractor phases, only look for Contractor Duration
-										const contractorPattern = /.*\*\*Contractor Duration\*\*:\s*(\d+)\s*weeks/;
-										const contractorMatch = timelineText.match(contractorPattern);
-										
-										if (contractorMatch) {
+										// Priority 2: Contractor Duration from API (if no DIY or user didn't select DIY)
+										if (parsedData.contractorDuration) {
 											return (
 												<span className="text-base px-3 py-1 rounded font-medium bg-purple-100 text-purple-700 border-purple-200">
-													{`${contractorMatch[1]} weeks`}
+													{parsedData.contractorDuration}
 												</span>
 											);
 										}
 									}
 								}
 								
-								// Fallback to baseline estimatedDuration if no AI timeline data
+								// Priority 3: Baseline estimatedDuration (always available)
 								if (phaseInfo?.estimatedDuration) {
 									return (
 										<span className="text-base px-3 py-1 rounded font-medium bg-blue-50 text-blue-800 border-blue-200">
@@ -221,10 +256,10 @@ export function RoadmapView({ data }: RoadmapViewProps) {
 									);
 								}
 								
-								// Show "Duration not available" with matching styling
+								// This should never happen - indicates a problem
 								return (
-									<span className="text-base px-3 py-1 rounded font-medium bg-blue-50 text-blue-800 border-blue-200">
-										Duration not available
+									<span className="text-base px-3 py-1 rounded font-medium bg-red-50 text-red-800 border-red-200">
+										Duration Error
 									</span>
 								);
 							})()}

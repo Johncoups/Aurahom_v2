@@ -87,6 +87,7 @@ async function generatePhaseTimeline(
   phaseId: string;
   phaseTitle: string;
   timeline: string;
+  rawOpenAIResponse: string;
   error?: string;
 }> {
   try {
@@ -111,21 +112,23 @@ async function generatePhaseTimeline(
     
     const timeline = completion.choices[0]?.message?.content || '';
     
-    return {
-      phaseId: phase.id,
-      phaseTitle: phase.title,
-      timeline: timeline.trim()
-    };
+         return {
+       phaseId: phase.id,
+       phaseTitle: phase.title,
+       timeline: timeline.trim(),
+       rawOpenAIResponse: timeline.trim()
+     };
     
   } catch (error) {
     console.error(`Failed to generate timeline for phase ${phase.id}:`, error);
     
-    return {
-      phaseId: phase.id,
-      phaseTitle: phase.title,
-      timeline: `Timeline generation failed for ${phase.title}. Please consult with a construction professional for accurate estimates.`,
-      error: error instanceof Error ? error.message : 'Unknown error'
-    };
+         return {
+       phaseId: phase.id,
+       phaseTitle: phase.title,
+       timeline: `Timeline generation failed for ${phase.title}. Please consult with a construction professional for accurate estimates.`,
+       rawOpenAIResponse: `Timeline generation failed for ${phase.title}. Please consult with a construction professional for accurate estimates.`,
+       error: error instanceof Error ? error.message : 'Unknown error'
+     };
   }
 }
 
@@ -252,15 +255,26 @@ MODE SELECTION (Mutually Exclusive)
 If ${phase.id} ∈ [${userProfile.diyPhaseIds.join(", ")}] → MODE = DIY
 Else → MODE = CONTRACTOR
 
-OUTPUT FORMAT
+🚨 BRACKET POLICE - READ THIS TWICE 🚨
+You are the BRACKET POLICE. Your job is to ensure EVERY number is wrapped in [X] format.
+- If you output "8 weeks" → YOU FAILED
+- If you output "[8] weeks" → YOU SUCCEED
+- Check your work before submitting
+- No excuses - brackets are mandatory
+
+OUTPUT FORMAT - BRACKETS ARE MANDATORY
 🔨 DIY Phase
 **Phase: ${phase.title} (DIY Phase)**
-- **Duration**: [DIY_WEEKS] weeks
-- **DIY Hours**: [DIY_HOURS] hours
+- **Duration**: [DIY_WEEKS] weeks ← MUST USE BRACKETS
+- **DIY Hours**: [DIY_HOURS] hours ← MUST USE BRACKETS
 
 🏗 Contractor Phase
 **Phase: ${phase.title} (Contractor Phase)**
-- **Contractor Duration**: [CONTRACTOR_WEEKS] weeks
+- **Contractor Duration**: [CONTRACTOR_WEEKS] weeks ← MUST USE BRACKETS
+
+⚠️ BRACKET REQUIREMENT: Every number MUST be wrapped in square brackets [X]
+❌ WRONG: Duration: 8 weeks
+✅ CORRECT: Duration: [8] weeks
 
 CALCULATION METHODOLOGY
 
@@ -314,8 +328,11 @@ ${isHighRegulationState ? '- High Regulation: Energy code compliance, extensive 
 ${isCaliforniaBased ? '- California: Title 24 energy compliance, seismic bracing, solar panel integration - use CONSTRUCTION multipliers (1.5-2.2x), NOT permit multipliers' : ''}
 ${isHighRegulationState ? '- High Regulation: Energy code compliance, weatherproofing requirements' : ''}
 
-CRITICAL RULES
-- Use bracketed values [X] for every number
+CRITICAL RULES - BRACKETS ARE ABSOLUTELY REQUIRED
+🚨 BRACKET RULE #1: Use bracketed values [X] for EVERY number - NO EXCEPTIONS
+🚨 BRACKET RULE #2: Format MUST be exactly: **Duration**: [8] weeks (not Duration: 8 weeks)
+🚨 BRACKET RULE #3: If you see a number without brackets, you are WRONG
+🚨 BRACKET RULE #4: Test your output - every number should be [X] format
 - Always use the word "weeks" (never abbreviations)
 - Output must be under 150 words
 - Single numbers only (never ranges)
@@ -333,8 +350,17 @@ VALIDATION CHECKLIST
 ✓ Contractor weeks include permit/inspection delays for location
 ✓ Weather considerations applied if relevant
 ✓ DIY Duration ≥ Contractor Duration for same phase
+✓ EVERY number is wrapped in brackets [X] format
 
-The system will automatically remove brackets from your response. Focus on providing accurate regionally-adjusted numbers in brackets.`;
+🚨 FINAL BRACKET CHECK - BEFORE SUBMITTING:
+1. Look at your output
+2. Find every number (8, 12, 24, etc.)
+3. Make sure each number is [8], [12], [24] format
+4. If ANY number lacks brackets, you FAILED - fix it!
+
+The system will automatically remove brackets from your response. Focus on providing accurate regionally-adjusted numbers in brackets.
+
+REMEMBER: [X] format is NOT optional - it's MANDATORY for every single number!`;
 }
 
 /**
@@ -346,6 +372,7 @@ async function generateAllPhaseTimelines(
   phaseId: string;
   phaseTitle: string;
   timeline: string;
+  rawOpenAIResponse: string;
   error?: string;
 }>> {
   console.log(`Generating timeline estimates for all phases`);
@@ -391,7 +418,7 @@ async function generateAllPhaseTimelines(
 // POST endpoint for generating timeline estimates
 export async function POST(request: NextRequest) {
   try {
-    const { userProfile } = await request.json();
+    const { userProfile, userId, projectId } = await request.json();
     
     if (!userProfile) {
       return NextResponse.json(
@@ -400,6 +427,15 @@ export async function POST(request: NextRequest) {
       );
     }
     
+    if (!userId || !projectId) {
+      return NextResponse.json(
+        { error: 'User ID and Project ID are required' },
+        { status: 400 }
+      );
+    }
+    
+    console.log('Timeline API received:', { userId, projectId, userProfileRole: userProfile.role });
+    
     console.log('Starting timeline estimation generation via API route');
     
     // Generate timeline estimates for all phases in parallel
@@ -407,9 +443,46 @@ export async function POST(request: NextRequest) {
     
     console.log('Timeline estimation generated successfully via API route');
     
+    // Structure the response with both raw and parsed data
+    const rawOpenAIResponses: Record<string, string> = {};
+    const parsedTimelineEstimates: Record<string, any> = {};
+    
+    timelines.forEach(timeline => {
+      if (timeline.phaseId) {
+        rawOpenAIResponses[timeline.phaseId] = timeline.rawOpenAIResponse;
+        
+                 // Parse the timeline response to extract durations
+         // More flexible regex to handle variations in spacing and formatting
+         console.log(`🔍 Parsing timeline for phase ${timeline.phaseId}:`);
+         console.log(`🔍 Raw timeline text: "${timeline.timeline}"`);
+         
+                   // Updated patterns to handle bracketed format [X] weeks/hours
+          const diyMatch = timeline.timeline.match(/\*\*Duration\*\*:\s*\[(\d+)\]\s*weeks?/i);
+          const contractorMatch = timeline.timeline.match(/\*\*Contractor Duration\*\*:\s*\[(\d+)\]\s*weeks?/i);
+          const diyHoursMatch = timeline.timeline.match(/\*\*DIY Hours\*\*:\s*\[(\d+)\]\s*hours?/i);
+         
+         console.log(`🔍 DIY match:`, diyMatch);
+         console.log(`🔍 Contractor match:`, contractorMatch);
+         console.log(`🔍 DIY Hours match:`, diyHoursMatch);
+         
+         parsedTimelineEstimates[timeline.phaseId] = {
+           diyDuration: diyMatch ? `${diyMatch[1]} weeks` : null,
+           contractorDuration: contractorMatch ? `${contractorMatch[1]} weeks` : null,
+           diyHours: diyHoursMatch ? `${diyHoursMatch[1]} hours` : null,
+           rawTimeline: timeline.timeline
+         };
+         
+         console.log(`🔍 Parsed result:`, parsedTimelineEstimates[timeline.phaseId]);
+      }
+    });
+
     return NextResponse.json({
       success: true,
-      timelines: timelines
+      userId: userId,
+      projectId: projectId,
+      timelines: timelines,
+      rawOpenAIResponses: rawOpenAIResponses,
+      parsedTimelineEstimates: parsedTimelineEstimates
     });
     
   } catch (error) {

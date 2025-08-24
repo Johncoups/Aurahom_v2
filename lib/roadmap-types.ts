@@ -55,6 +55,12 @@ export interface RoadmapPhase {
 export interface RoadmapData {
 	phases: RoadmapPhase[];
 	timelineEstimates?: TimelineEstimate[];
+	parsedTimelineEstimates?: Record<string, {
+		diyDuration: string | null;
+		contractorDuration: string | null;
+		diyHours: string | null;
+		rawTimeline: string;
+	}>;
 }
 
 export interface TimelineEstimate {
