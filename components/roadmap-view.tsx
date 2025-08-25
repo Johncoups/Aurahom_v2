@@ -1,7 +1,7 @@
 "use client"
 
 import type { RoadmapData, RoadmapPhase } from "@/lib/roadmap-types"
-import { getPhaseById, getPhasesForMethod } from "@/lib/roadmap-phases"
+import { getPhaseById, getPhasesForMethod, CONSTRUCTION_PHASES } from "@/lib/roadmap-phases"
 import { useRoadmap } from "@/contexts/roadmap-context"
 
 interface RoadmapViewProps {
@@ -30,7 +30,7 @@ export function RoadmapView({ data }: RoadmapViewProps) {
 		<div className="max-w-6xl mx-auto p-4 space-y-6">
 			
 			{/* Timeline Summary Section */}
-			{data.timelineEstimates && data.timelineEstimates.length > 0 && (
+			{data.parsedTimelineEstimates && Object.keys(data.parsedTimelineEstimates).length > 0 && (
 				<div className="p-6 bg-white rounded-lg border shadow-sm">
 					<h2 className="text-xl font-semibold mb-4">Project Timeline Summary</h2>
 					<div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
@@ -99,7 +99,9 @@ export function RoadmapView({ data }: RoadmapViewProps) {
 			)}
 			
 			{data.phases && data.phases.length > 0 ? data.phases.map(phase => {
-				const phaseInfo = getPhaseById(phase.id)
+				// Get the correct phases based on user's construction method
+				const userPhases = profile ? getPhasesForMethod(profile.constructionMethod) : CONSTRUCTION_PHASES;
+				const phaseInfo = userPhases.find((p: any) => p.id === phase.id);
 				return (
 					<section key={phase.id || `phase-${Math.random()}`} className="border rounded-lg p-6 bg-white shadow-sm">
 						<div className="flex items-center justify-between mb-6">
@@ -177,7 +179,7 @@ export function RoadmapView({ data }: RoadmapViewProps) {
 							<div className="mb-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
 								<h3 className="font-semibold text-blue-900 mb-3">Phase Subtasks</h3>
 								<ul className="grid grid-cols-1 md:grid-cols-2 gap-2">
-									{phaseInfo.subtasks.map((subtask, index) => (
+									{phaseInfo.subtasks.map((subtask: any, index: number) => (
 										<li key={index} className="flex items-start gap-2 text-sm text-blue-800">
 											<span className="text-blue-600 mt-0.5">•</span>
 											<span>{subtask}</span>

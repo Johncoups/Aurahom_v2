@@ -52,6 +52,7 @@ export const TRADITIONAL_FRAME_PHASES: ConstructionPhase[] = [
     order: 0,
     description: "Project initiation and initial assessment phase",
     subtasks: [
+      "Acquire Land",
       "Complete initial project assessment",
       "Determine project scope and goals",
       "Research construction methods and options",
@@ -71,13 +72,13 @@ export const TRADITIONAL_FRAME_PHASES: ConstructionPhase[] = [
     description: "Initial planning, financing, and legal setup before breaking ground",
     subtasks: [
       "Complete project kickoff questionnaire",
-      "Secure financing and construction loan",
       "Obtain property survey and site analysis",
       "Hire architect/engineer for plans",
+      "Establish budget and cost tracking",
+      "Secure financing and construction loan",
       "Obtain building permits and approvals",
       "Secure insurance (builder's risk, liability)",
       "Identify and contact sub contractors",
-      "Establish budget and cost tracking",
       "Schedule pre-construction meeting with trades"
     ],
     dependencies: [],
@@ -85,25 +86,31 @@ export const TRADITIONAL_FRAME_PHASES: ConstructionPhase[] = [
     estimatedDuration: "2-4 weeks"
   },
   {
-    id: "site-prep",
-    title: "Site Preparation",
+    id: "site-prep-excavation",
+    title: "Site Preparation & Excavation",
     order: 2,
-    description: "Site clearing, grading, and utility preparation",
+    description: "Site preparation, excavation, and foundation preparation",
     subtasks: [
+      "Apply for site/driveway/grading permits",
+      "**CALL FOR UTILITY LOCATIONS**",
+      "Establish benchmark elevations",
       "Clear and grub site within permitted limits",
       "Install erosion controls (silt fence, inlet protection)",
-      "Rough grade pad to plan elevations",
+      "Stake house corners, driveway, and utilities",
       "Install construction entrance and access roads",
+      "Cut and fill operations",
+      "Rock removal and blasting if needed",
+      "Foundation excavation and trenching",
       "Set up temporary power and water",
       "Install portable restroom and dumpster",
-      "Stake house corners, driveway, and utilities",
-      "Apply for site/driveway/grading permits",
       "Pre-construction meeting with key trades",
+      "Backfill and compaction",
+      "Final grade and drainage verification",
       "Site inspection(s) per jurisdiction"
     ],
     dependencies: ["pre-construction"],
     constructionMethods: ["traditional-frame", "post-frame", "icf", "sip", "modular", "other"],
-    estimatedDuration: "1-2 weeks"
+    estimatedDuration: "2-3 weeks"
   },
   {
     id: "utilities-septic",
@@ -113,44 +120,24 @@ export const TRADITIONAL_FRAME_PHASES: ConstructionPhase[] = [
     subtasks: [
       "Soil and perc tests for septic system",
       "Septic system design and permitting",
-      "Install septic tank and distribution field",
+      "Town water/sewer tap fees and hookup",
       "Well drilling and pump installation",
       "Pressure tank and water treatment setup",
-      "Town water/sewer tap fees and hookup",
+      "Install septic tank and distribution field",
       "Electrical service connection and meter",
       "Gas line installation and hookup",
       "Telecom and internet hookup",
       "Final utility inspections"
     ],
-    dependencies: ["site-prep"],
+    dependencies: ["site-prep-excavation"],
     constructionMethods: ["traditional-frame", "post-frame", "icf", "sip", "modular", "other"],
     estimatedDuration: "2-3 weeks"
   },
-  {
-    id: "excavation",
-    title: "Excavation & Earthwork",
-    order: 4,
-    description: "Foundation excavation and site drainage",
-    subtasks: [
-      "Foundation excavation and trenching",
-      "Install foundation footing drains",
-      "Cut and fill operations",
-      "Rock removal and blasting if needed",
-      "Install curtain drains and swales",
-      "Backfill and compaction",
-      "Foundation drain board installation",
-      "Waterproofing and dampproofing",
-      "Perimeter drain tile with washed stone",
-      "Final grade and drainage verification"
-    ],
-    dependencies: ["utilities-septic"],
-    constructionMethods: ["traditional-frame", "icf", "sip", "modular", "other"],
-    estimatedDuration: "1-2 weeks"
-  },
+
   {
     id: "foundation",
     title: "Foundation",
-    order: 5,
+    order: 4,
     description: "Concrete foundation walls, footings, slabs, and in-floor radiant heat system",
     subtasks: [
       "Layout verification against survey stakes",
@@ -158,6 +145,11 @@ export const TRADITIONAL_FRAME_PHASES: ConstructionPhase[] = [
       "Pre-pour inspection and pour footings",
       "Form/pour foundation walls or ICF",
       "Install anchor bolts and hold-downs",
+      "Install foundation footing drains",
+      "Install curtain drains and swales",
+      "Install foundation drain board installation",
+      "Waterproofing and dampproofing",
+      "Perimeter drain tile with washed stone",
       "Under-slab plumbing sleeves",
       "Vapor barrier and rigid insulation",
       "Foundation waterproofing and protection board",
@@ -169,14 +161,14 @@ export const TRADITIONAL_FRAME_PHASES: ConstructionPhase[] = [
       "Pour foundation and garage slabs",
       "As-built/foundation survey if required"
     ],
-    dependencies: ["excavation"],
+    dependencies: ["utilities-septic"],
     constructionMethods: ["traditional-frame", "icf", "sip", "modular", "other"],
     estimatedDuration: "3-6 weeks"
   },
   {
     id: "rough-framing",
     title: "Rough Framing",
-    order: 6,
+    order: 5,
     description: "Complete structural framing including floors, walls, roof, and interior partitions",
     subtasks: [
       "Install sill plates and seal",
@@ -206,7 +198,7 @@ export const TRADITIONAL_FRAME_PHASES: ConstructionPhase[] = [
   {
     id: "roofing",
     title: "Roofing",
-    order: 7,
+    order: 6,
     description: "Roof installation and weatherproofing",
     subtasks: [
       "Install roof underlayment",
@@ -226,7 +218,7 @@ export const TRADITIONAL_FRAME_PHASES: ConstructionPhase[] = [
   {
     id: "exterior",
     title: "Exterior Finishes",
-    order: 8,
+    order: 7,
     description: "Exterior siding, trim, and weather protection",
     subtasks: [
       "Install exterior foam sheathing",
@@ -247,7 +239,7 @@ export const TRADITIONAL_FRAME_PHASES: ConstructionPhase[] = [
   {
     id: "plumbing-rough",
     title: "Plumbing Rough-In",
-    order: 9,
+    order: 8,
     description: "Underground and wall plumbing installation",
     subtasks: [
       "Install DWV piping with proper slope",
@@ -267,7 +259,7 @@ export const TRADITIONAL_FRAME_PHASES: ConstructionPhase[] = [
   {
     id: "electrical-rough",
     title: "Electrical Rough-In",
-    order: 10,
+    order: 9,
     description: "Electrical wiring and panel installation",
     subtasks: [
       "Install service panel and sub-panels",
@@ -287,7 +279,7 @@ export const TRADITIONAL_FRAME_PHASES: ConstructionPhase[] = [
   {
     id: "hvac-rough",
     title: "HVAC Rough-In",
-    order: 11,
+    order: 10,
     description: "Heating, ventilation, and air conditioning installation",
     subtasks: [
       "Complete Manual J/S/D calculations",
@@ -307,7 +299,7 @@ export const TRADITIONAL_FRAME_PHASES: ConstructionPhase[] = [
   {
     id: "concrete-slabs",
     title: "Concrete Slabs & Flatwork",
-    order: 12,
+    order: 11,
     description: "Interior slabs, garage, and exterior concrete",
     subtasks: [
       "Verify radiant tubing protection",
@@ -326,7 +318,7 @@ export const TRADITIONAL_FRAME_PHASES: ConstructionPhase[] = [
   {
     id: "insulation",
     title: "Insulation & Air Sealing",
-    order: 13,
+    order: 12,
     description: "Thermal and sound insulation installation",
     subtasks: [
       "Complete air sealing pass",
@@ -345,7 +337,7 @@ export const TRADITIONAL_FRAME_PHASES: ConstructionPhase[] = [
   {
     id: "drywall",
     title: "Drywall",
-    order: 14,
+    order: 13,
     description: "Interior wall and ceiling finishing",
     subtasks: [
       "Hang drywall (MR board where needed)",
@@ -363,7 +355,7 @@ export const TRADITIONAL_FRAME_PHASES: ConstructionPhase[] = [
   {
     id: "paint",
     title: "Paint",
-    order: 15,
+    order: 14,
     description: "Interior and exterior painting",
     subtasks: [
       "Surface preparation and caulking",
@@ -381,7 +373,7 @@ export const TRADITIONAL_FRAME_PHASES: ConstructionPhase[] = [
   {
     id: "trim-carpentry",
     title: "Trim Carpentry",
-    order: 16,
+    order: 15,
     description: "Interior trim, doors, and hardware",
     subtasks: [
       "Install interior doors and jambs",
@@ -400,7 +392,7 @@ export const TRADITIONAL_FRAME_PHASES: ConstructionPhase[] = [
   {
     id: "flooring",
     title: "Flooring",
-    order: 17,
+    order: 16,
     description: "Floor covering installation",
     subtasks: [
       "Inspect subfloor flatness",
@@ -419,7 +411,7 @@ export const TRADITIONAL_FRAME_PHASES: ConstructionPhase[] = [
   {
     id: "kitchen-bath",
     title: "Kitchen & Bath",
-    order: 18,
+    order: 17,
     description: "Kitchen and bathroom finishing",
     subtasks: [
       "Install kitchen cabinets",
@@ -431,13 +423,13 @@ export const TRADITIONAL_FRAME_PHASES: ConstructionPhase[] = [
       "Final kitchen and bath inspection"
     ],
     dependencies: ["flooring"],
-    constructionMethods: ["traditional-frame", "post-frame", "icf", "sip", "modular", "other"],
+    constructionMethods: ["traditional-frame", "post-frame", "icf", "other"],
     estimatedDuration: "3-4 weeks"
   },
   {
     id: "final-touches",
     title: "Final Touches & Punch List",
-    order: 19,
+    order: 18,
     description: "Final details and project completion",
     subtasks: [
       "Complete punch list items",
@@ -463,6 +455,7 @@ export const POST_FRAME_PHASES: ConstructionPhase[] = [
     order: 0,
     description: "Project initiation and initial assessment phase",
     subtasks: [
+      "Acquire Land",
       "Complete initial project assessment",
       "Determine project scope and goals",
       "Research construction methods and options",
@@ -482,39 +475,45 @@ export const POST_FRAME_PHASES: ConstructionPhase[] = [
     description: "Initial planning, financing, and legal setup before breaking ground",
     subtasks: [
       "Complete project kickoff questionnaire",
-      "Secure financing and construction loan",
       "Obtain property survey and site analysis",
       "Hire architect/engineer for plans",
+      "Establish budget and cost tracking",
+      "Secure financing and construction loan",
       "Obtain building permits and approvals",
       "Secure insurance (builder's risk, liability)",
       "Identify and contact sub contractors",
-      "Establish budget and cost tracking",
       "Schedule pre-construction meeting with trades"
     ],
     dependencies: [],
      constructionMethods: ["post-frame"],
      estimatedDuration: "2-4 weeks"
   },
-  {
-    id: "site-prep",
-    title: "Site Preparation",
+    {
+    id: "site-prep-excavation",
+    title: "Site Preparation & Excavation",
     order: 2,
-    description: "Site clearing, grading, and utility preparation",
+    description: "Site preparation, excavation, and foundation preparation",
     subtasks: [
+      "Apply for site/driveway/grading permits",
+      "**CALL FOR UTILITY LOCATIONS**",
+      "Establish benchmark elevations",
       "Clear and grub site within permitted limits",
       "Install erosion controls (silt fence, inlet protection)",
-      "Rough grade pad to plan elevations",
+      "Cut and fill operations",
+      "Rock removal and blasting if needed",
+      "Foundation excavation and trenching",
+      "Stake house corners, driveway, and utilities",
       "Install construction entrance and access roads",
       "Set up temporary power and water",
       "Install portable restroom and dumpster",
-      "Stake house corners, driveway, and utilities",
-      "Apply for site/driveway/grading permits",
+      "Backfill and compaction",
       "Pre-construction meeting with key trades",
+      "Final grade and drainage verification",
       "Site inspection(s) per jurisdiction"
     ],
     dependencies: ["pre-construction"],
-    constructionMethods: ["post-frame"],
-    estimatedDuration: "2-4 weeks"
+     constructionMethods: ["post-frame"],
+     estimatedDuration: "2-3 weeks"
   },
   {
     id: "utilities-septic",
@@ -524,44 +523,24 @@ export const POST_FRAME_PHASES: ConstructionPhase[] = [
     subtasks: [
       "Soil and perc tests for septic system",
       "Septic system design and permitting",
-      "Install septic tank and distribution field",
+      "Town water/sewer tap fees and hookup",
       "Well drilling and pump installation",
       "Pressure tank and water treatment setup",
-      "Town water/sewer tap fees and hookup",
+      "Install septic tank and distribution field",
       "Electrical service connection and meter",
       "Gas line installation and hookup",
       "Telecom and internet hookup",
       "Final utility inspections"
     ],
-    dependencies: ["site-prep"],
+    dependencies: ["site-prep-excavation"],
     constructionMethods: ["post-frame"],
     estimatedDuration: "1-2 weeks"
   },
-  {
-    id: "excavation",
-    title: "Excavation & Earthwork",
-    order: 4,
-    description: "Foundation excavation and site drainage",
-    subtasks: [
-      "Foundation excavation and trenching",
-      "Install foundation footing drains",
-      "Cut and fill operations",
-      "Rock removal and blasting if needed",
-      "Install curtain drains and swales",
-      "Backfill and compaction",
-      "Foundation drain board installation",
-      "Waterproofing and dampproofing",
-      "Perimeter drain tile with washed stone",
-      "Final grade and drainage verification"
-    ],
-    dependencies: ["utilities-septic"],
-    constructionMethods: ["post-frame"],
-    estimatedDuration: "1-2 weeks"
-  },
+
   {
     id: "foundation",
     title: "Foundation",
-    order: 5,
+    order: 4,
     description: "Concrete foundation walls, footings, and slabs",
     subtasks: [
       "Layout verification against survey stakes",
@@ -569,6 +548,11 @@ export const POST_FRAME_PHASES: ConstructionPhase[] = [
       "Pre-pour inspection and pour footings",
       "Form/pour foundation walls",
       "Install anchor bolts and hold-downs",
+      "Install foundation footing drains",
+      "Install curtain drains and swales",
+      "Install foundation drain board installation",
+      "Waterproofing and dampproofing",
+      "Perimeter drain tile with washed stone",
       "Under-slab plumbing sleeves",
       "Vapor barrier and rigid insulation",
       "Foundation waterproofing and protection board",
@@ -576,14 +560,14 @@ export const POST_FRAME_PHASES: ConstructionPhase[] = [
       "Pour foundation and garage slabs",
       "As-built/foundation survey if required"
     ],
-    dependencies: ["excavation"],
+    dependencies: ["utilities-septic"],
     constructionMethods: ["post-frame"],
     estimatedDuration: "2-3 weeks"
   },
   {
     id: "post-frame-structure",
     title: "Post Frame Structure",
-    order: 6,
+    order: 5,
     description: "Post frame construction with trusses, metal siding, windows, exterior doors, and roof",
     subtasks: [
       "Set posts in concrete or on piers",
@@ -602,7 +586,7 @@ export const POST_FRAME_PHASES: ConstructionPhase[] = [
   {
     id: "exterior",
     title: "Exterior Finishes",
-    order: 7,
+    order: 6,
     description: "Exterior siding, trim, and weather protection",
     subtasks: [
       "Install exterior foam sheathing",
@@ -623,7 +607,7 @@ export const POST_FRAME_PHASES: ConstructionPhase[] = [
   {
     id: "plumbing-rough",
     title: "Plumbing Rough-In",
-    order: 8,
+    order: 7,
     description: "Underground and wall plumbing installation",
     subtasks: [
       "Install DWV piping with proper slope",
@@ -643,7 +627,7 @@ export const POST_FRAME_PHASES: ConstructionPhase[] = [
   {
     id: "electrical-rough",
     title: "Electrical Rough-In",
-    order: 9,
+    order: 8,
     description: "Underground electrical wiring and panel installation",
     subtasks: [
       "Install service panel and sub-panels",
@@ -663,7 +647,7 @@ export const POST_FRAME_PHASES: ConstructionPhase[] = [
   {
     id: "concrete-slabs",
     title: "Slab and Flatwork",
-    order: 10,
+    order: 9,
     description: "Interior slabs, garage, and exterior concrete",
     subtasks: [
       "Verify radiant tubing protection if applicable",
@@ -682,7 +666,7 @@ export const POST_FRAME_PHASES: ConstructionPhase[] = [
   {
     id: "insulation",
     title: "Insulation & Air Sealing",
-    order: 11,
+    order: 10,
     description: "Thermal and sound insulation installation",
     subtasks: [
       "Complete air sealing pass",
@@ -701,7 +685,7 @@ export const POST_FRAME_PHASES: ConstructionPhase[] = [
   {
     id: "rough-framing-post-frame",
     title: "Rough Framing",
-    order: 12,
+    order: 11,
     description: "Interior walls, blocking, and soundproofing",
     subtasks: [
       "Frame interior partition walls",
@@ -721,7 +705,7 @@ export const POST_FRAME_PHASES: ConstructionPhase[] = [
   {
     id: "hvac-rough",
     title: "HVAC Rough-In",
-    order: 13,
+    order: 12,
     description: "Heating, ventilation, and air conditioning installation",
     subtasks: [
       "Complete Manual J/S/D calculations",
@@ -741,7 +725,7 @@ export const POST_FRAME_PHASES: ConstructionPhase[] = [
   {
     id: "drywall",
     title: "Drywall",
-    order: 14,
+    order: 13,
     description: "Interior wall and ceiling finishing",
     subtasks: [
       "Hang drywall (MR board where needed)",
@@ -859,6 +843,7 @@ export const ICF_PHASES: ConstructionPhase[] = [
     order: 0,
     description: "Project initiation and initial assessment phase",
     subtasks: [
+      "Acquire Land",
       "Complete initial project assessment",
       "Determine project scope and goals",
       "Research construction methods and options",
@@ -878,13 +863,13 @@ export const ICF_PHASES: ConstructionPhase[] = [
     description: "Initial planning, financing, and legal setup before breaking ground",
     subtasks: [
       "Complete project kickoff questionnaire",
-      "Secure financing and construction loan",
       "Obtain property survey and site analysis",
       "Hire architect/engineer for ICF-specific plans",
+      "Establish budget and cost tracking",
+      "Secure financing and construction loan",
       "Obtain building permits and approvals",
       "Secure insurance (builder's risk, liability)",
       "Identify and contact sub contractors",
-      "Establish budget and cost tracking",
       "Schedule pre-construction meeting with trades"
     ],
     dependencies: [],
@@ -892,25 +877,31 @@ export const ICF_PHASES: ConstructionPhase[] = [
     estimatedDuration: "2-4 weeks"
   },
   {
-    id: "site-prep",
-    title: "Site Preparation",
+    id: "site-prep-excavation",
+    title: "Site Preparation & Excavation",
     order: 2,
-    description: "Site clearing, grading, and utility preparation",
+    description: "Site preparation, excavation, and foundation preparation",
     subtasks: [
+      "Apply for site/driveway/grading permits",
+      "**CALL FOR UTILITY LOCATIONS**",
+      "Establish benchmark elevations",
       "Clear and grub site within permitted limits",
       "Install erosion controls (silt fence, inlet protection)",
-      "Rough grade pad to plan elevations",
+      "Cut and fill operations",
+      "Rock removal and blasting if needed",
+      "Foundation excavation and trenching",
+      "Stake house corners, driveway, and utilities",
       "Install construction entrance and access roads",
       "Set up temporary power and water",
       "Install portable restroom and dumpster",
-      "Stake house corners, driveway, and utilities",
-      "Apply for site/driveway/grading permits",
+      "Backfill and compaction",
       "Pre-construction meeting with key trades",
+      "Final grade and drainage verification",
       "Site inspection(s) per jurisdiction"
     ],
     dependencies: ["pre-construction"],
     constructionMethods: ["icf"],
-    estimatedDuration: "1-2 weeks"
+    estimatedDuration: "2-3 weeks"
   },
   {
     id: "utilities-septic",
@@ -920,44 +911,24 @@ export const ICF_PHASES: ConstructionPhase[] = [
     subtasks: [
       "Soil and perc tests for septic system",
       "Septic system design and permitting",
-      "Install septic tank and distribution field",
+      "Town water/sewer tap fees and hookup",
       "Well drilling and pump installation",
       "Pressure tank and water treatment setup",
-      "Town water/sewer tap fees and hookup",
+      "Install septic tank and distribution field",
       "Electrical service connection and meter",
       "Gas line installation and hookup",
       "Telecom and internet hookup",
       "Final utility inspections"
     ],
-    dependencies: ["site-prep"],
+    dependencies: ["site-prep-excavation"],
     constructionMethods: ["icf"],
     estimatedDuration: "2-3 weeks"
   },
-  {
-    id: "excavation",
-    title: "Excavation & Earthwork",
-    order: 4,
-    description: "Foundation excavation and site drainage",
-    subtasks: [
-      "Foundation excavation and trenching",
-      "Install foundation footing drains",
-      "Cut and fill operations",
-      "Rock removal and blasting if needed",
-      "Install curtain drains and swales",
-      "Backfill and compaction",
-      "Foundation drain board installation",
-      "Waterproofing and dampproofing",
-      "Perimeter drain tile with washed stone",
-      "Final grade and drainage verification"
-    ],
-    dependencies: ["utilities-septic"],
-    constructionMethods: ["icf"],
-    estimatedDuration: "1-2 weeks"
-  },
+
   {
     id: "icf-foundation-walls",
     title: "ICF Foundation & Walls",
-    order: 5,
+    order: 4,
     description: "ICF forms, concrete, and wall construction",
     subtasks: [
       "Layout verification against survey stakes",
@@ -968,16 +939,21 @@ export const ICF_PHASES: ConstructionPhase[] = [
       "Install electrical and plumbing sleeves",
       "Pour concrete into ICF forms",
       "Remove ICF forms after curing",
+      "Install foundation footing drains",
+      "Install curtain drains and swales",
+      "Install foundation drain board installation",
+      "Waterproofing and dampproofing",
+      "Perimeter drain tile with washed stone",
       "ICF foundation inspection and QC"
     ],
-    dependencies: ["excavation"],
+    dependencies: ["utilities-septic"],
     constructionMethods: ["icf"],
     estimatedDuration: "4-6 weeks"
   },
   {
     id: "roofing",
     title: "Roofing",
-    order: 6,
+    order: 5,
     description: "Roof installation and weatherproofing",
     subtasks: [
       "Install roof underlayment",
@@ -997,7 +973,7 @@ export const ICF_PHASES: ConstructionPhase[] = [
   {
     id: "exterior",
     title: "Exterior Finishes",
-    order: 7,
+    order: 6,
     description: "Exterior siding, trim, and weather protection",
     subtasks: [
       "Install exterior foam sheathing",
@@ -1018,7 +994,7 @@ export const ICF_PHASES: ConstructionPhase[] = [
   {
     id: "plumbing-rough",
     title: "Plumbing Rough-In",
-    order: 8,
+    order: 7,
     description: "Underground and wall plumbing installation",
     subtasks: [
       "Install DWV piping with proper slope",
@@ -1038,7 +1014,7 @@ export const ICF_PHASES: ConstructionPhase[] = [
   {
     id: "electrical-rough",
     title: "Electrical Rough-In",
-    order: 9,
+    order: 8,
     description: "Electrical wiring and panel installation",
     subtasks: [
       "Install service panel and sub-panels",
@@ -1058,7 +1034,7 @@ export const ICF_PHASES: ConstructionPhase[] = [
   {
     id: "hvac-rough",
     title: "HVAC Rough-In",
-    order: 10,
+    order: 9,
     description: "Heating, ventilation, and air conditioning installation",
     subtasks: [
       "Complete Manual J/S/D calculations",
@@ -1078,7 +1054,7 @@ export const ICF_PHASES: ConstructionPhase[] = [
   {
     id: "concrete-slabs",
     title: "Concrete Slabs & Flatwork",
-    order: 11,
+    order: 10,
     description: "Interior slabs, garage, and exterior concrete",
     subtasks: [
       "Verify radiant tubing protection if applicable",
@@ -1255,6 +1231,7 @@ export const SIP_PHASES: ConstructionPhase[] = [
     order: 0,
     description: "Project initiation and initial assessment phase",
     subtasks: [
+      "Acquire Land",
       "Complete initial project assessment",
       "Determine project scope and goals",
       "Research construction methods and options",
@@ -1274,13 +1251,13 @@ export const SIP_PHASES: ConstructionPhase[] = [
     description: "Initial planning, financing, and legal setup before breaking ground",
     subtasks: [
       "Complete project kickoff questionnaire",
-      "Secure financing and construction loan",
       "Obtain property survey and site analysis",
       "Hire architect/engineer for SIP-specific plans",
+      "Establish budget and cost tracking",
+      "Secure financing and construction loan",
       "Obtain building permits and approvals",
       "Secure insurance (builder's risk, liability)",
       "Identify and contact sub contractors",
-      "Establish budget and cost tracking",
       "Schedule pre-construction meeting with trades"
     ],
     dependencies: [],
@@ -1288,25 +1265,31 @@ export const SIP_PHASES: ConstructionPhase[] = [
     estimatedDuration: "2-4 weeks"
   },
   {
-    id: "site-prep",
-    title: "Site Preparation",
+    id: "site-prep-excavation",
+    title: "Site Preparation & Excavation",
     order: 2,
-    description: "Site clearing, grading, and utility preparation",
+    description: "Site preparation, excavation, and foundation preparation",
     subtasks: [
+      "Apply for site/driveway/grading permits",
+      "**CALL FOR UTILITY LOCATIONS**",
+      "Establish benchmark elevations",
       "Clear and grub site within permitted limits",
       "Install erosion controls (silt fence, inlet protection)",
-      "Rough grade pad to plan elevations",
+      "Cut and fill operations",
+      "Rock removal and blasting if needed",
+      "Foundation excavation and trenching",
+      "Stake house corners, driveway, and utilities",
       "Install construction entrance and access roads",
       "Set up temporary power and water",
       "Install portable restroom and dumpster",
-      "Stake house corners, driveway, and utilities",
-      "Apply for site/driveway/grading permits",
+      "Backfill and compaction",
       "Pre-construction meeting with key trades",
+      "Final grade and drainage verification",
       "Site inspection(s) per jurisdiction"
     ],
     dependencies: ["pre-construction"],
     constructionMethods: ["sip"],
-    estimatedDuration: "1-2 weeks"
+    estimatedDuration: "2-3 weeks"
   },
   {
     id: "utilities-septic",
@@ -1316,23 +1299,23 @@ export const SIP_PHASES: ConstructionPhase[] = [
     subtasks: [
       "Soil and perc tests for septic system",
       "Septic system design and permitting",
-      "Install septic tank and distribution field",
+      "Town water/sewer tap fees and hookup",
       "Well drilling and pump installation",
       "Pressure tank and water treatment setup",
-      "Town water/sewer tap fees and hookup",
+      "Install septic tank and distribution field",
       "Electrical service connection and meter",
       "Gas line installation and hookup",
       "Telecom and internet hookup",
       "Final utility inspections"
     ],
-    dependencies: ["site-prep"],
+    dependencies: ["site-prep-excavation"],
     constructionMethods: ["sip"],
     estimatedDuration: "2-3 weeks"
   },
   {
     id: "foundation",
     title: "Foundation",
-    order: 4,
+    order: 3,
     description: "Concrete foundation walls, footings, and slabs",
     subtasks: [
       "Layout verification against survey stakes",
@@ -1354,7 +1337,7 @@ export const SIP_PHASES: ConstructionPhase[] = [
   {
     id: "sip-panel-installation",
     title: "SIP Panel Installation",
-    order: 5,
+    order: 4,
     description: "Installation of structural insulated panels for walls and roof",
     subtasks: [
       "Set SIP panels according to engineered plans",
@@ -1372,7 +1355,7 @@ export const SIP_PHASES: ConstructionPhase[] = [
   {
     id: "exterior",
     title: "Exterior Finishes",
-    order: 6,
+    order: 5,
     description: "Exterior siding, trim, and weather protection",
     subtasks: [
       "Install exterior foam sheathing",
@@ -1393,7 +1376,7 @@ export const SIP_PHASES: ConstructionPhase[] = [
   {
     id: "plumbing-rough",
     title: "Plumbing Rough-In",
-    order: 7,
+    order: 6,
     description: "Underground and wall plumbing installation",
     subtasks: [
       "Install DWV piping with proper slope",
@@ -1413,7 +1396,7 @@ export const SIP_PHASES: ConstructionPhase[] = [
   {
     id: "electrical-rough",
     title: "Electrical Rough-In",
-    order: 8,
+    order: 7,
     description: "Electrical wiring and panel installation",
     subtasks: [
       "Install service panel and sub-panels",
@@ -1433,7 +1416,7 @@ export const SIP_PHASES: ConstructionPhase[] = [
   {
     id: "hvac-rough",
     title: "HVAC Rough-In",
-    order: 9,
+    order: 8,
     description: "Heating, ventilation, and air conditioning installation",
     subtasks: [
       "Complete Manual J/S/D calculations",
@@ -1453,7 +1436,7 @@ export const SIP_PHASES: ConstructionPhase[] = [
   {
     id: "concrete-slabs",
     title: "Concrete Slabs & Flatwork",
-    order: 10,
+    order: 9,
     description: "Interior slabs, garage, and exterior concrete",
     subtasks: [
       "Verify radiant tubing protection if applicable",
@@ -1472,7 +1455,7 @@ export const SIP_PHASES: ConstructionPhase[] = [
   {
     id: "insulation",
     title: "Insulation & Air Sealing",
-    order: 11,
+    order: 10,
     description: "Thermal and sound insulation installation",
     subtasks: [
       "Complete air sealing pass",
@@ -1491,7 +1474,7 @@ export const SIP_PHASES: ConstructionPhase[] = [
   {
     id: "rough-framing-sip",
     title: "Rough Framing",
-    order: 12,
+    order: 11,
     description: "Interior walls, blocking, and soundproofing",
     subtasks: [
       "Frame interior partition walls",
@@ -1629,6 +1612,7 @@ export const MODULAR_PHASES: ConstructionPhase[] = [
     order: 0,
     description: "Project initiation and initial assessment phase",
     subtasks: [
+      "Acquire Land",
       "Complete initial project assessment",
       "Determine project scope and goals",
       "Research construction methods and options",
@@ -1648,13 +1632,13 @@ export const MODULAR_PHASES: ConstructionPhase[] = [
     description: "Initial planning, financing, and legal setup before breaking ground",
     subtasks: [
       "Complete project kickoff questionnaire",
-      "Secure financing and construction loan",
       "Obtain property survey and site analysis",
       "Hire architect/engineer for modular plans",
+      "Establish budget and cost tracking",
+      "Secure financing and construction loan",
       "Obtain building permits and approvals",
       "Secure insurance (builder's risk, liability)",
       "Identify and contact modular manufacturer",
-      "Establish budget and cost tracking",
       "Schedule factory visit and design review"
     ],
     dependencies: [],
@@ -1662,25 +1646,31 @@ export const MODULAR_PHASES: ConstructionPhase[] = [
     estimatedDuration: "3-6 weeks"
   },
   {
-    id: "site-prep",
-    title: "Site Preparation",
+    id: "site-prep-excavation",
+    title: "Site Preparation & Excavation",
     order: 2,
-    description: "Site clearing, grading, and utility preparation",
+    description: "Site preparation, excavation, and foundation preparation",
     subtasks: [
+      "Apply for site/driveway/grading permits",
+      "**CALL FOR UTILITY LOCATIONS**",
+      "Establish benchmark elevations",
       "Clear and grub site within permitted limits",
       "Install erosion controls (silt fence, inlet protection)",
-      "Rough grade pad to plan elevations",
+      "Cut and fill operations",
+      "Rock removal and blasting if needed",
+      "Foundation excavation and trenching",
+      "Stake house corners, driveway, and utilities",
       "Install construction entrance and access roads",
       "Set up temporary power and water",
       "Install portable restroom and dumpster",
-      "Stake house corners, driveway, and utilities",
-      "Apply for site/driveway/grading permits",
+      "Backfill and compaction",
       "Pre-construction meeting with key trades",
+      "Final grade and drainage verification",
       "Site inspection(s) per jurisdiction"
     ],
     dependencies: ["pre-construction"],
     constructionMethods: ["modular"],
-    estimatedDuration: "1-2 weeks"
+    estimatedDuration: "2-3 weeks"
   },
   {
     id: "utilities-septic",
@@ -1690,23 +1680,23 @@ export const MODULAR_PHASES: ConstructionPhase[] = [
     subtasks: [
       "Soil and perc tests for septic system",
       "Septic system design and permitting",
-      "Install septic tank and distribution field",
+      "Town water/sewer tap fees and hookup",
       "Well drilling and pump installation",
       "Pressure tank and water treatment setup",
-      "Town water/sewer tap fees and hookup",
+      "Install septic tank and distribution field",
       "Electrical service connection and meter",
       "Gas line installation and hookup",
       "Telecom and internet hookup",
       "Final utility inspections"
     ],
-    dependencies: ["site-prep"],
+    dependencies: ["site-prep-excavation"],
     constructionMethods: ["modular"],
     estimatedDuration: "2-3 weeks"
   },
   {
     id: "foundation",
     title: "Foundation",
-    order: 4,
+    order: 3,
     description: "Concrete foundation walls, footings, and slabs",
     subtasks: [
       "Layout verification against survey stakes",
@@ -1728,7 +1718,7 @@ export const MODULAR_PHASES: ConstructionPhase[] = [
   {
     id: "modular-delivery-setup",
     title: "Modular Delivery & Setup",
-    order: 5,
+    order: 4,
     description: "Delivery and installation of factory-built modules",
     subtasks: [
       "Coordinate crane and delivery logistics",
@@ -1746,7 +1736,7 @@ export const MODULAR_PHASES: ConstructionPhase[] = [
   {
     id: "roofing",
     title: "Roofing",
-    order: 6,
+    order: 5,
     description: "Roof installation and weatherproofing",
     subtasks: [
       "Install roof underlayment",
@@ -1766,7 +1756,7 @@ export const MODULAR_PHASES: ConstructionPhase[] = [
   {
     id: "exterior",
     title: "Exterior Finishes",
-    order: 7,
+    order: 6,
     description: "Exterior siding, trim, and weather protection",
     subtasks: [
       "Install exterior foam sheathing",
@@ -1787,7 +1777,7 @@ export const MODULAR_PHASES: ConstructionPhase[] = [
   {
     id: "plumbing-rough",
     title: "Plumbing Rough-In",
-    order: 8,
+    order: 7,
     description: "Underground and wall plumbing installation",
     subtasks: [
       "Install DWV piping with proper slope",
@@ -1807,7 +1797,7 @@ export const MODULAR_PHASES: ConstructionPhase[] = [
   {
     id: "electrical-rough",
     title: "Electrical Rough-In",
-    order: 9,
+    order: 8,
     description: "Electrical wiring and panel installation",
     subtasks: [
       "Install service panel and sub-panels",
@@ -1827,7 +1817,7 @@ export const MODULAR_PHASES: ConstructionPhase[] = [
   {
     id: "hvac-rough",
     title: "HVAC Rough-In",
-    order: 10,
+    order: 9,
     description: "Heating, ventilation, and air conditioning installation",
     subtasks: [
       "Complete Manual J/S/D calculations",
@@ -1847,7 +1837,7 @@ export const MODULAR_PHASES: ConstructionPhase[] = [
   {
     id: "concrete-slabs",
     title: "Concrete Slabs & Flatwork",
-    order: 11,
+    order: 10,
     description: "Interior slabs, garage, and exterior concrete",
     subtasks: [
       "Verify radiant tubing protection if applicable",
@@ -1866,7 +1856,7 @@ export const MODULAR_PHASES: ConstructionPhase[] = [
   {
     id: "insulation",
     title: "Insulation & Air Sealing",
-    order: 12,
+    order: 11,
     description: "Thermal and sound insulation installation",
     subtasks: [
       "Complete air sealing pass",
@@ -1885,7 +1875,7 @@ export const MODULAR_PHASES: ConstructionPhase[] = [
   {
     id: "rough-framing-modular",
     title: "Rough Framing",
-    order: 13,
+    order: 12,
     description: "Interior walls, blocking, and soundproofing",
     subtasks: [
       "Frame interior partition walls",

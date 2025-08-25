@@ -220,12 +220,12 @@ ${isCaliforniaBased ? '- California: Add 3-8x baseline time for permits/inspecti
 ${isHighRegulationState ? '- High Regulation State: Add 2-4x baseline time for permits/inspections' : ''}
 ${isMidwestBased ? '- Midwest: Use baseline permit/inspection times' : ''}
 
-**Construction-Heavy Phases** (site prep, excavation, foundation, framing, roofing, exterior finishes, interior finishes):
+**Construction-Heavy Phases** (site preparation & excavation, foundation, framing, roofing, exterior finishes, interior finishes):
 ${isCaliforniaBased ? '- California: Add 1.5-2.2x baseline time for construction complexity (Title 24, seismic, inspections)' : ''}
 ${isHighRegulationState ? '- High Regulation State: Add 1.2-1.8x baseline time for construction complexity' : ''}
 ${isMidwestBased ? '- Midwest: Use baseline construction times' : ''}
 
-**Weather-Dependent Phases** (site prep, excavation, foundation, roofing, exterior):
+**Weather-Dependent Phases** (site preparation & excavation, foundation, roofing, exterior):
 ${isNorthernClimate ? '- Northern Climate: Add 1.5-2x time if winter months, consider weather delays' : ''}
 ${location.includes('fl') || location.includes('florida') || location.includes('tx') || location.includes('texas') ? '- Hurricane Season: June-Nov construction windows, potential delays' : ''}
 ${location.includes('az') || location.includes('arizona') || location.includes('nv') || location.includes('nevada') ? '- Desert Climate: Summer heat limitations 10am-6pm work windows' : ''}
@@ -294,7 +294,7 @@ CALCULATION METHODOLOGY
 2. Scale by ${userProfile.houseSize}, ${userProfile.numberOfStories}, ${userProfile.foundationType}
 3. Apply Regional Adjustment Multipliers:
    ${isCaliforniaBased ? '- California Permit-Heavy Phases (pre-construction, foundation, framing, rough-ins, final): 3-8x baseline' : ''}
-   ${isCaliforniaBased ? '- California Construction-Heavy Phases (site prep, excavation, roofing, exterior finishes, interior): 1.5-2.2x baseline' : ''}
+   ${isCaliforniaBased ? '- California Construction-Heavy Phases (site preparation & excavation, roofing, exterior finishes, interior): 1.5-2.2x baseline' : ''}
    ${isHighRegulationState ? '- High Regulation States: 1.5-2.5x baseline' : ''}
    ${isMidwestBased ? '- Midwest States: 1.0x baseline' : ''}
 4. Apply Labor Market Multipliers:

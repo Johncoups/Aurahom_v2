@@ -502,10 +502,10 @@ export function BudgetPage() {
       variance: 0,
     },
 
-    // Excavation & Earthwork
+    // Site Preparation & Excavation
     {
       id: "37",
-      category: "EXCAVATION & EARTHWORK",
+      category: "SITE PREPARATION & EXCAVATION",
       description: "Cut & Fill",
       materials: 0,
       labor: 0,
@@ -518,7 +518,7 @@ export function BudgetPage() {
     },
     {
       id: "38",
-      category: "EXCAVATION & EARTHWORK",
+      category: "SITE PREPARATION & EXCAVATION",
       description: "Blasting",
       materials: 0,
       labor: 0,
@@ -531,7 +531,7 @@ export function BudgetPage() {
     },
     {
       id: "39",
-      category: "EXCAVATION & EARTHWORK",
+      category: "SITE PREPARATION & EXCAVATION",
       description: "Removal Of Stone/Dirt",
       materials: 0,
       labor: 0,
@@ -544,7 +544,7 @@ export function BudgetPage() {
     },
     {
       id: "40",
-      category: "EXCAVATION & EARTHWORK",
+      category: "SITE PREPARATION & EXCAVATION",
       description: "Rough Grading",
       materials: 0,
       labor: 0,
@@ -557,7 +557,7 @@ export function BudgetPage() {
     },
     {
       id: "41",
-      category: "EXCAVATION & EARTHWORK",
+      category: "SITE PREPARATION & EXCAVATION",
       description: "Trenching For Utility Hookups",
       materials: 0,
       labor: 0,
@@ -570,7 +570,7 @@ export function BudgetPage() {
     },
     {
       id: "42",
-      category: "EXCAVATION & EARTHWORK",
+      category: "SITE PREPARATION & EXCAVATION",
       description: "Foundation Excavation",
       materials: 0,
       labor: 0,
@@ -583,7 +583,7 @@ export function BudgetPage() {
     },
     {
       id: "43",
-      category: "EXCAVATION & EARTHWORK",
+      category: "SITE PREPARATION & EXCAVATION",
       description: "Foundation Footing Drains",
       materials: 0,
       labor: 0,
@@ -596,7 +596,7 @@ export function BudgetPage() {
     },
     {
       id: "44",
-      category: "EXCAVATION & EARTHWORK",
+      category: "SITE PREPARATION & EXCAVATION",
       description: "Backfill",
       materials: 0,
       labor: 0,
@@ -609,7 +609,7 @@ export function BudgetPage() {
     },
     {
       id: "45",
-      category: "EXCAVATION & EARTHWORK",
+      category: "SITE PREPARATION & EXCAVATION",
       description: "Compaction",
       materials: 0,
       labor: 0,
@@ -622,7 +622,7 @@ export function BudgetPage() {
     },
     {
       id: "46",
-      category: "EXCAVATION & EARTHWORK",
+      category: "SITE PREPARATION & EXCAVATION",
       description: "Curtain Drains",
       materials: 0,
       labor: 0,
@@ -635,7 +635,7 @@ export function BudgetPage() {
     },
     {
       id: "47",
-      category: "EXCAVATION & EARTHWORK",
+      category: "SITE PREPARATION & EXCAVATION",
       description: "Swales",
       materials: 0,
       labor: 0,
@@ -648,7 +648,7 @@ export function BudgetPage() {
     },
     {
       id: "48",
-      category: "EXCAVATION & EARTHWORK",
+      category: "SITE PREPARATION & EXCAVATION",
       description: "Retaining Walls",
       materials: 0,
       labor: 0,
@@ -661,7 +661,7 @@ export function BudgetPage() {
     },
     {
       id: "49",
-      category: "EXCAVATION & EARTHWORK",
+      category: "SITE PREPARATION & EXCAVATION",
       description: "Ponds",
       materials: 0,
       labor: 0,
@@ -674,7 +674,7 @@ export function BudgetPage() {
     },
     {
       id: "50",
-      category: "EXCAVATION & EARTHWORK",
+      category: "SITE PREPARATION & EXCAVATION",
       description: "Other Site Drainage",
       materials: 0,
       labor: 0,
@@ -687,7 +687,7 @@ export function BudgetPage() {
     },
     {
       id: "51",
-      category: "EXCAVATION & EARTHWORK",
+      category: "SITE PREPARATION & EXCAVATION",
       description: "Topsoil",
       materials: 0,
       labor: 0,
@@ -700,7 +700,7 @@ export function BudgetPage() {
     },
     {
       id: "52",
-      category: "EXCAVATION & EARTHWORK",
+      category: "SITE PREPARATION & EXCAVATION",
       description: "Finish Grading",
       materials: 0,
       labor: 0,
@@ -713,7 +713,7 @@ export function BudgetPage() {
     },
     {
       id: "53",
-      category: "EXCAVATION & EARTHWORK",
+      category: "SITE PREPARATION & EXCAVATION",
       description: "Seeding/Sod",
       materials: 0,
       labor: 0,
@@ -726,7 +726,7 @@ export function BudgetPage() {
     },
     {
       id: "54",
-      category: "EXCAVATION & EARTHWORK",
+      category: "SITE PREPARATION & EXCAVATION",
       description: "Plantings, Landscaping",
       materials: 0,
       labor: 0,
@@ -1794,7 +1794,7 @@ export function BudgetPage() {
     "SITE PREP",
     "ON-SITE WATER/SEWER",
     "UTILITIES",
-    "EXCAVATION & EARTHWORK",
+    "SITE PREPARATION & EXCAVATION",
     "FOUNDATION",
     "OTHER MASONRY/PAVING",
     "ROUGH FRAMING",

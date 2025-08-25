@@ -21,12 +21,14 @@ function getQAChecksForPhase(phaseId: string): string[] {
 			'Is financing secured and documented?',
 			'Are material orders confirmed with delivery dates?'
 		],
-		'site-prep': [
+		'site-prep-excavation': [
 			'Is site properly cleared and graded?',
 			'Are erosion control measures in place?',
 			'Is construction access road established?',
 			'Are temporary utilities installed?',
-			'Is site drainage working properly?'
+			'Is site drainage working properly?',
+			'Is excavation complete and properly graded?',
+			'Are foundation trenches properly dug?'
 		],
 		'foundation': [
 			'Are concrete forms properly aligned and braced?',
@@ -96,12 +98,14 @@ function getVendorQuestionsForPhase(phaseId: string): string[] {
 			'Do you have the necessary licenses and insurance?',
 			'What is your payment schedule and terms?'
 		],
-		'site-prep': [
+		'site-prep-excavation': [
 			'What equipment will you use for excavation?',
 			'How will you handle excess soil removal?',
 			'What erosion control measures do you implement?',
 			'How do you ensure proper site drainage?',
-			'What is your process for site cleanup?'
+			'What is your process for site cleanup?',
+			'How do you handle rock removal and blasting if needed?',
+			'What is your process for foundation trenching?'
 		],
 		'foundation': [
 			'What concrete mix design do you recommend?',
@@ -172,12 +176,14 @@ function getVendorNeedsForPhase(phaseId: string): string[] {
 			'Utility connections and temporary power',
 			'Project timeline and milestone dates'
 		],
-		'site-prep': [
+		'site-prep-excavation': [
 			'Property survey and site plans',
 			'Utility locates and permits',
 			'Access to site and staging area',
 			'Clearance for equipment and materials',
-			'Contact information for coordination'
+			'Contact information for coordination',
+			'Excavation equipment and operators',
+			'Foundation trenching specifications'
 		],
 		'foundation': [
 			'Approved foundation plans',
