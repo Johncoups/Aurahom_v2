@@ -1,5 +1,6 @@
 "use client"
 
+import { useState } from "react"
 import type { RoadmapData, RoadmapPhase } from "@/lib/roadmap-types"
 import { getPhaseById, getPhasesForMethod, CONSTRUCTION_PHASES } from "@/lib/roadmap-phases"
 import { useRoadmap } from "@/contexts/roadmap-context"
@@ -10,6 +11,7 @@ interface RoadmapViewProps {
 
 export function RoadmapView({ data }: RoadmapViewProps) {
 	const { profile } = useRoadmap();
+	const [expandedPhases, setExpandedPhases] = useState<Set<string>>(new Set());
 	
 	// Debug logging when component renders
 	console.log('🔍 RoadmapView rendered with data:', {
@@ -24,7 +26,17 @@ export function RoadmapView({ data }: RoadmapViewProps) {
 			Object.entries(data.parsedTimelineEstimates).slice(0, 2) : 'No parsed data'
 	});
 
-
+	const togglePhase = (phaseId: string) => {
+		setExpandedPhases(prev => {
+			const newSet = new Set(prev);
+			if (newSet.has(phaseId)) {
+				newSet.delete(phaseId);
+			} else {
+				newSet.add(phaseId);
+			}
+			return newSet;
+		});
+	};
 
 	return (
 		<div className="max-w-6xl mx-auto p-4 space-y-6">
@@ -98,14 +110,25 @@ export function RoadmapView({ data }: RoadmapViewProps) {
 				</div>
 			)}
 			
-			{data.phases && data.phases.length > 0 ? data.phases.map(phase => {
+			{data.phases && data.phases.length > 0 ? data.phases
+				// Filter out roofing phase for Post Frame construction since it's covered in post-frame-structure
+				.filter(phase => {
+					if (profile?.constructionMethod === "post-frame" && phase.id === "roofing") {
+						return false;
+					}
+					return true;
+				})
+				.map(phase => {
 				// Get the correct phases based on user's construction method
 				const userPhases = profile ? getPhasesForMethod(profile.constructionMethod) : CONSTRUCTION_PHASES;
 				const phaseInfo = userPhases.find((p: any) => p.id === phase.id);
 				return (
 					<section key={phase.id || `phase-${Math.random()}`} className="border rounded-lg p-6 bg-white shadow-sm">
-						<div className="flex items-center justify-between mb-6">
-							<div>
+						<div 
+							className="flex items-center justify-between mb-6 cursor-pointer hover:bg-gray-100 p-3 rounded-lg transition-all duration-200 ease-in-out"
+							onClick={() => togglePhase(phase.id)}
+						>
+							<div className="flex-1">
 								<h2 className="text-2xl font-semibold text-gray-900">
 									{phase.title}
 								</h2>
@@ -174,29 +197,31 @@ export function RoadmapView({ data }: RoadmapViewProps) {
 							})()}
 						</div>
 
-						{/* Phase Subtasks */}
-						{phaseInfo?.subtasks && (
-							<div className="mb-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
-								<h3 className="font-semibold text-blue-900 mb-3">Phase Subtasks</h3>
-								<ul className="grid grid-cols-1 md:grid-cols-2 gap-2">
-									{phaseInfo.subtasks.map((subtask: any, index: number) => (
-										<li key={index} className="flex items-start gap-2 text-sm text-blue-800">
-											<span className="text-blue-600 mt-0.5">•</span>
-											<span>{subtask}</span>
-										</li>
-									))}
-								</ul>
-							</div>
-						)}
+						{/* Accordion Content - Tasks and AI-Generated Content */}
+						{expandedPhases.has(phase.id) && (
+							<div className="space-y-6">
+								{/* Tasks */}
+								{phaseInfo?.tasks && (
+									<div className="mb-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
+										<h3 className="font-semibold text-blue-900 mb-3">Tasks</h3>
+										<ul className="grid grid-cols-1 md:grid-cols-2 gap-2">
+											{phaseInfo.tasks.map((task: any, index: number) => (
+												<li key={index} className="flex items-start gap-2 text-sm text-blue-800">
+													<span className="text-blue-600 mt-0.5">•</span>
+													<span>{task}</span>
+												</li>
+											))}
+										</ul>
+									</div>
+								)}
 
-						{/* AI-Generated Tasks */}
-						<div className="space-y-4">
-							<h3 className="font-semibold text-gray-900 border-b pb-2">Detailed Tasks</h3>
-							{phase.tasks && phase.tasks.length > 0 ? (
-								<ul className="space-y-4">
-									{phase.tasks.map(task => (
-									<li key={task.id} className="border rounded-lg p-4 bg-gray-50">
-										<div className="font-medium text-gray-900 mb-3">{task.title || 'Untitled Task'}</div>
+								{/* AI-Generated Tasks */}
+								<div className="space-y-4">
+									<h3 className="font-semibold text-gray-900 border-b pb-2">Helpful Information</h3>
+									{phase.tasks && phase.tasks.length > 0 ? (
+										<ul className="space-y-4">
+											{phase.tasks.map(task => (
+												<li key={task.id} className="border rounded-lg p-4 bg-gray-50">
 										
 										{task.steps && task.steps.length > 0 && (
 											<div className="mb-3">
@@ -255,7 +280,9 @@ export function RoadmapView({ data }: RoadmapViewProps) {
 									<p className="text-sm mt-2">Tasks will be generated when you select this phase for AI enhancement.</p>
 								</div>
 							)}
-						</div>
+								</div>
+							</div>
+						)}
 					</section>
 				)
 			}) : (

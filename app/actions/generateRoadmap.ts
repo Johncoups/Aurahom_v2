@@ -380,7 +380,7 @@ async function generateAIRoadmap(profile: OnboardingProfile): Promise<RoadmapDat
 		if ((!enhancedTasks || enhancedTasks.length === 0) && baselinePhase.subtasks && baselinePhase.subtasks.length > 0) {
 			enhancedTasks = [{
 				id: `baseline-${baselinePhase.id}`,
-				title: `${baselinePhase.title} - Baseline Tasks`,
+				title: baselinePhase.title,
 				description: `Standard tasks for ${baselinePhase.title} phase`,
 				steps: baselinePhase.subtasks.map((subtask, index) => ({
 					id: `step-${baselinePhase.id}-${index}`,
@@ -500,7 +500,7 @@ async function generateBaselineRoadmap(profile: OnboardingProfile): Promise<Road
 			// Create a single task from the subtasks
 			baselineTasks = [{
 				id: `baseline-${p.id}`,
-				title: `${p.title} - Baseline Tasks`,
+				title: p.title,
 				description: `Standard tasks for ${p.title} phase`,
 				steps: p.subtasks.map((subtask, index) => ({
 					id: `step-${p.id}-${index}`,
@@ -516,7 +516,7 @@ async function generateBaselineRoadmap(profile: OnboardingProfile): Promise<Road
 			// Create a basic task structure even if no subtasks exist
 			baselineTasks = [{
 				id: `baseline-${p.id}`,
-				title: `${p.title} - Baseline Tasks`,
+				title: p.title,
 				description: `Standard tasks for ${p.title} phase`,
 				steps: [],
 				qaChecks: getQAChecksForPhase(p.id),

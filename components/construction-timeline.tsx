@@ -121,10 +121,10 @@ export function ConstructionTimeline({
 									<div className="border-t pt-4">
 										<h4 className="font-semibold text-gray-900 mb-3">Key Tasks</h4>
 										<div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-											{phase.subtasks.map((subtask, subtaskIndex) => (
-												<div key={subtaskIndex} className="flex items-start gap-2 text-sm text-gray-700">
+											{phase.tasks.map((task, taskIndex) => (
+												<div key={taskIndex} className="flex items-start gap-2 text-sm text-gray-700">
 													<span className="text-blue-500 mt-0.5">•</span>
-													<span>{subtask}</span>
+													<span>{task}</span>
 												</div>
 											))}
 										</div>

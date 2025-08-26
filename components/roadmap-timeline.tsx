@@ -2,10 +2,11 @@
 
 import { useState } from "react"
 import type { RoadmapData, RoadmapPhase } from "@/lib/roadmap-types"
-import { getPhaseById } from "@/lib/roadmap-phases"
+import { getPhasesForMethod, CONSTRUCTION_PHASES } from "@/lib/roadmap-phases"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { CheckCircle2, Circle, Clock, AlertCircle } from "lucide-react"
+import { useRoadmap } from "@/contexts/roadmap-context"
 
 interface RoadmapTimelineProps {
 	data: RoadmapData
@@ -13,6 +14,7 @@ interface RoadmapTimelineProps {
 }
 
 export function RoadmapTimeline({ data, onPhaseClick }: RoadmapTimelineProps) {
+	const { profile } = useRoadmap()
 	const [expandedPhases, setExpandedPhases] = useState<Set<string>>(new Set())
 
 	const togglePhase = (phaseId: string) => {
@@ -65,7 +67,9 @@ export function RoadmapTimeline({ data, onPhaseClick }: RoadmapTimelineProps) {
 
 			<div className="space-y-6">
 				{data.phases.map((phase, index) => {
-					const phaseInfo = getPhaseById(phase.id)
+					// Get the correct phases based on user's construction method
+					const userPhases = profile ? getPhasesForMethod(profile.constructionMethod) : CONSTRUCTION_PHASES;
+					const phaseInfo = userPhases.find((p: any) => p.id === phase.id)
 					const status = getPhaseStatus(phase)
 					const isExpanded = expandedPhases.has(phase.id)
 					
@@ -134,10 +138,10 @@ export function RoadmapTimeline({ data, onPhaseClick }: RoadmapTimelineProps) {
 									<div className="border-t pt-4">
 										<h4 className="font-semibold text-gray-900 mb-3">Key Tasks</h4>
 										<div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-											{phaseInfo.subtasks.map((subtask, subtaskIndex) => (
-												<div key={subtaskIndex} className="flex items-start gap-2 text-sm text-gray-700">
+											{phaseInfo.tasks.map((task, taskIndex) => (
+												<div key={taskIndex} className="flex items-start gap-2 text-sm text-gray-700">
 													<span className="text-blue-500 mt-0.5">•</span>
-													<span>{subtask}</span>
+													<span>{task}</span>
 												</div>
 											))}
 										</div>

@@ -24,7 +24,8 @@ export interface ConstructionPhase {
   title: string
   order: number
   description: string
-  subtasks: string[]
+  tasks: string[]
+  helpfulInformation?: string[] // Helpful information and guidance
   dependencies: string[] // IDs of phases that must be completed first
   constructionMethods: string[] // Which construction methods this phase applies to
   estimatedDuration?: string // Estimated duration for the phase
@@ -51,7 +52,7 @@ export const TRADITIONAL_FRAME_PHASES: ConstructionPhase[] = [
     title: "Just Starting",
     order: 0,
     description: "Project initiation and initial assessment phase",
-    subtasks: [
+    tasks: [
       "Acquire Land",
       "Complete initial project assessment",
       "Determine project scope and goals",
@@ -62,6 +63,18 @@ export const TRADITIONAL_FRAME_PHASES: ConstructionPhase[] = [
       "Research local building codes and regulations",
       "Consider timeline and scheduling needs"
     ],
+    helpfulInformation: [
+      "Research 3-5 similar completed projects in your area for insights and costs",
+      "Interview 2-3 local contractors to understand pricing and availability",
+      "Visit 3 different building supply stores to research material costs",
+      "Research 3 different financing options (construction loans, HELOC, cash)",
+      "Review 3 different insurance policies (builder's risk, liability, workers comp)",
+      "Research 3 different permit requirements and typical timelines",
+      "Create a project budget spreadsheet with multiple cost scenarios",
+      "Develop a risk assessment document with mitigation strategies",
+      "Research 3 different construction methods and their pros/cons",
+      "Create a project timeline with key milestones and dependencies"
+    ],
     dependencies: [],
     constructionMethods: ["traditional-frame", "icf", "sip", "modular", "other"]
   },
@@ -70,7 +83,7 @@ export const TRADITIONAL_FRAME_PHASES: ConstructionPhase[] = [
     title: "Pre-Construction Planning",
     order: 1,
     description: "Initial planning, financing, and legal setup before breaking ground",
-    subtasks: [
+    tasks: [
       "Complete project kickoff questionnaire",
       "Obtain property survey and site analysis",
       "Hire architect/engineer for plans",
@@ -81,6 +94,18 @@ export const TRADITIONAL_FRAME_PHASES: ConstructionPhase[] = [
       "Identify and contact sub contractors",
       "Schedule pre-construction meeting with trades"
     ],
+    helpfulInformation: [
+      "Get 3+ quotes from architects/engineers and compare their experience",
+      "Research 3 different survey companies and their pricing",
+      "Create a detailed cost breakdown spreadsheet with line items",
+      "Apply to 3+ banks for construction loans and compare terms",
+      "Research 3 different permit expediting services if needed",
+      "Get 3+ insurance quotes and compare coverage options",
+      "Create a contractor evaluation matrix with criteria and scoring",
+      "Develop a pre-construction meeting agenda and checklist",
+      "Research 3 different project management software options",
+      "Create a communication plan with all stakeholders"
+    ],
     dependencies: [],
     constructionMethods: ["traditional-frame", "icf", "sip", "modular", "other"],
     estimatedDuration: "2-4 weeks"
@@ -90,7 +115,7 @@ export const TRADITIONAL_FRAME_PHASES: ConstructionPhase[] = [
     title: "Site Preparation & Excavation",
     order: 2,
     description: "Site preparation, excavation, and foundation preparation",
-    subtasks: [
+    tasks: [
       "Apply for site/driveway/grading permits",
       "**CALL FOR UTILITY LOCATIONS**",
       "Establish benchmark elevations",
@@ -108,6 +133,18 @@ export const TRADITIONAL_FRAME_PHASES: ConstructionPhase[] = [
       "Final grade and drainage verification",
       "Site inspection(s) per jurisdiction"
     ],
+    helpfulInformation: [
+      "Get 3+ quotes from excavation contractors and compare equipment and experience",
+      "Research 3 different erosion control product suppliers and their pricing",
+      "Contact 3+ utility companies to understand connection requirements and costs",
+      "Get 3+ quotes from survey companies for benchmark elevations",
+      "Research 3 different temporary power/water service providers",
+      "Get 3+ quotes from portable restroom and dumpster rental companies",
+      "Research 3 different erosion control installation methods and costs",
+      "Create a site preparation checklist with photos and measurements",
+      "Research 3 different rock removal methods if blasting is needed",
+      "Develop a site access plan for deliveries and equipment"
+    ],
     dependencies: ["pre-construction"],
     constructionMethods: ["traditional-frame", "post-frame", "icf", "sip", "modular", "other"],
     estimatedDuration: "2-3 weeks"
@@ -117,7 +154,7 @@ export const TRADITIONAL_FRAME_PHASES: ConstructionPhase[] = [
     title: "Utilities & Septic",
     order: 3,
     description: "Installation of water, sewer, and utility systems",
-    subtasks: [
+    tasks: [
       "Soil and perc tests for septic system",
       "Septic system design and permitting",
       "Town water/sewer tap fees and hookup",
@@ -129,6 +166,18 @@ export const TRADITIONAL_FRAME_PHASES: ConstructionPhase[] = [
       "Telecom and internet hookup",
       "Final utility inspections"
     ],
+    helpfulInformation: [
+      "Get 3+ quotes from soil testing companies and compare their methods",
+      "Research 3 different septic system designs and their costs",
+      "Contact 3+ utility companies for connection fees and requirements",
+      "Get 3+ quotes from well drilling companies and compare their experience",
+      "Research 3 different water treatment systems and their maintenance needs",
+      "Get 3+ quotes from septic installers and compare their warranties",
+      "Research 3 different electrical service upgrade options and costs",
+      "Get 3+ quotes from gas line installers and compare their safety records",
+      "Research 3 different telecom providers and their installation requirements",
+      "Create a utility connection timeline with all required inspections"
+    ],
     dependencies: ["site-prep-excavation"],
     constructionMethods: ["traditional-frame", "post-frame", "icf", "sip", "modular", "other"],
     estimatedDuration: "2-3 weeks"
@@ -139,27 +188,31 @@ export const TRADITIONAL_FRAME_PHASES: ConstructionPhase[] = [
     title: "Foundation",
     order: 4,
     description: "Concrete foundation walls, footings, slabs, and in-floor radiant heat system",
-    subtasks: [
+    tasks: [
       "Layout verification against survey stakes",
-      "Form and pour footings with rebar",
-      "Pre-pour inspection and pour footings",
-      "Form/pour foundation walls or ICF",
+      "Form footings with rebar, pre-pour inspection, and pour footings",
+      "Form and pour foundation walls",
       "Install anchor bolts and hold-downs",
-      "Install foundation footing drains",
-      "Install curtain drains and swales",
-      "Install foundation drain board installation",
-      "Waterproofing and dampproofing",
-      "Perimeter drain tile with washed stone",
-      "Under-slab plumbing sleeves",
-      "Vapor barrier and rigid insulation",
-      "Foundation waterproofing and protection board",
-      "Install sub-slab insulation for radiant heat",
-      "Lay and staple PEX tubing for radiant heat",
-      "Protect tubing transitions",
-      "Pressure test radiant heat tubing",
-      "Slab reinforcement and control joints",
+      "Install foundation drainage system (footing drains / perimeter drain tile with washed stone)",
+      "Install curtain drains and swales (if required for site drainage)",
+      "Waterproof or dampproof foundation walls and install protection/drain board",
+      "Install under-slab plumbing sleeves",
+      "Install vapor barrier and rigid insulation",
+      "Place slab reinforcement and control joints",
       "Pour foundation and garage slabs",
-      "As-built/foundation survey if required"
+      "Conduct as-built/foundation survey if required"
+    ],
+    helpfulInformation: [
+      "Get 3+ quotes from concrete contractors and compare their experience with foundations",
+      "Research 3 different rebar suppliers and compare their quality and pricing",
+      "Get 3+ quotes from waterproofing contractors and compare their methods",
+      "Research 3 different drainage system designs and their effectiveness",
+      "Get 3+ quotes from excavation contractors for foundation trenches",
+      "Research 3 different concrete mix designs and their strength characteristics",
+      "Get 3+ quotes from formwork companies and compare their quality",
+      "Research 3 different anchor bolt systems and their load ratings",
+      "Create a foundation inspection checklist with photos and measurements",
+      "Develop a concrete curing and protection plan for different weather conditions"
     ],
     dependencies: ["utilities-septic"],
     constructionMethods: ["traditional-frame", "icf", "sip", "modular", "other"],
@@ -170,7 +223,7 @@ export const TRADITIONAL_FRAME_PHASES: ConstructionPhase[] = [
     title: "Rough Framing",
     order: 5,
     description: "Complete structural framing including floors, walls, roof, and interior partitions",
-    subtasks: [
+    tasks: [
       "Install sill plates and seal",
       "Frame floors with joists and subflooring",
       "Frame exterior walls",
@@ -191,6 +244,18 @@ export const TRADITIONAL_FRAME_PHASES: ConstructionPhase[] = [
       "Pre-drywall walk and documentation",
       "Rough framing inspection and QC"
     ],
+    helpfulInformation: [
+      "Get 3+ quotes from framing contractors and compare their experience and crew size",
+      "Research 3 different lumber suppliers and compare their quality and pricing",
+      "Get 3+ quotes from truss manufacturers and compare their engineering and delivery times",
+      "Research 3 different subfloor materials and their installation requirements",
+      "Get 3+ quotes from door/window suppliers and compare their energy ratings",
+      "Research 3 different framing techniques and their structural benefits",
+      "Get 3+ quotes from crane services for truss installation if needed",
+      "Research 3 different blocking materials and their fire resistance ratings",
+      "Create a framing inspection checklist with photos and measurements",
+      "Develop a weather protection plan for exposed framing during construction"
+    ],
     dependencies: ["foundation"],
     constructionMethods: ["traditional-frame", "modular", "other"],
     estimatedDuration: "4-8 weeks"
@@ -200,7 +265,7 @@ export const TRADITIONAL_FRAME_PHASES: ConstructionPhase[] = [
     title: "Roofing",
     order: 6,
     description: "Roof installation and weatherproofing",
-    subtasks: [
+    tasks: [
       "Install roof underlayment",
       "Install roof membrane",
       "Install flashing for chimneys and vents",
@@ -211,6 +276,18 @@ export const TRADITIONAL_FRAME_PHASES: ConstructionPhase[] = [
       "Final roof inspection",
       "Install downspouts and drainage"
     ],
+    helpfulInformation: [
+      "Get 3+ quotes from roofing contractors and compare their experience and warranties",
+      "Research 3 different roofing materials and compare their lifespan and costs",
+      "Get 3+ quotes from gutter companies and compare their materials and installation",
+      "Research 3 different underlayment products and their moisture resistance",
+      "Get 3+ quotes from skylight suppliers and compare their energy ratings",
+      "Research 3 different flashing materials and their durability",
+      "Get 3+ quotes from ventilation companies and compare their airflow ratings",
+      "Research 3 different roof membrane options and their installation methods",
+      "Create a roof inspection checklist with photos and measurements",
+      "Develop a roof maintenance schedule and warranty documentation"
+    ],
     dependencies: ["rough-framing"],
     constructionMethods: ["traditional-frame", "modular", "other"],
     estimatedDuration: "2-4 weeks"
@@ -220,7 +297,7 @@ export const TRADITIONAL_FRAME_PHASES: ConstructionPhase[] = [
     title: "Exterior Finishes",
     order: 7,
     description: "Exterior siding, trim, and weather protection",
-    subtasks: [
+    tasks: [
       "Install exterior foam sheathing",
       "Install weather barrier (Tyvek, etc.)",
       "Install membrane and flashing",
@@ -232,6 +309,18 @@ export const TRADITIONAL_FRAME_PHASES: ConstructionPhase[] = [
       "Exterior paint, stain, and caulk",
       "Final exterior inspection"
     ],
+    helpfulInformation: [
+      "Get 3+ quotes from siding contractors and compare their experience and warranties",
+      "Research 3 different siding materials and compare their durability and maintenance",
+      "Get 3+ quotes from stone/brick veneer installers and compare their craftsmanship",
+      "Research 3 different weather barrier products and their permeability ratings",
+      "Get 3+ quotes from window/door installers and compare their energy ratings",
+      "Research 3 different exterior paint brands and their weather resistance",
+      "Get 3+ quotes from trim carpenters and compare their attention to detail",
+      "Research 3 different flashing materials and their corrosion resistance",
+      "Create an exterior inspection checklist with photos and measurements",
+      "Develop an exterior maintenance schedule and warranty documentation"
+    ],
     dependencies: ["roofing"],
     constructionMethods: ["traditional-frame", "post-frame", "icf", "sip", "modular", "other"],
     estimatedDuration: "3-5 weeks"
@@ -241,7 +330,7 @@ export const TRADITIONAL_FRAME_PHASES: ConstructionPhase[] = [
     title: "Plumbing Rough-In",
     order: 8,
     description: "Underground and wall plumbing installation",
-    subtasks: [
+    tasks: [
       "Install DWV piping with proper slope",
       "Install water supply piping (PEX/copper)",
       "Install gas piping if applicable",
@@ -252,6 +341,18 @@ export const TRADITIONAL_FRAME_PHASES: ConstructionPhase[] = [
       "Plumbing rough-in inspection",
       "Install water heater and treatment"
     ],
+    helpfulInformation: [
+      "Get 3+ quotes from plumbing contractors and compare their experience and licenses",
+      "Research 3 different pipe materials and compare their durability and costs",
+      "Get 3+ quotes from water heater suppliers and compare their efficiency ratings",
+      "Research 3 different water treatment systems and their maintenance requirements",
+      "Get 3+ quotes from gas line installers and compare their safety certifications",
+      "Research 3 different fixture brands and compare their quality and warranties",
+      "Get 3+ quotes from inspection companies and compare their thoroughness",
+      "Research 3 different pressure testing methods and their accuracy",
+      "Create a plumbing inspection checklist with photos and measurements",
+      "Develop a plumbing maintenance schedule and warranty documentation"
+    ],
     dependencies: ["rough-framing"],
     constructionMethods: ["traditional-frame", "post-frame", "icf", "sip", "modular", "other"],
     estimatedDuration: "2-4 weeks"
@@ -261,7 +362,7 @@ export const TRADITIONAL_FRAME_PHASES: ConstructionPhase[] = [
     title: "Electrical Rough-In",
     order: 9,
     description: "Electrical wiring and panel installation",
-    subtasks: [
+    tasks: [
       "Install service panel and sub-panels",
       "Rough-in electrical wiring",
       "Install phone, cable, and internet wiring",
@@ -272,6 +373,18 @@ export const TRADITIONAL_FRAME_PHASES: ConstructionPhase[] = [
       "Label all circuits",
       "Electrical rough-in inspection"
     ],
+    helpfulInformation: [
+      "Get 3+ quotes from electrical contractors and compare their experience and licenses",
+      "Research 3 different electrical panel brands and compare their capacity and features",
+      "Get 3+ quotes from generator installers and compare their sizing and fuel options",
+      "Research 3 different EV charger brands and compare their charging speeds and costs",
+      "Get 3+ quotes from low-voltage contractors for phone/cable/internet wiring",
+      "Research 3 different smoke detector brands and compare their features and reliability",
+      "Get 3+ quotes from inspection companies and compare their thoroughness",
+      "Research 3 different wire types and compare their ampacity and costs",
+      "Create an electrical inspection checklist with photos and measurements",
+      "Develop an electrical maintenance schedule and warranty documentation"
+    ],
     dependencies: ["rough-framing"],
     constructionMethods: ["traditional-frame", "post-frame", "icf", "sip", "modular", "other"],
     estimatedDuration: "2-4 weeks"
@@ -281,7 +394,7 @@ export const TRADITIONAL_FRAME_PHASES: ConstructionPhase[] = [
     title: "HVAC Rough-In",
     order: 10,
     description: "Heating, ventilation, and air conditioning installation",
-    subtasks: [
+    tasks: [
       "Complete Manual J/S/D calculations",
       "Install ductwork and registers",
       "Install refrigerant lines",
@@ -292,6 +405,18 @@ export const TRADITIONAL_FRAME_PHASES: ConstructionPhase[] = [
       "Set thermostat locations",
       "HVAC rough-in inspection"
     ],
+    helpfulInformation: [
+      "Get 3+ quotes from HVAC contractors and compare their experience and certifications",
+      "Research 3 different HVAC brands and compare their efficiency ratings and warranties",
+      "Get 3+ quotes from ductwork companies and compare their materials and installation",
+      "Research 3 different thermostat brands and compare their features and smart capabilities",
+      "Get 3+ quotes from ERV/HRV suppliers and compare their energy recovery efficiency",
+      "Research 3 different duct materials and compare their insulation and air tightness",
+      "Get 3+ quotes from inspection companies and compare their thoroughness",
+      "Research 3 different zoning systems and compare their flexibility and costs",
+      "Create an HVAC inspection checklist with photos and measurements",
+      "Develop an HVAC maintenance schedule and warranty documentation"
+    ],
     dependencies: ["rough-framing"],
     constructionMethods: ["traditional-frame", "post-frame", "icf", "sip", "modular", "other"],
     estimatedDuration: "2-3 weeks"
@@ -301,7 +426,7 @@ export const TRADITIONAL_FRAME_PHASES: ConstructionPhase[] = [
     title: "Concrete Slabs & Flatwork",
     order: 11,
     description: "Interior slabs, garage, and exterior concrete",
-    subtasks: [
+    tasks: [
       "Verify radiant tubing protection",
       "Confirm slab thickness and reinforcement",
       "Place, finish, and cure slabs",
@@ -310,6 +435,18 @@ export const TRADITIONAL_FRAME_PHASES: ConstructionPhase[] = [
       "Install porches and walkways",
       "Apply sealers and hardeners",
       "Final concrete inspection"
+    ],
+    helpfulInformation: [
+      "Get 3+ quotes from concrete contractors and compare their experience and equipment",
+      "Research 3 different concrete mix designs and compare their strength and workability",
+      "Get 3+ quotes from finishing companies and compare their techniques and quality",
+      "Research 3 different sealer brands and compare their durability and maintenance",
+      "Get 3+ quotes from saw-cutting companies and compare their precision and timing",
+      "Research 3 different reinforcement materials and compare their strength and costs",
+      "Get 3+ quotes from inspection companies and compare their thoroughness",
+      "Research 3 different curing methods and compare their effectiveness and costs",
+      "Create a concrete inspection checklist with photos and measurements",
+      "Develop a concrete maintenance schedule and warranty documentation"
     ],
     dependencies: ["foundation"],
     constructionMethods: ["traditional-frame", "icf", "sip", "modular", "other"],
@@ -320,7 +457,7 @@ export const TRADITIONAL_FRAME_PHASES: ConstructionPhase[] = [
     title: "Insulation & Air Sealing",
     order: 12,
     description: "Thermal and sound insulation installation",
-    subtasks: [
+    tasks: [
       "Complete air sealing pass",
       "Install vent baffles and eave chutes",
       "Install wall insulation (batts/blown/foam)",
@@ -329,6 +466,18 @@ export const TRADITIONAL_FRAME_PHASES: ConstructionPhase[] = [
       "Install vapor retarder if required",
       "Blower door test and remediation",
       "Insulation inspection"
+    ],
+    helpfulInformation: [
+      "Get 3+ quotes from insulation contractors and compare their experience and techniques",
+      "Research 3 different insulation materials and compare their R-values and costs",
+      "Get 3+ quotes from air sealing companies and compare their methods and materials",
+      "Research 3 different vapor retarder products and compare their permeability ratings",
+      "Get 3+ quotes from blower door testing companies and compare their equipment and accuracy",
+      "Research 3 different sound insulation products and compare their STC ratings",
+      "Get 3+ quotes from inspection companies and compare their thoroughness",
+      "Research 3 different air sealing materials and compare their durability and effectiveness",
+      "Create an insulation inspection checklist with photos and measurements",
+      "Develop an insulation maintenance schedule and warranty documentation"
     ],
     dependencies: ["exterior", "rough-framing"],
     constructionMethods: ["traditional-frame", "post-frame", "icf", "sip", "modular", "other"],
@@ -339,7 +488,7 @@ export const TRADITIONAL_FRAME_PHASES: ConstructionPhase[] = [
     title: "Drywall",
     order: 13,
     description: "Interior wall and ceiling finishing",
-    subtasks: [
+    tasks: [
       "Hang drywall (MR board where needed)",
       "Tape and mud to Level 4/5 finish",
       "Sand and touch-up",
@@ -347,6 +496,18 @@ export const TRADITIONAL_FRAME_PHASES: ConstructionPhase[] = [
       "Prime walls and ceilings",
       "Ready-for-paint inspection",
       "Final drywall inspection"
+    ],
+    helpfulInformation: [
+      "Get 3+ quotes from drywall contractors and compare their experience and finish quality",
+      "Research 3 different drywall brands and compare their thickness and moisture resistance",
+      "Get 3+ quotes from taping companies and compare their techniques and finish levels",
+      "Research 3 different mud brands and compare their workability and drying time",
+      "Get 3+ quotes from sanding companies and compare their techniques and dust control",
+      "Research 3 different corner protection products and compare their durability and costs",
+      "Get 3+ quotes from inspection companies and compare their thoroughness",
+      "Research 3 different primer brands and compare their coverage and adhesion",
+      "Create a drywall inspection checklist with photos and measurements",
+      "Develop a drywall maintenance schedule and warranty documentation"
     ],
     dependencies: ["rough-framing"],
     constructionMethods: ["traditional-frame", "post-frame", "icf", "sip", "modular", "other"],
@@ -357,7 +518,7 @@ export const TRADITIONAL_FRAME_PHASES: ConstructionPhase[] = [
     title: "Paint",
     order: 14,
     description: "Interior and exterior painting",
-    subtasks: [
+    tasks: [
       "Surface preparation and caulking",
       "Mask and protect surfaces",
       "Prime all surfaces",
@@ -365,6 +526,18 @@ export const TRADITIONAL_FRAME_PHASES: ConstructionPhase[] = [
       "Apply finish coats",
       "Exterior painting as weather allows",
       "Touch-ups and final inspection"
+    ],
+    helpfulInformation: [
+      "Get 3+ quotes from painting contractors and compare their experience and techniques",
+      "Research 3 different paint brands and compare their coverage and durability",
+      "Get 3+ quotes from caulking companies and compare their materials and techniques",
+      "Research 3 different primer brands and compare their adhesion and coverage",
+      "Get 3+ quotes from sanding companies and compare their techniques and dust control",
+      "Research 3 different paint finishes and compare their appearance and maintenance",
+      "Get 3+ quotes from inspection companies and compare their thoroughness",
+      "Research 3 different masking materials and compare their protection and ease of use",
+      "Create a paint inspection checklist with photos and measurements",
+      "Develop a paint maintenance schedule and warranty documentation"
     ],
     dependencies: ["drywall"],
     constructionMethods: ["traditional-frame", "post-frame", "icf", "sip", "modular", "other"],
@@ -375,7 +548,7 @@ export const TRADITIONAL_FRAME_PHASES: ConstructionPhase[] = [
     title: "Trim Carpentry",
     order: 15,
     description: "Interior trim, doors, and hardware",
-    subtasks: [
+    tasks: [
       "Install interior doors and jambs",
       "Install door hardware",
       "Install casing, base, and crown molding",
@@ -384,6 +557,18 @@ export const TRADITIONAL_FRAME_PHASES: ConstructionPhase[] = [
       "Install stair trim and railings",
       "Install cabinet boxes",
       "Caulk and putty preparation"
+    ],
+    helpfulInformation: [
+      "Get 3+ quotes from trim carpenters and compare their experience and craftsmanship",
+      "Research 3 different door brands and compare their quality and energy ratings",
+      "Get 3+ quotes from hardware suppliers and compare their quality and warranties",
+      "Research 3 different molding materials and compare their durability and costs",
+      "Get 3+ quotes from cabinet installers and compare their techniques and quality",
+      "Research 3 different stair railing designs and compare their safety and aesthetics",
+      "Get 3+ quotes from caulking companies and compare their materials and techniques",
+      "Research 3 different trim materials and compare their moisture resistance and costs",
+      "Create a trim inspection checklist with photos and measurements",
+      "Develop a trim maintenance schedule and warranty documentation"
     ],
     dependencies: ["paint"],
     constructionMethods: ["traditional-frame", "post-frame", "icf", "sip", "modular", "other"],
@@ -394,7 +579,7 @@ export const TRADITIONAL_FRAME_PHASES: ConstructionPhase[] = [
     title: "Flooring",
     order: 16,
     description: "Floor covering installation",
-    subtasks: [
+    tasks: [
       "Inspect subfloor flatness",
       "Moisture testing and acclimation",
       "Install underlayments and sound isolation",
@@ -403,6 +588,18 @@ export const TRADITIONAL_FRAME_PHASES: ConstructionPhase[] = [
       "Install carpet with pad",
       "Install transitions and trim",
       "Protect until substantial completion"
+    ],
+    helpfulInformation: [
+      "Get 3+ quotes from flooring contractors and compare their experience and techniques",
+      "Research 3 different flooring materials and compare their durability and maintenance",
+      "Get 3+ quotes from tile installers and compare their craftsmanship and patterns",
+      "Research 3 different underlayment products and compare their sound isolation ratings",
+      "Get 3+ quotes from wood flooring suppliers and compare their species and finishes",
+      "Research 3 different LVP brands and compare their wear layers and warranties",
+      "Get 3+ quotes from carpet installers and compare their padding and installation",
+      "Research 3 different transition materials and compare their durability and costs",
+      "Create a flooring inspection checklist with photos and measurements",
+      "Develop a flooring maintenance schedule and warranty documentation"
     ],
     dependencies: ["trim-carpentry"],
     constructionMethods: ["traditional-frame", "post-frame", "icf", "sip", "modular", "other"],
@@ -413,7 +610,7 @@ export const TRADITIONAL_FRAME_PHASES: ConstructionPhase[] = [
     title: "Kitchen & Bath",
     order: 17,
     description: "Kitchen and bathroom finishing",
-    subtasks: [
+    tasks: [
       "Install kitchen cabinets",
       "Install bathroom vanities",
       "Install countertops and backsplash",
@@ -431,7 +628,7 @@ export const TRADITIONAL_FRAME_PHASES: ConstructionPhase[] = [
     title: "Final Touches & Punch List",
     order: 18,
     description: "Final details and project completion",
-    subtasks: [
+    tasks: [
       "Complete punch list items",
       "Final cleaning and touch-ups",
       "Install final hardware and accessories",
@@ -454,7 +651,7 @@ export const POST_FRAME_PHASES: ConstructionPhase[] = [
     title: "Just Starting",
     order: 0,
     description: "Project initiation and initial assessment phase",
-    subtasks: [
+    tasks: [
       "Acquire Land",
       "Complete initial project assessment",
       "Determine project scope and goals",
@@ -473,7 +670,7 @@ export const POST_FRAME_PHASES: ConstructionPhase[] = [
     title: "Pre-Construction Planning",
     order: 1,
     description: "Initial planning, financing, and legal setup before breaking ground",
-    subtasks: [
+    tasks: [
       "Complete project kickoff questionnaire",
       "Obtain property survey and site analysis",
       "Hire architect/engineer for plans",
@@ -488,12 +685,12 @@ export const POST_FRAME_PHASES: ConstructionPhase[] = [
      constructionMethods: ["post-frame"],
      estimatedDuration: "2-4 weeks"
   },
-    {
+  {
     id: "site-prep-excavation",
     title: "Site Preparation & Excavation",
     order: 2,
     description: "Site preparation, excavation, and foundation preparation",
-    subtasks: [
+    tasks: [
       "Apply for site/driveway/grading permits",
       "**CALL FOR UTILITY LOCATIONS**",
       "Establish benchmark elevations",
@@ -520,7 +717,7 @@ export const POST_FRAME_PHASES: ConstructionPhase[] = [
     title: "Utilities & Septic",
     order: 3,
     description: "Installation of water, sewer, and utility systems",
-    subtasks: [
+    tasks: [
       "Soil and perc tests for septic system",
       "Septic system design and permitting",
       "Town water/sewer tap fees and hookup",
@@ -542,7 +739,7 @@ export const POST_FRAME_PHASES: ConstructionPhase[] = [
     title: "Foundation",
     order: 4,
     description: "Concrete foundation walls, footings, and slabs",
-    subtasks: [
+    tasks: [
       "Layout verification against survey stakes",
       "Form and pour footings with rebar",
       "Pre-pour inspection and pour footings",
@@ -565,11 +762,52 @@ export const POST_FRAME_PHASES: ConstructionPhase[] = [
     estimatedDuration: "2-3 weeks"
   },
   {
+    id: "rough-framing",
+    title: "Rough Framing",
+    order: 5,
+    description: "Complete structural framing including floors, walls, roof, and interior partitions",
+    tasks: [
+      "Install sill plates and seal",
+      "Frame floors with joists and subflooring",
+      "Frame interior partition walls",
+      "Install steel/wood carrying beams",
+      "Frame roof trusses and decking",
+      "Install sheathing and subfascia",
+      "Frame exterior stairs and landings",
+      "Install steel framing connectors",
+      "Set windows and doors with flashing",
+      "Install exterior WRB and tapes",
+      "Install blocking for cabinets and vanities",
+      "Reinforce walls for wall-hung fixtures",
+      "Frame niches, benches, and curbs",
+      "Straighten and plane walls",
+      "Install soundproofing details",
+      "Frame pocket and hidden doors",
+      "Pre-drywall walk and documentation",
+      "Rough framing inspection and QC"
+    ],
+    helpfulInformation: [
+      "Get 3+ quotes from framing contractors and compare their experience and crew size",
+      "Research 3 different lumber suppliers and compare their quality and pricing",
+      "Get 3+ quotes from truss manufacturers and compare their engineering and delivery times",
+      "Research 3 different subfloor materials and their installation requirements",
+      "Get 3+ quotes from door/window suppliers and compare their energy ratings",
+      "Research 3 different framing techniques and their structural benefits",
+      "Get 3+ quotes from crane services for truss installation if needed",
+      "Research 3 different blocking materials and their fire resistance ratings",
+      "Create a framing inspection checklist with photos and measurements",
+      "Develop a weather protection plan for exposed framing during construction"
+    ],
+    dependencies: ["foundation"],
+    constructionMethods: ["post-frame"],
+    estimatedDuration: "4-8 weeks"
+  },
+  {
     id: "post-frame-structure",
     title: "Post Frame Structure",
-    order: 5,
+    order: 6,
     description: "Post frame construction with trusses, metal siding, windows, exterior doors, and roof",
-    subtasks: [
+    tasks: [
       "Set posts in concrete or on piers",
       "Install post frame trusses",
       "Install roof purlins and girts",
@@ -586,9 +824,9 @@ export const POST_FRAME_PHASES: ConstructionPhase[] = [
   {
     id: "exterior",
     title: "Exterior Finishes",
-    order: 6,
+    order: 7,
     description: "Exterior siding, trim, and weather protection",
-    subtasks: [
+    tasks: [
       "Install exterior foam sheathing",
       "Install weather barrier (Tyvek, etc.)",
       "Install membrane and flashing",
@@ -607,9 +845,9 @@ export const POST_FRAME_PHASES: ConstructionPhase[] = [
   {
     id: "plumbing-rough",
     title: "Plumbing Rough-In",
-    order: 7,
+    order: 8,
     description: "Underground and wall plumbing installation",
-    subtasks: [
+    tasks: [
       "Install DWV piping with proper slope",
       "Install water supply piping (PEX/copper)",
       "Install gas piping if applicable",
@@ -620,16 +858,16 @@ export const POST_FRAME_PHASES: ConstructionPhase[] = [
       "Plumbing rough-in inspection",
       "Install water heater and treatment"
     ],
-    dependencies: ["post-frame-structure"],
+    dependencies: ["rough-framing"],
     constructionMethods: ["post-frame"],
     estimatedDuration: "2-3 weeks"
   },
   {
     id: "electrical-rough",
     title: "Electrical Rough-In",
-    order: 8,
+    order: 9,
     description: "Underground electrical wiring and panel installation",
-    subtasks: [
+    tasks: [
       "Install service panel and sub-panels",
       "Rough-in electrical wiring",
       "Install phone, cable, and internet wiring",
@@ -640,16 +878,16 @@ export const POST_FRAME_PHASES: ConstructionPhase[] = [
       "Label all circuits",
       "Electrical rough-in inspection"
     ],
-    dependencies: ["plumbing-rough"],
+    dependencies: ["rough-framing"],
     constructionMethods: ["post-frame"],
     estimatedDuration: "2-3 weeks"
   },
   {
     id: "concrete-slabs",
     title: "Slab and Flatwork",
-    order: 9,
+    order: 10,
     description: "Interior slabs, garage, and exterior concrete",
-    subtasks: [
+    tasks: [
       "Verify radiant tubing protection if applicable",
       "Confirm slab thickness and reinforcement",
       "Place, finish, and cure slabs",
@@ -659,16 +897,16 @@ export const POST_FRAME_PHASES: ConstructionPhase[] = [
       "Apply sealers and hardeners",
       "Final concrete inspection"
     ],
-    dependencies: ["electrical-rough"],
+    dependencies: ["foundation"],
     constructionMethods: ["post-frame"],
     estimatedDuration: "2-3 weeks"
   },
   {
     id: "insulation",
     title: "Insulation & Air Sealing",
-    order: 10,
+    order: 11,
     description: "Thermal and sound insulation installation",
-    subtasks: [
+    tasks: [
       "Complete air sealing pass",
       "Install vent baffles and eave chutes",
       "Install wall insulation (batts/blown/foam)",
@@ -678,16 +916,16 @@ export const POST_FRAME_PHASES: ConstructionPhase[] = [
       "Blower door test and remediation",
       "Insulation inspection"
     ],
-    dependencies: ["exterior", "concrete-slabs"],
+    dependencies: ["exterior", "rough-framing"],
     constructionMethods: ["post-frame"],
     estimatedDuration: "2-3 weeks"
   },
   {
     id: "rough-framing-post-frame",
     title: "Rough Framing",
-    order: 11,
+    order: 12,
     description: "Interior walls, blocking, and soundproofing",
-    subtasks: [
+    tasks: [
       "Frame interior partition walls",
       "Install blocking for cabinets and vanities",
       "Reinforce walls for wall-hung fixtures",
@@ -705,9 +943,9 @@ export const POST_FRAME_PHASES: ConstructionPhase[] = [
   {
     id: "hvac-rough",
     title: "HVAC Rough-In",
-    order: 12,
+    order: 13,
     description: "Heating, ventilation, and air conditioning installation",
-    subtasks: [
+    tasks: [
       "Complete Manual J/S/D calculations",
       "Install ductwork and registers",
       "Install refrigerant lines",
@@ -727,7 +965,7 @@ export const POST_FRAME_PHASES: ConstructionPhase[] = [
     title: "Drywall",
     order: 13,
     description: "Interior wall and ceiling finishing",
-    subtasks: [
+    tasks: [
       "Hang drywall (MR board where needed)",
       "Tape and mud to Level 4/5 finish",
       "Sand and touch-up",
@@ -745,7 +983,7 @@ export const POST_FRAME_PHASES: ConstructionPhase[] = [
     title: "Paint",
     order: 15,
     description: "Interior and exterior painting",
-    subtasks: [
+    tasks: [
       "Surface preparation and caulking",
       "Mask and protect surfaces",
       "Prime all surfaces",
@@ -763,7 +1001,7 @@ export const POST_FRAME_PHASES: ConstructionPhase[] = [
     title: "Trim Carpentry",
     order: 16,
     description: "Interior trim, doors, and hardware",
-    subtasks: [
+    tasks: [
       "Install interior doors and jambs",
       "Install door hardware",
       "Install casing, base, and crown molding",
@@ -782,7 +1020,7 @@ export const POST_FRAME_PHASES: ConstructionPhase[] = [
     title: "Flooring",
     order: 17,
     description: "Floor covering installation",
-    subtasks: [
+    tasks: [
       "Inspect subfloor flatness",
       "Moisture testing and acclimation",
       "Install underlayments and sound isolation",
@@ -801,7 +1039,7 @@ export const POST_FRAME_PHASES: ConstructionPhase[] = [
     title: "Kitchen & Bath",
     order: 18,
     description: "Kitchen and bathroom finishing",
-    subtasks: [
+    tasks: [
       "Install kitchen cabinets",
       "Install bathroom vanities",
       "Install countertops and backsplash",
@@ -819,7 +1057,7 @@ export const POST_FRAME_PHASES: ConstructionPhase[] = [
     title: "Final Touches & Punch List",
     order: 19,
     description: "Final details and project completion",
-    subtasks: [
+    tasks: [
       "Complete punch list items",
       "Final cleaning and touch-ups",
       "Install final hardware and accessories",
@@ -842,7 +1080,7 @@ export const ICF_PHASES: ConstructionPhase[] = [
     title: "Just Starting",
     order: 0,
     description: "Project initiation and initial assessment phase",
-    subtasks: [
+    tasks: [
       "Acquire Land",
       "Complete initial project assessment",
       "Determine project scope and goals",
@@ -861,7 +1099,7 @@ export const ICF_PHASES: ConstructionPhase[] = [
     title: "Pre-Construction Planning",
     order: 1,
     description: "Initial planning, financing, and legal setup before breaking ground",
-    subtasks: [
+    tasks: [
       "Complete project kickoff questionnaire",
       "Obtain property survey and site analysis",
       "Hire architect/engineer for ICF-specific plans",
@@ -881,7 +1119,7 @@ export const ICF_PHASES: ConstructionPhase[] = [
     title: "Site Preparation & Excavation",
     order: 2,
     description: "Site preparation, excavation, and foundation preparation",
-    subtasks: [
+    tasks: [
       "Apply for site/driveway/grading permits",
       "**CALL FOR UTILITY LOCATIONS**",
       "Establish benchmark elevations",
@@ -908,7 +1146,7 @@ export const ICF_PHASES: ConstructionPhase[] = [
     title: "Utilities & Septic",
     order: 3,
     description: "Installation of water, sewer, and utility systems",
-    subtasks: [
+    tasks: [
       "Soil and perc tests for septic system",
       "Septic system design and permitting",
       "Town water/sewer tap fees and hookup",
@@ -930,7 +1168,7 @@ export const ICF_PHASES: ConstructionPhase[] = [
     title: "ICF Foundation & Walls",
     order: 4,
     description: "ICF forms, concrete, and wall construction",
-    subtasks: [
+    tasks: [
       "Layout verification against survey stakes",
       "Form and pour footings with rebar",
       "Pre-pour inspection and pour footings",
@@ -951,11 +1189,52 @@ export const ICF_PHASES: ConstructionPhase[] = [
     estimatedDuration: "4-6 weeks"
   },
   {
+    id: "rough-framing",
+    title: "Rough Framing",
+    order: 5,
+    description: "Complete structural framing including floors, walls, roof, and interior partitions",
+    tasks: [
+      "Install sill plates and seal",
+      "Frame floors with joists and subflooring",
+      "Frame interior partition walls",
+      "Install steel/wood carrying beams",
+      "Frame roof trusses and decking",
+      "Install sheathing and subfascia",
+      "Frame exterior stairs and landings",
+      "Install steel framing connectors",
+      "Set windows and doors with flashing",
+      "Install exterior WRB and tapes",
+      "Install blocking for cabinets and vanities",
+      "Reinforce walls for wall-hung fixtures",
+      "Frame niches, benches, and curbs",
+      "Straighten and plane walls",
+      "Install soundproofing details",
+      "Frame pocket and hidden doors",
+      "Pre-drywall walk and documentation",
+      "Rough framing inspection and QC"
+    ],
+    helpfulInformation: [
+      "Get 3+ quotes from framing contractors and compare their experience and crew size",
+      "Research 3 different lumber suppliers and compare their quality and pricing",
+      "Get 3+ quotes from truss manufacturers and compare their engineering and delivery times",
+      "Research 3 different subfloor materials and their installation requirements",
+      "Get 3+ quotes from door/window suppliers and compare their energy ratings",
+      "Research 3 different framing techniques and their structural benefits",
+      "Get 3+ quotes from crane services for truss installation if needed",
+      "Research 3 different blocking materials and their fire resistance ratings",
+      "Create a framing inspection checklist with photos and measurements",
+      "Develop a weather protection plan for exposed framing during construction"
+    ],
+    dependencies: ["icf-foundation-walls"],
+    constructionMethods: ["icf"],
+    estimatedDuration: "4-8 weeks"
+  },
+  {
     id: "roofing",
     title: "Roofing",
-    order: 5,
+    order: 6,
     description: "Roof installation and weatherproofing",
-    subtasks: [
+    tasks: [
       "Install roof underlayment",
       "Install roof membrane",
       "Install flashing for chimneys and vents",
@@ -973,9 +1252,9 @@ export const ICF_PHASES: ConstructionPhase[] = [
   {
     id: "exterior",
     title: "Exterior Finishes",
-    order: 6,
+    order: 7,
     description: "Exterior siding, trim, and weather protection",
-    subtasks: [
+    tasks: [
       "Install exterior foam sheathing",
       "Install weather barrier (Tyvek, etc.)",
       "Install membrane and flashing",
@@ -994,9 +1273,9 @@ export const ICF_PHASES: ConstructionPhase[] = [
   {
     id: "plumbing-rough",
     title: "Plumbing Rough-In",
-    order: 7,
+    order: 8,
     description: "Underground and wall plumbing installation",
-    subtasks: [
+    tasks: [
       "Install DWV piping with proper slope",
       "Install water supply piping (PEX/copper)",
       "Install gas piping if applicable",
@@ -1007,16 +1286,16 @@ export const ICF_PHASES: ConstructionPhase[] = [
       "Plumbing rough-in inspection",
       "Install water heater and treatment"
     ],
-    dependencies: ["icf-foundation-walls"],
+    dependencies: ["rough-framing"],
     constructionMethods: ["icf"],
     estimatedDuration: "2-4 weeks"
   },
   {
     id: "electrical-rough",
     title: "Electrical Rough-In",
-    order: 8,
+    order: 9,
     description: "Electrical wiring and panel installation",
-    subtasks: [
+    tasks: [
       "Install service panel and sub-panels",
       "Rough-in electrical wiring",
       "Install phone, cable, and internet wiring",
@@ -1027,16 +1306,16 @@ export const ICF_PHASES: ConstructionPhase[] = [
       "Label all circuits",
       "Electrical rough-in inspection"
     ],
-    dependencies: ["icf-foundation-walls"],
+    dependencies: ["rough-framing"],
     constructionMethods: ["icf"],
     estimatedDuration: "2-4 weeks"
   },
   {
     id: "hvac-rough",
     title: "HVAC Rough-In",
-    order: 9,
+    order: 10,
     description: "Heating, ventilation, and air conditioning installation",
-    subtasks: [
+    tasks: [
       "Complete Manual J/S/D calculations",
       "Install ductwork and registers",
       "Install refrigerant lines",
@@ -1047,16 +1326,16 @@ export const ICF_PHASES: ConstructionPhase[] = [
       "Set thermostat locations",
       "HVAC rough-in inspection"
     ],
-    dependencies: ["icf-foundation-walls"],
+    dependencies: ["rough-framing"],
     constructionMethods: ["icf"],
     estimatedDuration: "2-3 weeks"
   },
   {
     id: "concrete-slabs",
     title: "Concrete Slabs & Flatwork",
-    order: 10,
+    order: 11,
     description: "Interior slabs, garage, and exterior concrete",
-    subtasks: [
+    tasks: [
       "Verify radiant tubing protection if applicable",
       "Confirm slab thickness and reinforcement",
       "Place, finish, and cure slabs",
@@ -1066,7 +1345,7 @@ export const ICF_PHASES: ConstructionPhase[] = [
       "Apply sealers and hardeners",
       "Final concrete inspection"
     ],
-    dependencies: ["icf-foundation-walls"],
+    dependencies: ["foundation"],
     constructionMethods: ["icf"],
     estimatedDuration: "2-3 weeks"
   },
@@ -1075,7 +1354,7 @@ export const ICF_PHASES: ConstructionPhase[] = [
     title: "Insulation & Air Sealing",
     order: 12,
     description: "Thermal and sound insulation installation",
-    subtasks: [
+    tasks: [
       "Complete air sealing pass",
       "Install vent baffles and eave chutes",
       "Install wall insulation (batts/blown/foam)",
@@ -1085,7 +1364,7 @@ export const ICF_PHASES: ConstructionPhase[] = [
       "Blower door test and remediation",
       "Insulation inspection"
     ],
-    dependencies: ["exterior", "icf-foundation-walls"],
+    dependencies: ["exterior", "rough-framing"],
     constructionMethods: ["icf"],
     estimatedDuration: "2-3 weeks"
   },
@@ -1094,7 +1373,7 @@ export const ICF_PHASES: ConstructionPhase[] = [
     title: "Rough Framing",
     order: 13,
     description: "Interior walls, blocking, and soundproofing",
-    subtasks: [
+    tasks: [
       "Frame interior partition walls",
       "Install blocking for cabinets and vanities",
       "Reinforce walls for wall-hung fixtures",
@@ -1115,7 +1394,7 @@ export const ICF_PHASES: ConstructionPhase[] = [
     title: "Drywall",
     order: 14,
     description: "Interior wall and ceiling finishing",
-    subtasks: [
+    tasks: [
       "Hang drywall (MR board where needed)",
       "Tape and mud to Level 4/5 finish",
       "Sand and touch-up",
@@ -1133,7 +1412,7 @@ export const ICF_PHASES: ConstructionPhase[] = [
     title: "Paint",
     order: 16,
     description: "Interior and exterior painting",
-    subtasks: [
+    tasks: [
       "Surface preparation and caulking",
       "Mask and protect surfaces",
       "Prime all surfaces",
@@ -1151,7 +1430,7 @@ export const ICF_PHASES: ConstructionPhase[] = [
     title: "Trim Carpentry",
     order: 17,
     description: "Interior trim, doors, and hardware",
-    subtasks: [
+    tasks: [
       "Install interior doors and jambs",
       "Install door hardware",
       "Install casing, base, and crown molding",
@@ -1170,7 +1449,7 @@ export const ICF_PHASES: ConstructionPhase[] = [
     title: "Flooring",
     order: 18,
     description: "Floor covering installation",
-    subtasks: [
+    tasks: [
       "Inspect subfloor flatness",
       "Moisture testing and acclimation",
       "Install underlayments and sound isolation",
@@ -1189,7 +1468,7 @@ export const ICF_PHASES: ConstructionPhase[] = [
     title: "Kitchen & Bath",
     order: 19,
     description: "Kitchen and bathroom finishing",
-    subtasks: [
+    tasks: [
       "Install kitchen cabinets",
       "Install bathroom vanities",
       "Install countertops and backsplash",
@@ -1207,7 +1486,7 @@ export const ICF_PHASES: ConstructionPhase[] = [
     title: "Final Touches & Punch List",
     order: 20,
     description: "Final details and project completion",
-    subtasks: [
+    tasks: [
       "Complete punch list items",
       "Final cleaning and touch-ups",
       "Install final hardware and accessories",
@@ -1230,7 +1509,7 @@ export const SIP_PHASES: ConstructionPhase[] = [
     title: "Just Starting",
     order: 0,
     description: "Project initiation and initial assessment phase",
-    subtasks: [
+    tasks: [
       "Acquire Land",
       "Complete initial project assessment",
       "Determine project scope and goals",
@@ -1249,7 +1528,7 @@ export const SIP_PHASES: ConstructionPhase[] = [
     title: "Pre-Construction Planning",
     order: 1,
     description: "Initial planning, financing, and legal setup before breaking ground",
-    subtasks: [
+    tasks: [
       "Complete project kickoff questionnaire",
       "Obtain property survey and site analysis",
       "Hire architect/engineer for SIP-specific plans",
@@ -1269,7 +1548,7 @@ export const SIP_PHASES: ConstructionPhase[] = [
     title: "Site Preparation & Excavation",
     order: 2,
     description: "Site preparation, excavation, and foundation preparation",
-    subtasks: [
+    tasks: [
       "Apply for site/driveway/grading permits",
       "**CALL FOR UTILITY LOCATIONS**",
       "Establish benchmark elevations",
@@ -1296,7 +1575,7 @@ export const SIP_PHASES: ConstructionPhase[] = [
     title: "Utilities & Septic",
     order: 3,
     description: "Installation of water, sewer, and utility systems",
-    subtasks: [
+    tasks: [
       "Soil and perc tests for septic system",
       "Septic system design and permitting",
       "Town water/sewer tap fees and hookup",
@@ -1317,7 +1596,7 @@ export const SIP_PHASES: ConstructionPhase[] = [
     title: "Foundation",
     order: 3,
     description: "Concrete foundation walls, footings, and slabs",
-    subtasks: [
+    tasks: [
       "Layout verification against survey stakes",
       "Form and pour footings with rebar",
       "Pre-pour inspection and pour footings",
@@ -1339,7 +1618,7 @@ export const SIP_PHASES: ConstructionPhase[] = [
     title: "SIP Panel Installation",
     order: 4,
     description: "Installation of structural insulated panels for walls and roof",
-    subtasks: [
+    tasks: [
       "Set SIP panels according to engineered plans",
       "Install panel connectors and fasteners",
       "Seal panel joints with approved sealant",
@@ -1353,11 +1632,52 @@ export const SIP_PHASES: ConstructionPhase[] = [
     estimatedDuration: "2-4 weeks"
   },
   {
+    id: "rough-framing",
+    title: "Rough Framing",
+    order: 5,
+    description: "Complete structural framing including floors, walls, roof, and interior partitions",
+    tasks: [
+      "Install sill plates and seal",
+      "Frame floors with joists and subflooring",
+      "Frame interior partition walls",
+      "Install steel/wood carrying beams",
+      "Frame roof trusses and decking",
+      "Install sheathing and subfascia",
+      "Frame exterior stairs and landings",
+      "Install steel framing connectors",
+      "Set windows and doors with flashing",
+      "Install exterior WRB and tapes",
+      "Install blocking for cabinets and vanities",
+      "Reinforce walls for wall-hung fixtures",
+      "Frame niches, benches, and curbs",
+      "Straighten and plane walls",
+      "Install soundproofing details",
+      "Frame pocket and hidden doors",
+      "Pre-drywall walk and documentation",
+      "Rough framing inspection and QC"
+    ],
+    helpfulInformation: [
+      "Get 3+ quotes from framing contractors and compare their experience and crew size",
+      "Research 3 different lumber suppliers and compare their quality and pricing",
+      "Get 3+ quotes from truss manufacturers and compare their engineering and delivery times",
+      "Research 3 different subfloor materials and their installation requirements",
+      "Get 3+ quotes from door/window suppliers and compare their energy ratings",
+      "Research 3 different framing techniques and their structural benefits",
+      "Get 3+ quotes from crane services for truss installation if needed",
+      "Research 3 different blocking materials and their fire resistance ratings",
+      "Create a framing inspection checklist with photos and measurements",
+      "Develop a weather protection plan for exposed framing during construction"
+    ],
+    dependencies: ["sip-panel-installation"],
+    constructionMethods: ["sip"],
+    estimatedDuration: "4-8 weeks"
+  },
+  {
     id: "exterior",
     title: "Exterior Finishes",
-    order: 5,
+    order: 6,
     description: "Exterior siding, trim, and weather protection",
-    subtasks: [
+    tasks: [
       "Install exterior foam sheathing",
       "Install weather barrier (Tyvek, etc.)",
       "Install membrane and flashing",
@@ -1376,9 +1696,9 @@ export const SIP_PHASES: ConstructionPhase[] = [
   {
     id: "plumbing-rough",
     title: "Plumbing Rough-In",
-    order: 6,
+    order: 7,
     description: "Underground and wall plumbing installation",
-    subtasks: [
+    tasks: [
       "Install DWV piping with proper slope",
       "Install water supply piping (PEX/copper)",
       "Install gas piping if applicable",
@@ -1389,16 +1709,16 @@ export const SIP_PHASES: ConstructionPhase[] = [
       "Plumbing rough-in inspection",
       "Install water heater and treatment"
     ],
-    dependencies: ["sip-panel-installation"],
+    dependencies: ["rough-framing"],
     constructionMethods: ["sip"],
     estimatedDuration: "2-3 weeks"
   },
   {
     id: "electrical-rough",
     title: "Electrical Rough-In",
-    order: 7,
+    order: 8,
     description: "Electrical wiring and panel installation",
-    subtasks: [
+    tasks: [
       "Install service panel and sub-panels",
       "Rough-in electrical wiring",
       "Install phone, cable, and internet wiring",
@@ -1409,16 +1729,16 @@ export const SIP_PHASES: ConstructionPhase[] = [
       "Label all circuits",
       "Electrical rough-in inspection"
     ],
-    dependencies: ["plumbing-rough"],
+    dependencies: ["rough-framing"],
     constructionMethods: ["sip"],
     estimatedDuration: "2-3 weeks"
   },
   {
     id: "hvac-rough",
     title: "HVAC Rough-In",
-    order: 8,
+    order: 9,
     description: "Heating, ventilation, and air conditioning installation",
-    subtasks: [
+    tasks: [
       "Complete Manual J/S/D calculations",
       "Install ductwork and registers",
       "Install refrigerant lines",
@@ -1429,16 +1749,16 @@ export const SIP_PHASES: ConstructionPhase[] = [
       "Set thermostat locations",
       "HVAC rough-in inspection"
     ],
-    dependencies: ["electrical-rough"],
+    dependencies: ["rough-framing"],
     constructionMethods: ["sip"],
     estimatedDuration: "2-3 weeks"
   },
   {
     id: "concrete-slabs",
     title: "Concrete Slabs & Flatwork",
-    order: 9,
+    order: 10,
     description: "Interior slabs, garage, and exterior concrete",
-    subtasks: [
+    tasks: [
       "Verify radiant tubing protection if applicable",
       "Confirm slab thickness and reinforcement",
       "Place, finish, and cure slabs",
@@ -1455,9 +1775,9 @@ export const SIP_PHASES: ConstructionPhase[] = [
   {
     id: "insulation",
     title: "Insulation & Air Sealing",
-    order: 10,
+    order: 11,
     description: "Thermal and sound insulation installation",
-    subtasks: [
+    tasks: [
       "Complete air sealing pass",
       "Install vent baffles and eave chutes",
       "Install wall insulation (batts/blown/foam)",
@@ -1467,16 +1787,16 @@ export const SIP_PHASES: ConstructionPhase[] = [
       "Blower door test and remediation",
       "Insulation inspection"
     ],
-    dependencies: ["exterior", "sip-panel-installation"],
+    dependencies: ["exterior", "rough-framing"],
     constructionMethods: ["sip"],
     estimatedDuration: "1-2 weeks"
   },
   {
     id: "rough-framing-sip",
     title: "Rough Framing",
-    order: 11,
+    order: 12,
     description: "Interior walls, blocking, and soundproofing",
-    subtasks: [
+    tasks: [
       "Frame interior partition walls",
       "Install blocking for cabinets and vanities",
       "Reinforce walls for wall-hung fixtures",
@@ -1496,7 +1816,7 @@ export const SIP_PHASES: ConstructionPhase[] = [
     title: "Drywall",
     order: 13,
     description: "Interior wall and ceiling finishing",
-    subtasks: [
+    tasks: [
       "Hang drywall (MR board where needed)",
       "Tape and mud to Level 4/5 finish",
       "Sand and touch-up",
@@ -1505,7 +1825,7 @@ export const SIP_PHASES: ConstructionPhase[] = [
       "Ready-for-paint inspection",
       "Final drywall inspection"
     ],
-    dependencies: ["rough-framing-sip"],
+    dependencies: ["rough-framing"],
     constructionMethods: ["sip"],
     estimatedDuration: "3-5 weeks"
   },
@@ -1514,7 +1834,7 @@ export const SIP_PHASES: ConstructionPhase[] = [
     title: "Paint",
     order: 14,
     description: "Interior and exterior painting",
-    subtasks: [
+    tasks: [
       "Surface preparation and caulking",
       "Mask and protect surfaces",
       "Prime all surfaces",
@@ -1532,7 +1852,7 @@ export const SIP_PHASES: ConstructionPhase[] = [
     title: "Trim Carpentry",
     order: 15,
     description: "Interior trim, doors, and hardware",
-    subtasks: [
+    tasks: [
       "Install interior doors and jambs",
       "Install door hardware",
       "Install casing, base, and crown molding",
@@ -1551,7 +1871,7 @@ export const SIP_PHASES: ConstructionPhase[] = [
     title: "Flooring",
     order: 16,
     description: "Floor covering installation",
-    subtasks: [
+    tasks: [
       "Inspect subfloor flatness",
       "Moisture testing and acclimation",
       "Install underlayments and sound isolation",
@@ -1570,7 +1890,7 @@ export const SIP_PHASES: ConstructionPhase[] = [
     title: "Kitchen & Bath",
     order: 17,
     description: "Kitchen and bathroom finishing",
-    subtasks: [
+    tasks: [
       "Install kitchen cabinets",
       "Install bathroom vanities",
       "Install countertops and backsplash",
@@ -1588,7 +1908,7 @@ export const SIP_PHASES: ConstructionPhase[] = [
     title: "Final Touches & Punch List",
     order: 18,
     description: "Final details and project completion",
-    subtasks: [
+    tasks: [
       "Complete punch list items",
       "Final cleaning and touch-ups",
       "Install final hardware and accessories",
@@ -1611,7 +1931,7 @@ export const MODULAR_PHASES: ConstructionPhase[] = [
     title: "Just Starting",
     order: 0,
     description: "Project initiation and initial assessment phase",
-    subtasks: [
+    tasks: [
       "Acquire Land",
       "Complete initial project assessment",
       "Determine project scope and goals",
@@ -1630,7 +1950,7 @@ export const MODULAR_PHASES: ConstructionPhase[] = [
     title: "Pre-Construction Planning",
     order: 1,
     description: "Initial planning, financing, and legal setup before breaking ground",
-    subtasks: [
+    tasks: [
       "Complete project kickoff questionnaire",
       "Obtain property survey and site analysis",
       "Hire architect/engineer for modular plans",
@@ -1650,7 +1970,7 @@ export const MODULAR_PHASES: ConstructionPhase[] = [
     title: "Site Preparation & Excavation",
     order: 2,
     description: "Site preparation, excavation, and foundation preparation",
-    subtasks: [
+    tasks: [
       "Apply for site/driveway/grading permits",
       "**CALL FOR UTILITY LOCATIONS**",
       "Establish benchmark elevations",
@@ -1677,7 +1997,7 @@ export const MODULAR_PHASES: ConstructionPhase[] = [
     title: "Utilities & Septic",
     order: 3,
     description: "Installation of water, sewer, and utility systems",
-    subtasks: [
+    tasks: [
       "Soil and perc tests for septic system",
       "Septic system design and permitting",
       "Town water/sewer tap fees and hookup",
@@ -1698,7 +2018,7 @@ export const MODULAR_PHASES: ConstructionPhase[] = [
     title: "Foundation",
     order: 3,
     description: "Concrete foundation walls, footings, and slabs",
-    subtasks: [
+    tasks: [
       "Layout verification against survey stakes",
       "Form and pour footings with rebar",
       "Pre-pour inspection and pour footings",
@@ -1720,7 +2040,7 @@ export const MODULAR_PHASES: ConstructionPhase[] = [
     title: "Modular Delivery & Setup",
     order: 4,
     description: "Delivery and installation of factory-built modules",
-    subtasks: [
+    tasks: [
       "Coordinate crane and delivery logistics",
       "Set modules on foundation",
       "Connect modules together",
@@ -1738,7 +2058,7 @@ export const MODULAR_PHASES: ConstructionPhase[] = [
     title: "Roofing",
     order: 5,
     description: "Roof installation and weatherproofing",
-    subtasks: [
+    tasks: [
       "Install roof underlayment",
       "Install roof membrane",
       "Install flashing for chimneys and vents",
@@ -1758,7 +2078,7 @@ export const MODULAR_PHASES: ConstructionPhase[] = [
     title: "Exterior Finishes",
     order: 6,
     description: "Exterior siding, trim, and weather protection",
-    subtasks: [
+    tasks: [
       "Install exterior foam sheathing",
       "Install weather barrier (Tyvek, etc.)",
       "Install membrane and flashing",
@@ -1779,7 +2099,7 @@ export const MODULAR_PHASES: ConstructionPhase[] = [
     title: "Plumbing Rough-In",
     order: 7,
     description: "Underground and wall plumbing installation",
-    subtasks: [
+    tasks: [
       "Install DWV piping with proper slope",
       "Install water supply piping (PEX/copper)",
       "Install gas piping if applicable",
@@ -1799,7 +2119,7 @@ export const MODULAR_PHASES: ConstructionPhase[] = [
     title: "Electrical Rough-In",
     order: 8,
     description: "Electrical wiring and panel installation",
-    subtasks: [
+    tasks: [
       "Install service panel and sub-panels",
       "Rough-in electrical wiring",
       "Install phone, cable, and internet wiring",
@@ -1819,7 +2139,7 @@ export const MODULAR_PHASES: ConstructionPhase[] = [
     title: "HVAC Rough-In",
     order: 9,
     description: "Heating, ventilation, and air conditioning installation",
-    subtasks: [
+    tasks: [
       "Complete Manual J/S/D calculations",
       "Install ductwork and registers",
       "Install refrigerant lines",
@@ -1839,7 +2159,7 @@ export const MODULAR_PHASES: ConstructionPhase[] = [
     title: "Concrete Slabs & Flatwork",
     order: 10,
     description: "Interior slabs, garage, and exterior concrete",
-    subtasks: [
+    tasks: [
       "Verify radiant tubing protection if applicable",
       "Confirm slab thickness and reinforcement",
       "Place, finish, and cure slabs",
@@ -1858,7 +2178,7 @@ export const MODULAR_PHASES: ConstructionPhase[] = [
     title: "Insulation & Air Sealing",
     order: 11,
     description: "Thermal and sound insulation installation",
-    subtasks: [
+    tasks: [
       "Complete air sealing pass",
       "Install vent baffles and eave chutes",
       "Install wall insulation (batts/blown/foam)",
@@ -1877,7 +2197,7 @@ export const MODULAR_PHASES: ConstructionPhase[] = [
     title: "Rough Framing",
     order: 12,
     description: "Interior walls, blocking, and soundproofing",
-    subtasks: [
+    tasks: [
       "Frame interior partition walls",
       "Install blocking for cabinets and vanities",
       "Reinforce walls for wall-hung fixtures",
@@ -1897,7 +2217,7 @@ export const MODULAR_PHASES: ConstructionPhase[] = [
     title: "Drywall",
     order: 14,
     description: "Interior wall and ceiling finishing",
-    subtasks: [
+    tasks: [
       "Hang drywall (MR board where needed)",
       "Tape and mud to Level 4/5 finish",
       "Sand and touch-up",
@@ -1915,7 +2235,7 @@ export const MODULAR_PHASES: ConstructionPhase[] = [
     title: "Paint",
     order: 15,
     description: "Interior and exterior painting",
-    subtasks: [
+    tasks: [
       "Surface preparation and caulking",
       "Mask and protect surfaces",
       "Prime all surfaces",
@@ -1933,7 +2253,7 @@ export const MODULAR_PHASES: ConstructionPhase[] = [
     title: "Trim Carpentry",
     order: 16,
     description: "Interior trim, doors, and hardware",
-    subtasks: [
+    tasks: [
       "Install interior doors and jambs",
       "Install door hardware",
       "Install casing, base, and crown molding",
@@ -1952,7 +2272,7 @@ export const MODULAR_PHASES: ConstructionPhase[] = [
     title: "Flooring",
     order: 17,
     description: "Floor covering installation",
-    subtasks: [
+    tasks: [
       "Inspect subfloor flatness",
       "Moisture testing and acclimation",
       "Install underlayments and sound isolation",
@@ -1971,7 +2291,7 @@ export const MODULAR_PHASES: ConstructionPhase[] = [
     title: "Kitchen & Bath",
     order: 18,
     description: "Kitchen and bathroom finishing",
-    subtasks: [
+    tasks: [
       "Install kitchen cabinets",
       "Install bathroom vanities",
       "Install countertops and backsplash",
@@ -1989,7 +2309,7 @@ export const MODULAR_PHASES: ConstructionPhase[] = [
     title: "Final Touches & Punch List",
     order: 19,
     description: "Final details and project completion",
-    subtasks: [
+    tasks: [
       "Complete punch list items",
       "Final cleaning and touch-ups",
       "Install final hardware and accessories",
