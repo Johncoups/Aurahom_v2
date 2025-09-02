@@ -373,25 +373,22 @@ async function generateAIRoadmap(profile: OnboardingProfile): Promise<RoadmapDat
 	for (const baselinePhase of baselineRoadmapData.phases) {
 		const detailLevel = diy.has(baselinePhase.id) || isHighDetail ? "high" : "standard" as const;
 		
-		// Generate AI-enhanced content for the current phase if it matches user's current phase
-		let enhancedTasks = baselinePhase.tasks;
-		
-		// Create baseline tasks from subtasks if no detailed tasks exist
-		if ((!enhancedTasks || enhancedTasks.length === 0) && baselinePhase.subtasks && baselinePhase.subtasks.length > 0) {
-			enhancedTasks = [{
-				id: `baseline-${baselinePhase.id}`,
-				title: baselinePhase.title,
-				description: `Standard tasks for ${baselinePhase.title} phase`,
-				steps: baselinePhase.subtasks.map((subtask, index) => ({
+		// Always create detailed task structure - even if no baseline tasks exist
+		let enhancedTasks: any[] = [{
+			id: `baseline-${baselinePhase.id}`,
+			title: baselinePhase.title,
+			description: `Standard tasks for ${baselinePhase.title} phase`,
+			steps: baselinePhase.tasks && baselinePhase.tasks.length > 0 
+				? baselinePhase.tasks.map((task, index) => ({
 					id: `step-${baselinePhase.id}-${index}`,
-					description: subtask
-				})),
-				qaChecks: getQAChecksForPhase(baselinePhase.id),
-				vendorQuestions: getVendorQuestionsForPhase(baselinePhase.id),
-				vendorNeeds: getVendorNeedsForPhase(baselinePhase.id),
-				notes: ''
-			}];
-		}
+					description: task
+				}))
+				: [],
+			qaChecks: getQAChecksForPhase(baselinePhase.id),
+			vendorQuestions: getVendorQuestionsForPhase(baselinePhase.id),
+			vendorNeeds: getVendorNeedsForPhase(baselinePhase.id),
+			notes: ''
+		}];
 		
 		if (baselinePhase.id === profile.currentPhaseId) {
 			try {
@@ -430,14 +427,18 @@ async function generateAIRoadmap(profile: OnboardingProfile): Promise<RoadmapDat
 			}
 		}
 
+
+		
 		enhancedPhases.push({
 			id: baselinePhase.id,
-			title: baselinePhase.order ? `${baselinePhase.order}. ${baselinePhase.title}` : baselinePhase.title, // Add order number if available
+			title: baselinePhase.title, // Use clean title without order number
 			detailLevel,
 			tasks: enhancedTasks
 		});
 	}
 
+
+	
 	return { phases: enhancedPhases };
 }
 
@@ -488,50 +489,33 @@ async function generateBaselineRoadmap(profile: OnboardingProfile): Promise<Road
 			title: p.title,
 			hasTasks: !!p.tasks,
 			tasksLength: p.tasks?.length || 0,
-			hasSubtasks: !!p.subtasks,
-			subtasksLength: p.subtasks?.length || 0,
+			// Note: Using tasks field instead of deprecated subtasks
 			phaseData: JSON.stringify(p, null, 2)
 		});
 		
-		// Create baseline tasks from subtasks if no detailed tasks exist
-		let baselineTasks = p.tasks;
-		if ((!p.tasks || p.tasks.length === 0) && p.subtasks && p.subtasks.length > 0) {
-			console.log(`Creating baseline tasks from subtasks for phase ${p.id}`);
-			// Create a single task from the subtasks
-			baselineTasks = [{
-				id: `baseline-${p.id}`,
-				title: p.title,
-				description: `Standard tasks for ${p.title} phase`,
-				steps: p.subtasks.map((subtask, index) => ({
+		// Always create baseline tasks structure - even if no tasks exist
+		let baselineTasks = [{
+			id: `baseline-${p.id}`,
+			title: p.title,
+			description: `Standard tasks for ${p.title} phase`,
+			steps: p.tasks && p.tasks.length > 0 
+				? p.tasks.map((task, index) => ({
 					id: `step-${p.id}-${index}`,
-					description: subtask
-				})),
-				qaChecks: getQAChecksForPhase(p.id),
-				vendorQuestions: getVendorQuestionsForPhase(p.id),
-				vendorNeeds: getVendorNeedsForPhase(p.id),
-				notes: ''
-			}];
-		} else if (!p.tasks || p.tasks.length === 0) {
-			console.log(`No tasks or subtasks found for phase ${p.id}, creating empty task structure`);
-			// Create a basic task structure even if no subtasks exist
-			baselineTasks = [{
-				id: `baseline-${p.id}`,
-				title: p.title,
-				description: `Standard tasks for ${p.title} phase`,
-				steps: [],
-				qaChecks: getQAChecksForPhase(p.id),
-				vendorQuestions: getVendorQuestionsForPhase(p.id),
-				vendorNeeds: getVendorNeedsForPhase(p.id),
-				notes: ''
-			}];
-		}
+					description: task
+				}))
+				: [],
+			qaChecks: getQAChecksForPhase(p.id),
+			vendorQuestions: getVendorQuestionsForPhase(p.id),
+			vendorNeeds: getVendorNeedsForPhase(p.id),
+			notes: ''
+		}];
 		
 		console.log(`Final tasks for phase ${p.id}:`, baselineTasks);
 		
 		// Return the phase with the appropriate detail level and numbered title
 		return {
 			id: p.id,
-			title: p.order ? `${p.order}. ${p.title}` : p.title, // Add order number if available
+							title: p.title, // Use clean title without order number
 			detailLevel,
 			tasks: baselineTasks
 		};

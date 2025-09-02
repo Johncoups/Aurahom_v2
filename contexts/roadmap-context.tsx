@@ -30,25 +30,41 @@ export function RoadmapProvider({ children }: { children: ReactNode }) {
 	async function checkExistingProject() {
 		try {
 			setIsCheckingProject(true);
+			console.log('🔍 Checking for existing projects...');
+			
 			const { data: { user }, error: userError } = await supabase.auth.getUser();
 			
-			if (userError || !user?.id) {
+			if (userError) {
+				console.error('❌ User authentication error:', userError);
 				setHasExistingProject(false);
 				return;
 			}
 			
+			if (!user?.id) {
+				console.log('⚠️ No authenticated user found');
+				setHasExistingProject(false);
+				return;
+			}
+			
+			console.log('✅ User authenticated:', user.id);
+			
 			// Check if user has any projects
 			const { data: projects, error: projectError } = await supabase
 				.from('projects')
-				.select('id')
+				.select('id, name, created_at')
 				.eq('user_id', user.id)
-				.limit(1);
+				.limit(5);
 			
 			if (projectError) {
 				console.error('❌ Error checking existing projects:', projectError);
 				setHasExistingProject(false);
 				return;
 			}
+			
+			console.log('🔍 Projects query result:', {
+				projectCount: projects?.length || 0,
+				projects: projects || []
+			});
 			
 			const hasProject = projects && projects.length > 0;
 			setHasExistingProject(hasProject);

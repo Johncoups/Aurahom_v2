@@ -126,6 +126,10 @@ export const TRADITIONAL_FRAME_PHASES: ConstructionPhase[] = [
       "Cut and fill operations",
       "Rock removal and blasting if needed",
       "Foundation excavation and trenching",
+      "Install swales and curtain drains for site drainage",
+      "Install foundation drainage system (footing drains)",
+      "Backfill with clean rock around drainage systems",
+      "Foundation waterproofing preparation",
       "Set up temporary power and water",
       "Install portable restroom and dumpster",
       "Pre-construction meeting with key trades",
@@ -298,15 +302,15 @@ export const TRADITIONAL_FRAME_PHASES: ConstructionPhase[] = [
     order: 7,
     description: "Exterior siding, trim, and weather protection",
     tasks: [
+      "Install exterior windows and doors",
       "Install exterior foam sheathing",
       "Install weather barrier (Tyvek, etc.)",
       "Install membrane and flashing",
-      "Install siding finish material",
-      "Install stone/brick veneer if specified",
       "Install fascia, soffit, and trim",
-      "Install exterior windows and doors",
-      "Install exterior stairs and landings",
       "Exterior paint, stain, and caulk",
+      "Install stone/brick veneer if specified",
+      "Install siding finish material",
+      "Install exterior stairs and landings",
       "Final exterior inspection"
     ],
     helpfulInformation: [
@@ -358,9 +362,40 @@ export const TRADITIONAL_FRAME_PHASES: ConstructionPhase[] = [
     estimatedDuration: "2-4 weeks"
   },
   {
+    id: "concrete-slabs",
+    title: "Concrete Slabs & Flatwork",
+    order: 9,
+    description: "Interior slabs, garage, and exterior concrete",
+    tasks: [
+      "Verify radiant tubing protection",
+      "Confirm slab thickness and reinforcement",
+      "Place, finish, and cure slabs",
+      "Saw-cut control joints",
+      "Install garage apron and driveway",
+      "Install porches and walkways",
+      "Apply sealers and hardeners",
+      "Final concrete inspection"
+    ],
+    helpfulInformation: [
+      "Get 3+ quotes from concrete contractors and compare their experience and equipment",
+      "Research 3 different concrete mix designs and compare their strength and workability",
+      "Get 3+ quotes from finishing companies and compare their techniques and quality",
+      "Research 3 different sealer brands and compare their durability and maintenance",
+      "Get 3+ quotes from saw-cutting companies and compare their precision and timing",
+      "Research 3 different reinforcement materials and compare their strength and costs",
+      "Get 3+ quotes from inspection companies and compare their thoroughness",
+      "Research 3 different curing methods and compare their effectiveness and costs",
+      "Create a concrete inspection checklist with photos and measurements",
+      "Develop a concrete maintenance schedule and warranty documentation"
+    ],
+    dependencies: ["foundation"],
+    constructionMethods: ["traditional-frame", "icf", "sip", "modular", "other"],
+    estimatedDuration: "2-3 weeks"
+  },
+  {
     id: "electrical-rough",
     title: "Electrical Rough-In",
-    order: 9,
+    order: 10,
     description: "Electrical wiring and panel installation",
     tasks: [
       "Install service panel and sub-panels",
@@ -392,7 +427,7 @@ export const TRADITIONAL_FRAME_PHASES: ConstructionPhase[] = [
   {
     id: "hvac-rough",
     title: "HVAC Rough-In",
-    order: 10,
+    order: 11,
     description: "Heating, ventilation, and air conditioning installation",
     tasks: [
       "Complete Manual J/S/D calculations",
@@ -419,37 +454,6 @@ export const TRADITIONAL_FRAME_PHASES: ConstructionPhase[] = [
     ],
     dependencies: ["rough-framing"],
     constructionMethods: ["traditional-frame", "post-frame", "icf", "sip", "modular", "other"],
-    estimatedDuration: "2-3 weeks"
-  },
-  {
-    id: "concrete-slabs",
-    title: "Concrete Slabs & Flatwork",
-    order: 11,
-    description: "Interior slabs, garage, and exterior concrete",
-    tasks: [
-      "Verify radiant tubing protection",
-      "Confirm slab thickness and reinforcement",
-      "Place, finish, and cure slabs",
-      "Saw-cut control joints",
-      "Install garage apron and driveway",
-      "Install porches and walkways",
-      "Apply sealers and hardeners",
-      "Final concrete inspection"
-    ],
-    helpfulInformation: [
-      "Get 3+ quotes from concrete contractors and compare their experience and equipment",
-      "Research 3 different concrete mix designs and compare their strength and workability",
-      "Get 3+ quotes from finishing companies and compare their techniques and quality",
-      "Research 3 different sealer brands and compare their durability and maintenance",
-      "Get 3+ quotes from saw-cutting companies and compare their precision and timing",
-      "Research 3 different reinforcement materials and compare their strength and costs",
-      "Get 3+ quotes from inspection companies and compare their thoroughness",
-      "Research 3 different curing methods and compare their effectiveness and costs",
-      "Create a concrete inspection checklist with photos and measurements",
-      "Develop a concrete maintenance schedule and warranty documentation"
-    ],
-    dependencies: ["foundation"],
-    constructionMethods: ["traditional-frame", "icf", "sip", "modular", "other"],
     estimatedDuration: "2-3 weeks"
   },
   {
@@ -827,15 +831,15 @@ export const POST_FRAME_PHASES: ConstructionPhase[] = [
     order: 7,
     description: "Exterior siding, trim, and weather protection",
     tasks: [
+      "Install exterior windows and doors",
       "Install exterior foam sheathing",
       "Install weather barrier (Tyvek, etc.)",
       "Install membrane and flashing",
-      "Install siding finish material",
-      "Install stone/brick veneer if specified",
       "Install fascia, soffit, and trim",
-      "Install exterior windows and doors",
-      "Install exterior stairs and landings",
       "Exterior paint, stain, and caulk",
+      "Install stone/brick veneer if specified",
+      "Install siding finish material",
+      "Install exterior stairs and landings",
       "Final exterior inspection"
     ],
     dependencies: ["post-frame-structure"],
@@ -923,7 +927,7 @@ export const POST_FRAME_PHASES: ConstructionPhase[] = [
   {
     id: "rough-framing-post-frame",
     title: "Rough Framing",
-    order: 12,
+    order: 13,
     description: "Interior walls, blocking, and soundproofing",
     tasks: [
       "Frame interior partition walls",
@@ -943,7 +947,7 @@ export const POST_FRAME_PHASES: ConstructionPhase[] = [
   {
     id: "hvac-rough",
     title: "HVAC Rough-In",
-    order: 13,
+    order: 11,
     description: "Heating, ventilation, and air conditioning installation",
     tasks: [
       "Complete Manual J/S/D calculations",
@@ -963,7 +967,7 @@ export const POST_FRAME_PHASES: ConstructionPhase[] = [
   {
     id: "drywall",
     title: "Drywall",
-    order: 13,
+    order: 14,
     description: "Interior wall and ceiling finishing",
     tasks: [
       "Hang drywall (MR board where needed)",
@@ -979,27 +983,9 @@ export const POST_FRAME_PHASES: ConstructionPhase[] = [
     estimatedDuration: "3-5 weeks"
   },
   {
-    id: "paint",
-    title: "Paint",
-    order: 15,
-    description: "Interior and exterior painting",
-    tasks: [
-      "Surface preparation and caulking",
-      "Mask and protect surfaces",
-      "Prime all surfaces",
-      "Sand between coats",
-      "Apply finish coats",
-      "Exterior painting as weather allows",
-      "Touch-ups and final inspection"
-    ],
-    dependencies: ["drywall"],
-    constructionMethods: ["post-frame"],
-    estimatedDuration: "2-4 weeks"
-  },
-  {
     id: "trim-carpentry",
     title: "Trim Carpentry",
-    order: 16,
+    order: 15,
     description: "Interior trim, doors, and hardware",
     tasks: [
       "Install interior doors and jambs",
@@ -1011,9 +997,27 @@ export const POST_FRAME_PHASES: ConstructionPhase[] = [
       "Install cabinet boxes",
       "Caulk and putty preparation"
     ],
-    dependencies: ["paint"],
+    dependencies: ["drywall"],
     constructionMethods: ["post-frame"],
     estimatedDuration: "2-3 weeks"
+  },
+  {
+    id: "paint",
+    title: "Paint",
+    order: 16,
+    description: "Interior and exterior painting",
+    tasks: [
+      "Surface preparation and caulking",
+      "Mask and protect surfaces",
+      "Prime all surfaces",
+      "Sand between coats",
+      "Apply finish coats",
+      "Exterior painting as weather allows",
+      "Touch-ups and final inspection"
+    ],
+    dependencies: ["trim-carpentry"],
+    constructionMethods: ["post-frame"],
+    estimatedDuration: "2-4 weeks"
   },
   {
     id: "flooring",
@@ -1030,7 +1034,7 @@ export const POST_FRAME_PHASES: ConstructionPhase[] = [
       "Install transitions and trim",
       "Protect until substantial completion"
     ],
-    dependencies: ["trim-carpentry"],
+    dependencies: ["paint"],
     constructionMethods: ["post-frame"],
     estimatedDuration: "3-5 weeks"
   },
@@ -1255,15 +1259,15 @@ export const ICF_PHASES: ConstructionPhase[] = [
     order: 7,
     description: "Exterior siding, trim, and weather protection",
     tasks: [
+      "Install exterior windows and doors",
       "Install exterior foam sheathing",
       "Install weather barrier (Tyvek, etc.)",
       "Install membrane and flashing",
-      "Install siding finish material",
-      "Install stone/brick veneer if specified",
       "Install fascia, soffit, and trim",
-      "Install exterior windows and doors",
-      "Install exterior stairs and landings",
       "Exterior paint, stain, and caulk",
+      "Install stone/brick veneer if specified",
+      "Install siding finish material",
+      "Install exterior stairs and landings",
       "Final exterior inspection"
     ],
     dependencies: ["roofing"],
@@ -1410,7 +1414,7 @@ export const ICF_PHASES: ConstructionPhase[] = [
   {
     id: "paint",
     title: "Paint",
-    order: 16,
+    order: 15,
     description: "Interior and exterior painting",
     tasks: [
       "Surface preparation and caulking",
@@ -1428,7 +1432,7 @@ export const ICF_PHASES: ConstructionPhase[] = [
   {
     id: "trim-carpentry",
     title: "Trim Carpentry",
-    order: 17,
+    order: 16,
     description: "Interior trim, doors, and hardware",
     tasks: [
       "Install interior doors and jambs",
@@ -1447,7 +1451,7 @@ export const ICF_PHASES: ConstructionPhase[] = [
   {
     id: "flooring",
     title: "Flooring",
-    order: 18,
+    order: 17,
     description: "Floor covering installation",
     tasks: [
       "Inspect subfloor flatness",
@@ -1466,7 +1470,7 @@ export const ICF_PHASES: ConstructionPhase[] = [
   {
     id: "kitchen-bath",
     title: "Kitchen & Bath",
-    order: 19,
+    order: 18,
     description: "Kitchen and bathroom finishing",
     tasks: [
       "Install kitchen cabinets",
@@ -1484,7 +1488,7 @@ export const ICF_PHASES: ConstructionPhase[] = [
   {
     id: "final-touches",
     title: "Final Touches & Punch List",
-    order: 20,
+    order: 19,
     description: "Final details and project completion",
     tasks: [
       "Complete punch list items",
@@ -1594,7 +1598,7 @@ export const SIP_PHASES: ConstructionPhase[] = [
   {
     id: "foundation",
     title: "Foundation",
-    order: 3,
+    order: 4,
     description: "Concrete foundation walls, footings, and slabs",
     tasks: [
       "Layout verification against survey stakes",
@@ -1616,7 +1620,7 @@ export const SIP_PHASES: ConstructionPhase[] = [
   {
     id: "sip-panel-installation",
     title: "SIP Panel Installation",
-    order: 4,
+    order: 5,
     description: "Installation of structural insulated panels for walls and roof",
     tasks: [
       "Set SIP panels according to engineered plans",
@@ -1634,7 +1638,7 @@ export const SIP_PHASES: ConstructionPhase[] = [
   {
     id: "rough-framing",
     title: "Rough Framing",
-    order: 5,
+    order: 6,
     description: "Complete structural framing including floors, walls, roof, and interior partitions",
     tasks: [
       "Install sill plates and seal",
@@ -1675,18 +1679,18 @@ export const SIP_PHASES: ConstructionPhase[] = [
   {
     id: "exterior",
     title: "Exterior Finishes",
-    order: 6,
+    order: 7,
     description: "Exterior siding, trim, and weather protection",
     tasks: [
+      "Install exterior windows and doors",
       "Install exterior foam sheathing",
       "Install weather barrier (Tyvek, etc.)",
       "Install membrane and flashing",
-      "Install siding finish material",
-      "Install stone/brick veneer if specified",
       "Install fascia, soffit, and trim",
-      "Install exterior windows and doors",
-      "Install exterior stairs and landings",
       "Exterior paint, stain, and caulk",
+      "Install stone/brick veneer if specified",
+      "Install siding finish material",
+      "Install exterior stairs and landings",
       "Final exterior inspection"
     ],
     dependencies: ["sip-panel-installation"],
@@ -1696,7 +1700,7 @@ export const SIP_PHASES: ConstructionPhase[] = [
   {
     id: "plumbing-rough",
     title: "Plumbing Rough-In",
-    order: 7,
+    order: 8,
     description: "Underground and wall plumbing installation",
     tasks: [
       "Install DWV piping with proper slope",
@@ -1714,9 +1718,28 @@ export const SIP_PHASES: ConstructionPhase[] = [
     estimatedDuration: "2-3 weeks"
   },
   {
+    id: "concrete-slabs",
+    title: "Concrete Slabs & Flatwork",
+    order: 9,
+    description: "Interior slabs, garage, and exterior concrete",
+    tasks: [
+      "Verify radiant tubing protection if applicable",
+      "Confirm slab thickness and reinforcement",
+      "Place, finish, and cure slabs",
+      "Saw-cut control joints",
+      "Install garage apron and driveway",
+      "Install porches and walkways",
+      "Apply sealers and hardeners",
+      "Final concrete inspection"
+    ],
+    dependencies: ["foundation"],
+    constructionMethods: ["sip"],
+    estimatedDuration: "2-3 weeks"
+  },
+  {
     id: "electrical-rough",
     title: "Electrical Rough-In",
-    order: 8,
+    order: 10,
     description: "Electrical wiring and panel installation",
     tasks: [
       "Install service panel and sub-panels",
@@ -1736,7 +1759,7 @@ export const SIP_PHASES: ConstructionPhase[] = [
   {
     id: "hvac-rough",
     title: "HVAC Rough-In",
-    order: 9,
+    order: 11,
     description: "Heating, ventilation, and air conditioning installation",
     tasks: [
       "Complete Manual J/S/D calculations",
@@ -1754,28 +1777,9 @@ export const SIP_PHASES: ConstructionPhase[] = [
     estimatedDuration: "2-3 weeks"
   },
   {
-    id: "concrete-slabs",
-    title: "Concrete Slabs & Flatwork",
-    order: 10,
-    description: "Interior slabs, garage, and exterior concrete",
-    tasks: [
-      "Verify radiant tubing protection if applicable",
-      "Confirm slab thickness and reinforcement",
-      "Place, finish, and cure slabs",
-      "Saw-cut control joints",
-      "Install garage apron and driveway",
-      "Install porches and walkways",
-      "Apply sealers and hardeners",
-      "Final concrete inspection"
-    ],
-    dependencies: ["foundation"],
-    constructionMethods: ["sip"],
-    estimatedDuration: "2-3 weeks"
-  },
-  {
     id: "insulation",
     title: "Insulation & Air Sealing",
-    order: 11,
+    order: 12,
     description: "Thermal and sound insulation installation",
     tasks: [
       "Complete air sealing pass",
@@ -1794,7 +1798,7 @@ export const SIP_PHASES: ConstructionPhase[] = [
   {
     id: "rough-framing-sip",
     title: "Rough Framing",
-    order: 12,
+    order: 13,
     description: "Interior walls, blocking, and soundproofing",
     tasks: [
       "Frame interior partition walls",
@@ -1825,32 +1829,14 @@ export const SIP_PHASES: ConstructionPhase[] = [
       "Ready-for-paint inspection",
       "Final drywall inspection"
     ],
-    dependencies: ["rough-framing"],
+    dependencies: ["rough-framing-sip"],
     constructionMethods: ["sip"],
     estimatedDuration: "3-5 weeks"
   },
   {
-    id: "paint",
-    title: "Paint",
-    order: 14,
-    description: "Interior and exterior painting",
-    tasks: [
-      "Surface preparation and caulking",
-      "Mask and protect surfaces",
-      "Prime all surfaces",
-      "Sand between coats",
-      "Apply finish coats",
-      "Exterior painting as weather allows",
-      "Touch-ups and final inspection"
-    ],
-    dependencies: ["drywall"],
-    constructionMethods: ["sip"],
-    estimatedDuration: "2-4 weeks"
-  },
-  {
     id: "trim-carpentry",
     title: "Trim Carpentry",
-    order: 15,
+    order: 14,
     description: "Interior trim, doors, and hardware",
     tasks: [
       "Install interior doors and jambs",
@@ -1862,9 +1848,27 @@ export const SIP_PHASES: ConstructionPhase[] = [
       "Install cabinet boxes",
       "Caulk and putty preparation"
     ],
-    dependencies: ["paint"],
+    dependencies: ["drywall"],
     constructionMethods: ["sip"],
     estimatedDuration: "2-3 weeks"
+  },
+  {
+    id: "paint",
+    title: "Paint",
+    order: 15,
+    description: "Interior and exterior painting",
+    tasks: [
+      "Surface preparation and caulking",
+      "Mask and protect surfaces",
+      "Prime all surfaces",
+      "Sand between coats",
+      "Apply finish coats",
+      "Exterior painting as weather allows",
+      "Touch-ups and final inspection"
+    ],
+    dependencies: ["trim-carpentry"],
+    constructionMethods: ["sip"],
+    estimatedDuration: "2-4 weeks"
   },
   {
     id: "flooring",
@@ -1881,7 +1885,7 @@ export const SIP_PHASES: ConstructionPhase[] = [
       "Install transitions and trim",
       "Protect until substantial completion"
     ],
-    dependencies: ["trim-carpentry"],
+    dependencies: ["paint"],
     constructionMethods: ["sip"],
     estimatedDuration: "3-5 weeks"
   },
@@ -2016,7 +2020,7 @@ export const MODULAR_PHASES: ConstructionPhase[] = [
   {
     id: "foundation",
     title: "Foundation",
-    order: 3,
+    order: 4,
     description: "Concrete foundation walls, footings, and slabs",
     tasks: [
       "Layout verification against survey stakes",
@@ -2038,7 +2042,7 @@ export const MODULAR_PHASES: ConstructionPhase[] = [
   {
     id: "modular-delivery-setup",
     title: "Modular Delivery & Setup",
-    order: 4,
+    order: 5,
     description: "Delivery and installation of factory-built modules",
     tasks: [
       "Coordinate crane and delivery logistics",
@@ -2056,7 +2060,7 @@ export const MODULAR_PHASES: ConstructionPhase[] = [
   {
     id: "roofing",
     title: "Roofing",
-    order: 5,
+    order: 6,
     description: "Roof installation and weatherproofing",
     tasks: [
       "Install roof underlayment",
@@ -2076,18 +2080,18 @@ export const MODULAR_PHASES: ConstructionPhase[] = [
   {
     id: "exterior",
     title: "Exterior Finishes",
-    order: 6,
+    order: 7,
     description: "Exterior siding, trim, and weather protection",
     tasks: [
+      "Install exterior windows and doors",
       "Install exterior foam sheathing",
       "Install weather barrier (Tyvek, etc.)",
       "Install membrane and flashing",
-      "Install siding finish material",
-      "Install stone/brick veneer if specified",
       "Install fascia, soffit, and trim",
-      "Install exterior windows and doors",
-      "Install exterior stairs and landings",
       "Exterior paint, stain, and caulk",
+      "Install stone/brick veneer if specified",
+      "Install siding finish material",
+      "Install exterior stairs and landings",
       "Final exterior inspection"
     ],
     dependencies: ["roofing"],
@@ -2095,9 +2099,29 @@ export const MODULAR_PHASES: ConstructionPhase[] = [
     estimatedDuration: "2-3 weeks"
   },
   {
+    id: "rough-framing-modular",
+    title: "Rough Framing",
+    order: 8,
+    description: "Interior walls, blocking, and soundproofing",
+    tasks: [
+      "Frame interior partition walls",
+      "Install blocking for cabinets and vanities",
+      "Reinforce walls for wall-hung fixtures",
+      "Frame niches, benches, and curbs",
+      "Straighten and plane walls",
+      "Install soundproofing details",
+      "Frame pocket and hidden doors",
+      "Pre-drywall walk and documentation",
+      "Interior framing inspection"
+    ],
+    dependencies: ["exterior"],
+    constructionMethods: ["modular"],
+    estimatedDuration: "2-3 weeks"
+  },
+  {
     id: "plumbing-rough",
     title: "Plumbing Rough-In",
-    order: 7,
+    order: 9,
     description: "Underground and wall plumbing installation",
     tasks: [
       "Install DWV piping with proper slope",
@@ -2110,47 +2134,7 @@ export const MODULAR_PHASES: ConstructionPhase[] = [
       "Plumbing rough-in inspection",
       "Install water heater and treatment"
     ],
-    dependencies: ["modular-delivery-setup"],
-    constructionMethods: ["modular"],
-    estimatedDuration: "2-3 weeks"
-  },
-  {
-    id: "electrical-rough",
-    title: "Electrical Rough-In",
-    order: 8,
-    description: "Electrical wiring and panel installation",
-    tasks: [
-      "Install service panel and sub-panels",
-      "Rough-in electrical wiring",
-      "Install phone, cable, and internet wiring",
-      "Install smoke and CO detectors",
-      "Install bath fans and dedicated circuits",
-      "Install exterior lighting and receptacles",
-      "Generator and EV charger rough-in",
-      "Label all circuits",
-      "Electrical rough-in inspection"
-    ],
-    dependencies: ["plumbing-rough"],
-    constructionMethods: ["modular"],
-    estimatedDuration: "2-3 weeks"
-  },
-  {
-    id: "hvac-rough",
-    title: "HVAC Rough-In",
-    order: 9,
-    description: "Heating, ventilation, and air conditioning installation",
-    tasks: [
-      "Complete Manual J/S/D calculations",
-      "Install ductwork and registers",
-      "Install refrigerant lines",
-      "Install condensate and combustion vents",
-      "Install ERV/HRV if specified",
-      "Set outdoor unit pads",
-      "Install zoning controls",
-      "Set thermostat locations",
-      "HVAC rough-in inspection"
-    ],
-    dependencies: ["electrical-rough"],
+    dependencies: ["rough-framing-modular"],
     constructionMethods: ["modular"],
     estimatedDuration: "2-3 weeks"
   },
@@ -2174,9 +2158,49 @@ export const MODULAR_PHASES: ConstructionPhase[] = [
     estimatedDuration: "2-3 weeks"
   },
   {
+    id: "electrical-rough",
+    title: "Electrical Rough-In",
+    order: 11,
+    description: "Electrical wiring and panel installation",
+    tasks: [
+      "Install service panel and sub-panels",
+      "Rough-in electrical wiring",
+      "Install phone, cable, and internet wiring",
+      "Install smoke and CO detectors",
+      "Install bath fans and dedicated circuits",
+      "Install exterior lighting and receptacles",
+      "Generator and EV charger rough-in",
+      "Label all circuits",
+      "Electrical rough-in inspection"
+    ],
+    dependencies: ["plumbing-rough"],
+    constructionMethods: ["modular"],
+    estimatedDuration: "2-3 weeks"
+  },
+  {
+    id: "hvac-rough",
+    title: "HVAC Rough-In",
+    order: 12,
+    description: "Heating, ventilation, and air conditioning installation",
+    tasks: [
+      "Complete Manual J/S/D calculations",
+      "Install ductwork and registers",
+      "Install refrigerant lines",
+      "Install condensate and combustion vents",
+      "Install ERV/HRV if specified",
+      "Set outdoor unit pads",
+      "Install zoning controls",
+      "Set thermostat locations",
+      "HVAC rough-in inspection"
+    ],
+    dependencies: ["electrical-rough"],
+    constructionMethods: ["modular"],
+    estimatedDuration: "2-3 weeks"
+  },
+  {
     id: "insulation",
     title: "Insulation & Air Sealing",
-    order: 11,
+    order: 13,
     description: "Thermal and sound insulation installation",
     tasks: [
       "Complete air sealing pass",
@@ -2195,7 +2219,7 @@ export const MODULAR_PHASES: ConstructionPhase[] = [
   {
     id: "rough-framing-modular",
     title: "Rough Framing",
-    order: 12,
+    order: 14,
     description: "Interior walls, blocking, and soundproofing",
     tasks: [
       "Frame interior partition walls",
@@ -2226,32 +2250,14 @@ export const MODULAR_PHASES: ConstructionPhase[] = [
       "Ready-for-paint inspection",
       "Final drywall inspection"
     ],
-    dependencies: ["rough-framing-modular"],
+    dependencies: ["insulation"],
     constructionMethods: ["modular"],
     estimatedDuration: "3-5 weeks"
   },
   {
-    id: "paint",
-    title: "Paint",
-    order: 15,
-    description: "Interior and exterior painting",
-    tasks: [
-      "Surface preparation and caulking",
-      "Mask and protect surfaces",
-      "Prime all surfaces",
-      "Sand between coats",
-      "Apply finish coats",
-      "Exterior painting as weather allows",
-      "Touch-ups and final inspection"
-    ],
-    dependencies: ["drywall"],
-    constructionMethods: ["modular"],
-    estimatedDuration: "2-4 weeks"
-  },
-  {
     id: "trim-carpentry",
     title: "Trim Carpentry",
-    order: 16,
+    order: 15,
     description: "Interior trim, doors, and hardware",
     tasks: [
       "Install interior doors and jambs",
@@ -2263,9 +2269,27 @@ export const MODULAR_PHASES: ConstructionPhase[] = [
       "Install cabinet boxes",
       "Caulk and putty preparation"
     ],
-    dependencies: ["paint"],
+    dependencies: ["drywall"],
     constructionMethods: ["modular"],
     estimatedDuration: "2-3 weeks"
+  },
+  {
+    id: "paint",
+    title: "Paint",
+    order: 16,
+    description: "Interior and exterior painting",
+    tasks: [
+      "Surface preparation and caulking",
+      "Mask and protect surfaces",
+      "Prime all surfaces",
+      "Sand between coats",
+      "Apply finish coats",
+      "Exterior painting as weather allows",
+      "Touch-ups and final inspection"
+    ],
+    dependencies: ["trim-carpentry"],
+    constructionMethods: ["modular"],
+    estimatedDuration: "2-4 weeks"
   },
   {
     id: "flooring",
@@ -2282,7 +2306,7 @@ export const MODULAR_PHASES: ConstructionPhase[] = [
       "Install transitions and trim",
       "Protect until substantial completion"
     ],
-    dependencies: ["trim-carpentry"],
+    dependencies: ["paint"],
     constructionMethods: ["modular"],
     estimatedDuration: "3-5 weeks"
   },

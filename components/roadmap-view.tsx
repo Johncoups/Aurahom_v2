@@ -122,6 +122,15 @@ export function RoadmapView({ data }: RoadmapViewProps) {
 				// Get the correct phases based on user's construction method
 				const userPhases = profile ? getPhasesForMethod(profile.constructionMethod) : CONSTRUCTION_PHASES;
 				const phaseInfo = userPhases.find((p: any) => p.id === phase.id);
+				
+				// Debug logging for phase info lookup
+				console.log(`🔍 Phase lookup for "${phase.title}" (ID: ${phase.id}):`, {
+					constructionMethod: profile?.constructionMethod,
+					userPhasesCount: userPhases.length,
+					phaseInfoFound: !!phaseInfo,
+					phaseInfoOrder: phaseInfo?.order,
+					phaseInfoTitle: phaseInfo?.title
+				});
 				return (
 					<section key={phase.id || `phase-${Math.random()}`} className="border rounded-lg p-6 bg-white shadow-sm">
 						<div 
@@ -129,9 +138,19 @@ export function RoadmapView({ data }: RoadmapViewProps) {
 							onClick={() => togglePhase(phase.id)}
 						>
 							<div className="flex-1">
-								<h2 className="text-2xl font-semibold text-gray-900">
-									{phase.title}
-								</h2>
+								{/* Phase Number Badge */}
+								<div className="flex items-center gap-3 mb-2">
+									<div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center shadow-sm">
+										<span className="text-lg font-bold text-blue-600" style={{
+											textShadow: '0 0 8px rgba(147, 51, 234, 0.6), 0 0 4px rgba(147, 51, 234, 0.4)'
+										}}>
+											{phaseInfo?.order !== undefined ? phaseInfo.order : (phase.id === 'just-starting' ? 0 : '?')}
+										</span>
+									</div>
+									<h2 className="text-2xl font-semibold text-gray-900">
+										{phase.title}
+									</h2>
+								</div>
 								{phaseInfo?.description && (
 									<p className="text-gray-600 mt-1">{phaseInfo.description}</p>
 								)}
@@ -222,55 +241,58 @@ export function RoadmapView({ data }: RoadmapViewProps) {
 										<ul className="space-y-4">
 											{phase.tasks.map(task => (
 												<li key={task.id} className="border rounded-lg p-4 bg-gray-50">
-										
-										{task.steps && task.steps.length > 0 && (
-											<div className="mb-3">
-												<div className="text-sm font-semibold text-gray-700 mb-2">Steps:</div>
-												<ul className="list-disc pl-5 text-sm text-gray-600 space-y-1">
-													{task.steps.map(step => (
-														<li key={step.id}>{step.description || 'Step description not available'}</li>
-													))}
-												</ul>
-											</div>
-										)}
+													
+													{/* Vendor Information - Moved to Top */}
+													<div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+														<div className="bg-white p-3 rounded border">
+															<div className="text-sm font-semibold text-gray-700 mb-2">Questions to ask vendors:</div>
+															{task.vendorQuestions && task.vendorQuestions.length > 0 ? (
+																<ul className="list-disc pl-5 text-sm text-gray-600 space-y-1">
+																	{task.vendorQuestions.map((q, i) => (
+																	<li key={i}>{q}</li>
+																))}
+																</ul>
+															) : (
+																<p className="text-gray-500 text-sm">No vendor questions available</p>
+															)}
+														</div>
+														<div className="bg-white p-3 rounded border">
+															<div className="text-sm font-semibold text-gray-700 mb-2">What vendors need from you:</div>
+															{task.vendorNeeds && task.vendorNeeds.length > 0 ? (
+																<ul className="list-disc pl-5 text-sm text-gray-600 space-y-1">
+																	{task.vendorNeeds.map((q, i) => (
+																	<li key={i}>{q}</li>
+																))}
+																</ul>
+															) : (
+																<p className="text-gray-500 text-sm">No vendor requirements available</p>
+															)}
+														</div>
+													</div>
 
-										{task.qaChecks && task.qaChecks.length > 0 && (
-											<div className="mb-3">
-												<div className="text-sm font-semibold text-gray-700 mb-2">Quality checks:</div>
-												<ul className="list-disc pl-5 text-sm text-gray-600 space-y-1">
-													{task.qaChecks.map((q, i) => (
-														<li key={i}>{q || 'Quality check not available'}</li>
-													))}
-												</ul>
-											</div>
-										)}
+													{/* Steps - Moved Below Vendor Info */}
+													{task.steps && task.steps.length > 0 && (
+														<div className="mb-3">
+															<div className="text-sm font-semibold text-gray-700 mb-2">Steps:</div>
+															<ul className="list-disc pl-5 text-sm text-gray-600 space-y-1">
+																{task.steps.map(step => (
+																	<li key={step.id}>{step.description || 'Step description not available'}</li>
+																))}
+															</ul>
+														</div>
+													)}
 
-										<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-											<div className="bg-white p-3 rounded border">
-												<div className="text-sm font-semibold text-gray-700 mb-2">Questions to ask vendors:</div>
-												{task.vendorQuestions && task.vendorQuestions.length > 0 ? (
-													<ul className="list-disc pl-5 text-sm text-gray-600 space-y-1">
-														{task.vendorQuestions.map((q, i) => (
-														<li key={i}>{q}</li>
-													))}
-													</ul>
-												) : (
-													<p className="text-gray-500 text-sm">No vendor questions available</p>
-												)}
-											</div>
-											<div className="bg-white p-3 rounded border">
-												<div className="text-sm font-semibold text-gray-700 mb-2">What vendors need from you:</div>
-												{task.vendorNeeds && task.vendorNeeds.length > 0 ? (
-													<ul className="list-disc pl-5 text-sm text-gray-600 space-y-1">
-														{task.vendorNeeds.map((q, i) => (
-														<li key={i}>{q}</li>
-													))}
-													</ul>
-												) : (
-													<p className="text-gray-500 text-sm">No vendor requirements available</p>
-												)}
-											</div>
-										</div>
+													{/* Quality Checks - Moved Below Steps */}
+													{task.qaChecks && task.qaChecks.length > 0 && (
+														<div className="mb-3">
+															<div className="text-sm font-semibold text-gray-700 mb-2">Quality checks:</div>
+															<ul className="list-disc pl-5 text-sm text-gray-600 space-y-1">
+																{task.qaChecks.map((q, i) => (
+																	<li key={i}>{q || 'Quality check not available'}</li>
+																))}
+															</ul>
+														</div>
+													)}
 									</li>
 								))}
 								</ul>
