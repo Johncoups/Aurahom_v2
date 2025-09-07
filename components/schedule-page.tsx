@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Badge } from "@/components/ui/badge"
-import { Clock, User, Plus, X, FileText, AlertCircle } from "lucide-react"
+import { Timer, User, Plus, X, FileText, AlertTriangle } from "lucide-react"
 
 type Category = "material" | "subcontractor" | "inspection" | "payment"
 type Activity = {
@@ -329,7 +329,7 @@ export function SchedulePage() {
                         )}
                         {activity.estimatedArrival && (
                           <div className="flex items-center gap-1 text-xs text-gray-600">
-                            <Clock className="h-3 w-3" />
+                            <Timer className="h-3 w-3" />
                             {activity.estimatedArrival}
                           </div>
                         )}
@@ -355,7 +355,7 @@ export function SchedulePage() {
               <div className="flex-1 space-y-3 overflow-y-auto min-h-0">
                 <div className="p-4 border rounded-lg bg-yellow-50 border-yellow-200">
                   <div className="flex items-start gap-2">
-                    <AlertCircle className="h-4 w-4 text-yellow-600 mt-0.5" />
+                    <AlertTriangle className="h-4 w-4 text-yellow-600 mt-0.5" />
                     <div>
                       <h4 className="font-medium text-yellow-800">Weather Alert</h4>
                       <p className="text-sm text-yellow-700 mt-1">

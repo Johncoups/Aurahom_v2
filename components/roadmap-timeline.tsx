@@ -5,7 +5,7 @@ import type { RoadmapData, RoadmapPhase } from "@/lib/roadmap-types"
 import { getPhasesForMethod, CONSTRUCTION_PHASES } from "@/lib/roadmap-phases"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { CheckCircle2, Circle, Clock, AlertCircle, Timer, User, Wrench, ChevronDown, ChevronRight } from "lucide-react"
+import { CheckCircle2, Circle, Timer, AlertTriangle, User, Wrench, ChevronDown, ChevronRight } from "lucide-react"
 import { useRoadmap } from "@/contexts/roadmap-context"
 import { supabase } from "@/lib/supabase"
 
@@ -99,15 +99,23 @@ export function RoadmapTimeline({ data, onPhaseClick }: RoadmapTimelineProps) {
 		const estimate = timelineEstimates[phaseId]
 		if (!estimate) return null
 
-		const isDIYPhase = profile?.diyPhaseIds?.includes(phaseId)
+		const isDIYPhase = profile?.diyPhaseIds?.includes(phaseId) || false
 		
-		if (isDIYPhase && estimate.diyDuration) {
-			return {
-				type: 'diy',
-				duration: estimate.diyDuration,
-				hours: estimate.diyHours
+		// For DIY phases, prioritize DIY duration data
+		if (isDIYPhase) {
+			if (estimate.diyDuration) {
+				return {
+					type: 'diy',
+					duration: estimate.diyDuration,
+					hours: estimate.diyHours
+				}
 			}
-		} else if (estimate.contractorDuration) {
+			// If DIY phase but no DIY duration data, return null (don't show contractor duration)
+			return null
+		}
+		
+		// For contractor phases, show contractor duration
+		if (estimate.contractorDuration) {
 			return {
 				type: 'contractor',
 				duration: estimate.contractorDuration
@@ -146,9 +154,9 @@ export function RoadmapTimeline({ data, onPhaseClick }: RoadmapTimelineProps) {
 			case "completed":
 				return <CheckCircle2 className="h-5 w-5 text-green-600" />
 			case "in-progress":
-				return <Clock className="h-5 w-5 text-blue-600" />
+				return <Timer className="h-5 w-5 text-blue-600" />
 			case "blocked":
-				return <AlertCircle className="h-5 w-5 text-red-600" />
+				return <AlertTriangle className="h-5 w-5 text-red-600" />
 			default:
 				return <Circle className="h-5 w-5 text-gray-400" />
 		}

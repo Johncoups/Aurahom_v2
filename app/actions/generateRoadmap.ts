@@ -7,14 +7,16 @@ import { generateHybridRoadmap } from "@/lib/hybrid-roadmap-generator";
 import type { CompleteProjectResponse } from "@/lib/unified-response-types";
 
 // Helper functions to provide phase-specific content
-function getQAChecksForPhase(phaseId: string): string[] {
-	const qaChecks: Record<string, string[]> = {
+function getQAChecksForPhase(phaseId: string, isDiy: boolean = false): string[] {
+	const diyQaChecks: Record<string, string[]> = {
 		'just-starting': [
 			'Is project scope clearly defined?',
 			'Are project goals documented?',
 			'Is budget range established?',
 			'Are construction method options researched?',
-			'Are local building codes reviewed?'
+			'Are local building codes reviewed?',
+			'Do you have the necessary tools and equipment?',
+			'Have you assessed your skill level for this project?'
 		],
 		'pre-construction': [
 			'Are all permits obtained and displayed?',
@@ -75,7 +77,78 @@ function getQAChecksForPhase(phaseId: string): string[] {
 			'Is surface smooth and ready for paint?'
 		]
 	};
+
+	const contractorQaChecks: Record<string, string[]> = {
+		'just-starting': [
+			'Is project scope clearly defined?',
+			'Are project goals documented?',
+			'Is budget range established?',
+			'Are construction method options researched?',
+			'Are local building codes reviewed?',
+			'Are all contractors licensed and insured?',
+			'Are contracts properly executed?'
+		],
+		'pre-construction': [
+			'Are all permits obtained and displayed?',
+			'Are architectural plans finalized and approved?',
+			'Are contractors licensed and insured?',
+			'Is financing secured and documented?',
+			'Are material orders confirmed with delivery dates?'
+		],
+		'site-prep-excavation': [
+			'Is site properly cleared and graded?',
+			'Are erosion control measures in place?',
+			'Is construction access road established?',
+			'Are temporary utilities installed?',
+			'Is site drainage working properly?',
+			'Is excavation complete and properly graded?',
+			'Are foundation trenches properly dug?'
+		],
+		'foundation': [
+			'Are concrete forms properly aligned and braced?',
+			'Is rebar correctly placed and tied?',
+			'Is concrete properly mixed and poured?',
+			'Are anchor bolts correctly positioned?',
+			'Is foundation waterproofing applied?'
+		],
+		'rough-framing': [
+			'Are wall studs properly spaced and plumb?',
+			'Is roof truss spacing correct?',
+			'Are all connections properly fastened?',
+			'Is blocking installed for utilities?',
+			'Are windows and doors properly framed?'
+		],
+		'plumbing-rough': [
+			'Are all pipes properly supported?',
+			'Are drain slopes correct?',
+			'Are vent pipes properly installed?',
+			'Is water pressure adequate?',
+			'Are all connections leak-free?'
+		],
+		'electrical-rough': [
+			'Are all wires properly secured?',
+			'Are outlet and switch boxes level?',
+			'Is grounding system complete?',
+			'Are all circuits properly labeled?',
+			'Are all connections properly made?'
+		],
+		'insulation': [
+			'Is insulation properly installed?',
+			'Are all gaps and voids filled?',
+			'Is vapor barrier properly installed?',
+			'Are all penetrations sealed?',
+			'Is R-value appropriate for climate?'
+		],
+		'drywall': [
+			'Are all joints properly taped and mudded?',
+			'Are screw heads properly recessed?',
+			'Is drywall properly secured to framing?',
+			'Are corners and edges straight?',
+			'Is surface smooth and ready for paint?'
+		]
+	};
 	
+	const qaChecks = isDiy ? diyQaChecks : contractorQaChecks;
 	return qaChecks[phaseId] || [
 		'Check all work meets building codes',
 		'Verify materials are properly installed',
@@ -84,7 +157,7 @@ function getQAChecksForPhase(phaseId: string): string[] {
 	];
 }
 
-function getVendorQuestionsForPhase(phaseId: string): string[] {
+function getVendorQuestionsForPhase(phaseId: string, isDiy: boolean = false): string[] {
 	const vendorQuestions: Record<string, string[]> = {
 		'just-starting': [
 			'What is your experience with project planning and assessment?',
@@ -162,7 +235,7 @@ function getVendorQuestionsForPhase(phaseId: string): string[] {
 	];
 }
 
-function getVendorNeedsForPhase(phaseId: string): string[] {
+function getVendorNeedsForPhase(phaseId: string, isDiy: boolean = false): string[] {
 	const vendorNeeds: Record<string, string[]> = {
 		'just-starting': [
 			'Project goals and vision description',
@@ -309,7 +382,7 @@ async function getBaselinePhases(): Promise<any> {
 /**
  * Converts hybrid response format to legacy RoadmapData format for backward compatibility
  */
-function convertHybridToLegacyFormat(hybridResponse: CompleteProjectResponse): RoadmapData {
+function convertHybridToLegacyFormat(hybridResponse: CompleteProjectResponse, profile?: OnboardingProfile): RoadmapData {
 	try {
 		console.log('🔄 Converting hybrid response to legacy format...');
 		
@@ -324,9 +397,10 @@ function convertHybridToLegacyFormat(hybridResponse: CompleteProjectResponse): R
 					title: phaseResponse.phaseTitle,
 					description: `AI-enhanced tasks for ${phaseResponse.phaseTitle} phase`,
 					steps: [], // Will be populated from baseline phases if needed
-					qaChecks: getQAChecksForPhase(phaseResponse.phaseId),
-					vendorQuestions: getVendorQuestionsForPhase(phaseResponse.phaseId),
-					vendorNeeds: getVendorNeedsForPhase(phaseResponse.phaseId),
+					qaChecks: getQAChecksForPhase(phaseResponse.phaseId, profile?.diyPhaseIds?.includes(phaseResponse.phaseId) || false),
+					vendorQuestions: getVendorQuestionsForPhase(phaseResponse.phaseId, profile?.diyPhaseIds?.includes(phaseResponse.phaseId) || false),
+					vendorNeeds: getVendorNeedsForPhase(phaseResponse.phaseId, profile?.diyPhaseIds?.includes(phaseResponse.phaseId) || false),
+					status: 'todo' as const,
 					notes: phaseResponse.expertInsights?.proTips?.join(' ') || ''
 				}
 			]
@@ -360,7 +434,7 @@ export async function generateRoadmap(profile: OnboardingProfile, projectId?: st
 		if (projectId) {
 			console.log('🤖 Using hybrid approach for roadmap generation...');
 			const hybridResponse = await generateHybridRoadmap(profile, projectId);
-			const legacyRoadmap = convertHybridToLegacyFormat(hybridResponse);
+			const legacyRoadmap = convertHybridToLegacyFormat(hybridResponse, profile);
 			console.log('✅ Hybrid roadmap generation successful');
 			return legacyRoadmap;
 		}

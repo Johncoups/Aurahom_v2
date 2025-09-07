@@ -2,13 +2,13 @@
 
 import {
   Map,
-  Calendar,
+  Clock,
   CheckSquare,
   DollarSign,
   FileText,
   FolderOpen,
   Lightbulb,
-  Clock,
+  Timer,
   Users,
   LayoutDashboard,
 } from "lucide-react"
@@ -17,12 +17,12 @@ const features = [
   { id: "dashboard", name: "Dashboard", icon: LayoutDashboard },
   { id: "roadmap", name: "Roadmap", icon: Map },
   { id: "bids", name: "Bids", icon: FileText },
-  { id: "schedule", name: "Schedule", icon: Calendar },
+  { id: "schedule", name: "Schedule", icon: Clock },
   { id: "tasks", name: "Tasks", icon: CheckSquare },
   { id: "budget", name: "Budget", icon: DollarSign },
   { id: "documents", name: "Documents", icon: FolderOpen },
   { id: "inspiration", name: "Inspiration", icon: Lightbulb },
-  { id: "timeline", name: "Timeline Estimate", icon: Clock },
+  { id: "timeline", name: "Timeline Estimate", icon: Timer },
   { id: "vendors", name: "Vendors", icon: Users },
 ]
 

@@ -86,7 +86,6 @@ async function generatePhaseTimeline(
 ): Promise<{
   phaseId: string;
   phaseTitle: string;
-  timeline: string;
   rawOpenAIResponse: string;
   error?: string;
 }> {
@@ -112,12 +111,11 @@ async function generatePhaseTimeline(
     
     const timeline = completion.choices[0]?.message?.content || '';
     
-         return {
-       phaseId: phase.id,
-       phaseTitle: phase.title,
-       timeline: timeline.trim(),
-       rawOpenAIResponse: timeline.trim()
-     };
+    return {
+      phaseId: phase.id,
+      phaseTitle: phase.title,
+      rawOpenAIResponse: timeline.trim()
+    };
     
   } catch (error) {
     console.error(`Failed to generate timeline for phase ${phase.id}:`, error);
@@ -125,7 +123,6 @@ async function generatePhaseTimeline(
          return {
        phaseId: phase.id,
        phaseTitle: phase.title,
-       timeline: `Timeline generation failed for ${phase.title}. Please consult with a construction professional for accurate estimates.`,
        rawOpenAIResponse: `Timeline generation failed for ${phase.title}. Please consult with a construction professional for accurate estimates.`,
        error: error instanceof Error ? error.message : 'Unknown error'
      };
@@ -371,7 +368,6 @@ async function generateAllPhaseTimelines(
 ): Promise<Array<{
   phaseId: string;
   phaseTitle: string;
-  timeline: string;
   rawOpenAIResponse: string;
   error?: string;
 }>> {
@@ -454,12 +450,12 @@ export async function POST(request: NextRequest) {
                  // Parse the timeline response to extract durations
          // More flexible regex to handle variations in spacing and formatting
          console.log(`🔍 Parsing timeline for phase ${timeline.phaseId}:`);
-         console.log(`🔍 Raw timeline text: "${timeline.timeline}"`);
+         console.log(`🔍 Raw timeline text: "${timeline.rawOpenAIResponse}"`);
          
                    // Updated patterns to handle bracketed format [X] weeks/hours
-          const diyMatch = timeline.timeline.match(/\*\*Duration\*\*:\s*\[(\d+)\]\s*weeks?/i);
-          const contractorMatch = timeline.timeline.match(/\*\*Contractor Duration\*\*:\s*\[(\d+)\]\s*weeks?/i);
-          const diyHoursMatch = timeline.timeline.match(/\*\*DIY Hours\*\*:\s*\[(\d+)\]\s*hours?/i);
+          const diyMatch = timeline.rawOpenAIResponse.match(/\*\*Duration\*\*:\s*\[(\d+)\]\s*weeks?/i);
+          const contractorMatch = timeline.rawOpenAIResponse.match(/\*\*Contractor Duration\*\*:\s*\[(\d+)\]\s*weeks?/i);
+          const diyHoursMatch = timeline.rawOpenAIResponse.match(/\*\*DIY Hours\*\*:\s*\[(\d+)\]\s*hours?/i);
          
          console.log(`🔍 DIY match:`, diyMatch);
          console.log(`🔍 Contractor match:`, contractorMatch);
@@ -469,7 +465,7 @@ export async function POST(request: NextRequest) {
            diyDuration: diyMatch ? `${diyMatch[1]} weeks` : null,
            contractorDuration: contractorMatch ? `${contractorMatch[1]} weeks` : null,
            diyHours: diyHoursMatch ? `${diyHoursMatch[1]} hours` : null,
-           rawTimeline: timeline.timeline
+           rawTimeline: timeline.rawOpenAIResponse
          };
          
          console.log(`🔍 Parsed result:`, parsedTimelineEstimates[timeline.phaseId]);

@@ -67,7 +67,7 @@ export interface RoadmapData {
 export interface TimelineEstimate {
 	phaseId: string;
 	phaseTitle: string;
-	timeline: string;
+	rawOpenAIResponse: string;
 	error?: string;
 }
 

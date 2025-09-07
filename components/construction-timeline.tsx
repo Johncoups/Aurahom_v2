@@ -5,7 +5,7 @@ import { getPhasesForMethod, getPhaseById } from "@/lib/roadmap-phases"
 import type { ConstructionMethod, RoadmapData } from "@/lib/roadmap-types"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { CheckCircle2, Circle, Clock, AlertCircle, ChevronDown, ChevronRight, Timer, User, Wrench } from "lucide-react"
+import { CheckCircle2, Circle, Timer, AlertTriangle, ChevronDown, ChevronRight, User, Wrench } from "lucide-react"
 import { useRoadmap } from "@/contexts/roadmap-context"
 import { supabase } from "@/lib/supabase"
 
@@ -136,9 +136,9 @@ export function ConstructionTimeline({
 			case "completed":
 				return <CheckCircle2 className="h-5 w-5 text-green-600" />
 			case "in-progress":
-				return <Clock className="h-5 w-5 text-blue-600" />
+				return <Timer className="h-5 w-5 text-blue-600" />
 			case "blocked":
-				return <AlertCircle className="h-5 w-5 text-red-600" />
+				return <AlertTriangle className="h-5 w-5 text-red-600" />
 			default:
 				return <Circle className="h-5 w-5 text-gray-400" />
 		}

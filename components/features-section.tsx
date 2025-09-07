@@ -1,5 +1,5 @@
 import { Card, CardContent } from "@/components/ui/card"
-import { CheckCircle, Users, Lightbulb, Calendar, Shield, Smartphone } from "lucide-react"
+import { CheckCircle, Users, Lightbulb, Clock, Shield, Smartphone } from "lucide-react"
 
 const features = [
   {
@@ -20,7 +20,7 @@ const features = [
     description: "Join a network of builders and homeowners for shared experiences, advice, and encouragement.",
   },
   {
-    icon: Calendar,
+    icon: Clock,
     title: "Timeline Tracking",
     description: "Keep your project on schedule with milestone tracking and automated progress updates.",
   },

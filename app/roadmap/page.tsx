@@ -60,10 +60,10 @@ function RoadmapInner() {
 								{roadmap.timelineEstimates.reduce((total, phase) => {
 									const isDIYPhase = profile?.diyPhaseIds.includes(phase.phaseId);
 									if (isDIYPhase) {
-										const durationMatch = phase.timeline.match(/.*\*\*Duration\*\*:\s*(\d+)\s*weeks/);
+										const durationMatch = phase.rawOpenAIResponse.match(/.*\*\*Duration\*\*:\s*(\d+)\s*weeks/);
 										return total + (durationMatch ? parseInt(durationMatch[1]) : 0);
 									} else {
-										const contractorMatch = phase.timeline.match(/.*\*\*Contractor Duration\*\*:\s*(\d+)\s*weeks/);
+										const contractorMatch = phase.rawOpenAIResponse.match(/.*\*\*Contractor Duration\*\*:\s*(\d+)\s*weeks/);
 										return total + (contractorMatch ? parseInt(contractorMatch[1]) : 0);
 									}
 								}, 0)}
@@ -76,7 +76,7 @@ function RoadmapInner() {
 								{roadmap.timelineEstimates.reduce((total, phase) => {
 									const isDIYPhase = profile?.diyPhaseIds.includes(phase.phaseId);
 									if (isDIYPhase) {
-										const durationMatch = phase.timeline.match(/.*\*\*Duration\*\*:\s*(\d+)\s*weeks/);
+										const durationMatch = phase.rawOpenAIResponse.match(/.*\*\*Duration\*\*:\s*(\d+)\s*weeks/);
 										return total + (durationMatch ? parseInt(durationMatch[1]) : 0);
 									}
 									return total;
@@ -90,7 +90,7 @@ function RoadmapInner() {
 								{roadmap.timelineEstimates.reduce((total, phase) => {
 									const isDIYPhase = profile?.diyPhaseIds.includes(phase.phaseId);
 									if (!isDIYPhase) {
-										const contractorMatch = phase.timeline.match(/.*\*\*Contractor Duration\*\*:\s*(\d+)\s*weeks/);
+										const contractorMatch = phase.rawOpenAIResponse.match(/.*\*\*Contractor Duration\*\*:\s*(\d+)\s*weeks/);
 										return total + (contractorMatch ? parseInt(contractorMatch[1]) : 0);
 									}
 									return total;

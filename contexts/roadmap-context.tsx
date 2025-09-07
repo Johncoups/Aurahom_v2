@@ -18,6 +18,7 @@ interface RoadmapContextType {
 	regeneratePhase: (phaseId: string, detailLevel: "low" | "standard" | "high") => Promise<void>;
 	loadStoredRoadmap: () => Promise<void>;
 	checkExistingProject: () => Promise<void>;
+	clearAllData: () => Promise<void>;
 }
 
 const RoadmapContext = createContext<RoadmapContextType | undefined>(undefined);
@@ -25,7 +26,7 @@ const RoadmapContext = createContext<RoadmapContextType | undefined>(undefined);
 /**
  * Converts hybrid response format to legacy RoadmapData format for UI compatibility
  */
-function convertHybridToLegacyFormat(hybridResponse: CompleteProjectResponse): RoadmapData {
+function convertHybridToLegacyFormat(hybridResponse: CompleteProjectResponse, profile?: OnboardingProfile): RoadmapData {
 	try {
 		console.log('🔄 Converting hybrid response to legacy format...');
 		console.log('🔍 Hybrid response structure:', {
@@ -40,7 +41,7 @@ function convertHybridToLegacyFormat(hybridResponse: CompleteProjectResponse): R
 		});
 		
 		// Get the construction method from the project context
-		const constructionMethod = hybridResponse.projectContext?.constructionMethod?.method || 'traditional-frame';
+		const constructionMethod = (hybridResponse.projectContext?.projectDetails?.constructionMethod || 'traditional-frame') as any;
 		console.log('🔍 Using construction method:', constructionMethod);
 		
 		// Get hardcoded baseline phases for this construction method
@@ -54,14 +55,16 @@ function convertHybridToLegacyFormat(hybridResponse: CompleteProjectResponse): R
 		});
 		
 		// Helper functions for phase-specific content
-		const getQAChecksForPhase = (phaseId: string): string[] => {
-			const qaChecks: Record<string, string[]> = {
+		const getQAChecksForPhase = (phaseId: string, isDiy: boolean = false): string[] => {
+			const diyQaChecks: Record<string, string[]> = {
 				'just-starting': [
 					'Is project scope clearly defined?',
 					'Are project goals documented?',
 					'Is budget range established?',
 					'Are construction method options researched?',
-					'Are local building codes reviewed?'
+					'Are local building codes reviewed?',
+					'Do you have the necessary tools and equipment?',
+					'Have you assessed your skill level for this project?'
 				],
 				'pre-construction': [
 					'Are all permits obtained and displayed?',
@@ -123,15 +126,36 @@ function convertHybridToLegacyFormat(hybridResponse: CompleteProjectResponse): R
 				]
 			};
 			
-			return qaChecks[phaseId] || [
+			// Add DIY-specific checks if this is a DIY phase
+			const baseChecks = diyQaChecks[phaseId] || [
 				'Check all work meets building codes',
 				'Verify materials are properly installed',
 				'Ensure safety measures are in place',
 				'Confirm quality standards are met'
 			];
+			
+			if (isDiy) {
+				// Add DIY-specific checks
+				const diySpecificChecks = [
+					'Do you have the necessary tools and equipment?',
+					'Have you assessed your skill level for this project?',
+					'Do you have adequate help and support?',
+					'Are you familiar with safety protocols?'
+				];
+				return [...baseChecks, ...diySpecificChecks];
+			}
+			
+			// Add contractor-specific checks
+			const contractorSpecificChecks = [
+				'Are all contractors licensed and insured?',
+				'Are contracts properly executed?',
+				'Are payment schedules clearly defined?',
+				'Are quality standards documented?'
+			];
+			return [...baseChecks, ...contractorSpecificChecks];
 		};
 
-		const getVendorQuestionsForPhase = (phaseId: string): string[] => {
+		const getVendorQuestionsForPhase = (phaseId: string, isDiy: boolean = false): string[] => {
 			const vendorQuestions: Record<string, string[]> = {
 				'just-starting': [
 					'What is your experience with project planning and assessment?',
@@ -200,16 +224,31 @@ function convertHybridToLegacyFormat(hybridResponse: CompleteProjectResponse): R
 				]
 			};
 			
-			return vendorQuestions[phaseId] || [
+			const baseQuestions = vendorQuestions[phaseId] || [
 				'What is your experience with this type of work?',
 				'Can you provide references?',
 				'What is your timeline and pricing?',
 				'What warranty do you provide?',
 				'How do you ensure quality?'
 			];
+			
+			if (isDiy) {
+				// For DIY phases, show questions about materials and tools
+				const diyQuestions = [
+					'What materials do you recommend for this project?',
+					'What tools will you need to complete this work?',
+					'Are there any special techniques or tips?',
+					'What safety equipment is required?',
+					'How long should this phase take to complete?'
+				];
+				return [...baseQuestions, ...diyQuestions];
+			}
+			
+			// For contractor phases, show vendor selection questions
+			return baseQuestions;
 		};
 
-		const getVendorNeedsForPhase = (phaseId: string): string[] => {
+		const getVendorNeedsForPhase = (phaseId: string, isDiy: boolean = false): string[] => {
 			const vendorNeeds: Record<string, string[]> = {
 				'just-starting': [
 					'Project goals and vision description',
@@ -278,13 +317,28 @@ function convertHybridToLegacyFormat(hybridResponse: CompleteProjectResponse): R
 				]
 			};
 			
-			return vendorNeeds[phaseId] || [
+			const baseNeeds = vendorNeeds[phaseId] || [
 				'Complete project specifications',
 				'Access to work areas',
 				'Power and utilities',
 				'Coordination with other trades',
 				'Proper safety measures'
 			];
+			
+			if (isDiy) {
+				// For DIY phases, show what you need to prepare
+				const diyNeeds = [
+					'All necessary tools and equipment',
+					'Appropriate safety gear and equipment',
+					'Quality materials and supplies',
+					'Clear workspace and staging area',
+					'Time and availability for the work'
+				];
+				return [...baseNeeds, ...diyNeeds];
+			}
+			
+			// For contractor phases, show what contractors need
+			return baseNeeds;
 		};
 
 		// Extract phases by combining baseline content with AI-generated content
@@ -313,16 +367,19 @@ function convertHybridToLegacyFormat(hybridResponse: CompleteProjectResponse): R
 				...(aiHelpfulInfo.steps || [])
 			].filter(Boolean);
 			
+			// Determine if this phase is DIY based on profile
+			const isDiy = profile?.diyPhaseIds?.includes(baselinePhase.id) || false;
+			
 			const qaChecks = [
-				...getQAChecksForPhase(baselinePhase.id),
+				...getQAChecksForPhase(baselinePhase.id, isDiy),
 				...(aiTaskData.qaChecks || []),
 				...(aiHelpfulInfo.qaChecks || []),
 				...(aiExpertInsights.qualityCheckpoints || [])
 			].filter(Boolean);
 			
 			// Get phase-specific vendor questions and needs
-			const vendorQuestions = getVendorQuestionsForPhase(baselinePhase.id);
-			const vendorNeeds = getVendorNeedsForPhase(baselinePhase.id);
+			const vendorQuestions = getVendorQuestionsForPhase(baselinePhase.id, isDiy);
+			const vendorNeeds = getVendorNeedsForPhase(baselinePhase.id, isDiy);
 			
 			// Add AI-generated vendor content if available
 			vendorQuestions.push(...(aiTaskData.vendorQuestions || []));
@@ -354,6 +411,7 @@ function convertHybridToLegacyFormat(hybridResponse: CompleteProjectResponse): R
 						qaChecks: qaChecks,
 						vendorQuestions: vendorQuestions,
 						vendorNeeds: vendorNeeds,
+						status: 'todo' as const,
 						notes: notes || `AI-generated guidance for ${baselinePhase.title} phase`
 					}
 				]
@@ -459,7 +517,7 @@ export function RoadmapProvider({ children }: { children: ReactNode }) {
 			const hasRoadmap = roadmapData && roadmapData.length > 0;
 			const hasExistingData = hasProject || hasRoadmap;
 			
-			setHasExistingProject(hasExistingData);
+			setHasExistingProject(!!hasExistingData);
 			console.log(`✅ User ${hasExistingData ? 'has' : 'does not have'} existing project or roadmap data`);
 			
 		} catch (error) {
@@ -520,7 +578,7 @@ export function RoadmapProvider({ children }: { children: ReactNode }) {
 				console.log('✅ Hybrid roadmap generated:', hybridResponse);
 				
 				// Convert hybrid response to legacy format for UI compatibility
-				const roadmapData = convertHybridToLegacyFormat(hybridResponse);
+				const roadmapData = convertHybridToLegacyFormat(hybridResponse, p);
 				console.log('✅ Converted to legacy format:', roadmapData);
 			
 			// Generate timeline estimates in parallel (maintaining existing parallel processing)
@@ -556,6 +614,12 @@ export function RoadmapProvider({ children }: { children: ReactNode }) {
 				timelineEstimates: timelineData.success ? timelineData.timelines : [],
 				parsedTimelineEstimates: timelineData.success ? timelineData.parsedTimelineEstimates : {}
 			};
+			
+			console.log('🔍 Combined data with duration info:', {
+				hasParsedEstimates: !!combinedData.parsedTimelineEstimates,
+				parsedEstimatesKeys: Object.keys(combinedData.parsedTimelineEstimates || {}),
+				sampleDuration: combinedData.parsedTimelineEstimates?.['just-starting']
+			});
 			
 			console.log('🔍 Combined data structure:', {
 				hasPhases: !!combinedData.phases,
@@ -823,7 +887,7 @@ export function RoadmapProvider({ children }: { children: ReactNode }) {
 								constructionMethod
 							);
 							
-							reconstructedRoadmap = convertHybridToLegacyFormat(hybridResponse);
+							reconstructedRoadmap = convertHybridToLegacyFormat(hybridResponse, profile || undefined);
 							console.log('✅ Hybrid roadmap restored from database');
 						} else {
 							// Fallback to empty roadmap
@@ -832,6 +896,16 @@ export function RoadmapProvider({ children }: { children: ReactNode }) {
 								timelineEstimates: [],
 								parsedTimelineEstimates: {}
 							};
+						}
+						
+						// Ensure duration data is loaded from raw_api_response for hybrid data too
+						if (storedRoadmap.raw_api_response?.parsedTimelineEstimates) {
+							reconstructedRoadmap.parsedTimelineEstimates = storedRoadmap.raw_api_response.parsedTimelineEstimates;
+							console.log('🔍 Duration data loaded for hybrid approach:', {
+								hasParsedEstimates: !!storedRoadmap.raw_api_response?.parsedTimelineEstimates,
+								parsedEstimatesKeys: Object.keys(storedRoadmap.raw_api_response?.parsedTimelineEstimates || {}),
+								sampleDuration: storedRoadmap.raw_api_response?.parsedTimelineEstimates?.['just-starting']
+							});
 						}
 					} else {
 						// Handle legacy data
@@ -842,12 +916,15 @@ export function RoadmapProvider({ children }: { children: ReactNode }) {
 							parsedTimelineEstimates: storedRoadmap.raw_api_response?.parsedTimelineEstimates || {}
 						};
 						console.log('✅ Legacy roadmap restored from database');
+						console.log('🔍 Duration data loaded:', {
+							hasParsedEstimates: !!storedRoadmap.raw_api_response?.parsedTimelineEstimates,
+							parsedEstimatesKeys: Object.keys(storedRoadmap.raw_api_response?.parsedTimelineEstimates || {}),
+							sampleDuration: storedRoadmap.raw_api_response?.parsedTimelineEstimates?.['just-starting']
+						});
 					}
 					
-					// Restore the roadmap
-					setRoadmap(reconstructedRoadmap);
-					
-					// Now fetch the profile from the projects table using project_id
+					// First, fetch the profile from the projects table using project_id
+					let profileData: OnboardingProfile | null = null;
 					if (storedRoadmap.project_id) {
 						try {
 							const { data: projectData, error: projectError } = await supabase
@@ -860,7 +937,7 @@ export function RoadmapProvider({ children }: { children: ReactNode }) {
 								console.error('❌ Error loading project profile:', projectError);
 							} else if (projectData) {
 								// Convert project data to OnboardingProfile format
-								const profileData: OnboardingProfile = {
+								profileData = {
 									role: projectData.role || 'owner_plus_diy',
 									experience: projectData.experience || 'diy_permitting',
 									subcontractorHelp: projectData.subcontractor_help || 'yes',
@@ -877,13 +954,24 @@ export function RoadmapProvider({ children }: { children: ReactNode }) {
 									background: projectData.background || ''
 								};
 								
-								setProfile(profileData);
-								console.log('✅ Profile restored from projects table');
+								console.log('✅ Profile loaded from projects table:', {
+									diyPhaseIds: profileData.diyPhaseIds,
+									role: profileData.role,
+									experience: profileData.experience
+								});
 							}
 						} catch (error) {
 							console.error('❌ Error fetching project profile:', error);
 						}
 					}
+					
+					// Set profile first
+					if (profileData) {
+						setProfile(profileData);
+					}
+					
+					// Then restore the roadmap (this will trigger re-render with profile data)
+					setRoadmap(reconstructedRoadmap);
 				} else {
 					console.log('✅ Current session data preserved, not overwriting with stored data');
 				}
@@ -928,7 +1016,7 @@ export function RoadmapProvider({ children }: { children: ReactNode }) {
 			
 			// Regenerate the entire hybrid roadmap
 			const hybridResponse = await generateHybridRoadmap(profile, projects.id);
-			const roadmapData = convertHybridToLegacyFormat(hybridResponse);
+			const roadmapData = convertHybridToLegacyFormat(hybridResponse, profile);
 			
 			// Combine with existing timeline data
 			const combinedData = {
@@ -947,6 +1035,53 @@ export function RoadmapProvider({ children }: { children: ReactNode }) {
 		}
 	}
 
+	async function clearAllData() {
+		try {
+			console.log('🗑️ Clearing all user data...');
+			
+			const { data: { user }, error: userError } = await supabase.auth.getUser();
+			
+			if (userError || !user?.id) {
+				console.error('❌ User not authenticated:', userError);
+				return;
+			}
+			
+			// Clear roadmap data
+			const { error: roadmapError } = await supabase
+				.from('roadmap_data')
+				.delete()
+				.eq('user_id', user.id);
+			
+			if (roadmapError) {
+				console.error('❌ Error clearing roadmap data:', roadmapError);
+			} else {
+				console.log('✅ Cleared roadmap data');
+			}
+			
+			// Clear projects
+			const { error: projectError } = await supabase
+				.from('projects')
+				.delete()
+				.eq('user_id', user.id);
+			
+			if (projectError) {
+				console.error('❌ Error clearing projects:', projectError);
+			} else {
+				console.log('✅ Cleared projects');
+			}
+			
+			// Reset state
+			setProfile(null);
+			setRoadmap(null);
+			setHasExistingProject(false);
+			
+			console.log('✅ All data cleared successfully');
+			
+		} catch (error) {
+			console.error('❌ Error clearing data:', error);
+		}
+	}
+
 	const value = useMemo(() => ({ 
 		profile, 
 		roadmap, 
@@ -956,7 +1091,8 @@ export function RoadmapProvider({ children }: { children: ReactNode }) {
 		setProfileAndGenerate,
 		regeneratePhase,
 		loadStoredRoadmap,
-		checkExistingProject
+		checkExistingProject,
+		clearAllData
 	}), [profile, roadmap, isLoading, hasExistingProject, isCheckingProject])
 
 	return <RoadmapContext.Provider value={value}>{children}</RoadmapContext.Provider>;

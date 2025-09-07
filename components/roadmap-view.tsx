@@ -348,7 +348,7 @@ export function RoadmapView({ data }: RoadmapViewProps) {
 									
 									const parsedData = data.parsedTimelineEstimates?.[phase.id];
 									if (parsedData) {
-										const isDIYPhase = profile?.diyPhaseIds.includes(phase.id);
+										const isDIYPhase = profile?.diyPhaseIds?.includes(phase.id) || false;
 										
 										if (isDIYPhase && parsedData.diyDuration) {
 											const weeks = parseInt(parsedData.diyDuration.match(/\d+/)?.[0] || '0');
@@ -369,7 +369,7 @@ export function RoadmapView({ data }: RoadmapViewProps) {
 								{data.phases.reduce((total, phase) => {
 									if (phase.id === "just-starting") return total;
 									
-									const isDIYPhase = profile?.diyPhaseIds.includes(phase.id);
+									const isDIYPhase = profile?.diyPhaseIds?.includes(phase.id) || false;
 									if (isDIYPhase) {
 										const parsedData = data.parsedTimelineEstimates?.[phase.id];
 										if (parsedData?.diyDuration) {
@@ -388,7 +388,7 @@ export function RoadmapView({ data }: RoadmapViewProps) {
 								{data.phases.reduce((total, phase) => {
 									if (phase.id === "just-starting") return total;
 									
-									const isDIYPhase = profile?.diyPhaseIds.includes(phase.id);
+									const isDIYPhase = profile?.diyPhaseIds?.includes(phase.id) || false;
 									if (!isDIYPhase) {
 										const parsedData = data.parsedTimelineEstimates?.[phase.id];
 										if (parsedData?.contractorDuration) {
@@ -531,7 +531,7 @@ export function RoadmapView({ data }: RoadmapViewProps) {
 							{/* Hide duration for "Just Starting" phase */}
 							{phase.id !== "just-starting" && (() => {
 								// Priority 1: Check for parsed timeline data from API
-								if (data.parsedTimelineEstimates && profile) {
+								if (data.parsedTimelineEstimates) {
 									const parsedData = data.parsedTimelineEstimates[phase.id];
 									
 									// Enhanced debugging for this specific phase
@@ -541,24 +541,29 @@ export function RoadmapView({ data }: RoadmapViewProps) {
 										lookingForPhaseId: phase.id,
 										foundParsedData: !!parsedData,
 										parsedData: parsedData,
-										isDIYPhase: profile.diyPhaseIds.includes(phase.id),
-										diyPhaseIds: profile.diyPhaseIds
+										hasProfile: !!profile,
+										isDIYPhase: profile ? profile.diyPhaseIds.includes(phase.id) : false,
+										diyPhaseIds: profile?.diyPhaseIds || []
 									});
 									
 									if (parsedData) {
 										// Check if this phase is marked as DIY by the user
-										const isDIYPhase = profile.diyPhaseIds.includes(phase.id);
+										const isDIYPhase = profile ? profile.diyPhaseIds.includes(phase.id) : false;
 										
-										if (isDIYPhase && parsedData.diyDuration) {
-											// Priority 1: DIY Duration from API
-											return (
-												<span className="text-base px-3 py-1 rounded font-medium bg-blue-50 text-blue-800 border-blue-200">
-													{parsedData.diyDuration}
-												</span>
-											);
+										if (isDIYPhase) {
+											// For DIY phases, only show DIY duration
+											if (parsedData.diyDuration) {
+												return (
+													<span className="text-base px-3 py-1 rounded font-medium bg-blue-50 text-blue-800 border-blue-200">
+														{parsedData.diyDuration}
+													</span>
+												);
+											}
+											// If DIY phase but no DIY duration, don't show anything
+											return null;
 										}
 										
-										// Priority 2: Contractor Duration from API (if no DIY or user didn't select DIY)
+										// For contractor phases, show contractor duration
 										if (parsedData.contractorDuration) {
 											return (
 												<span className="text-base px-3 py-1 rounded font-medium bg-purple-100 text-purple-700 border-purple-200">
