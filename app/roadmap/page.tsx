@@ -119,7 +119,7 @@ export default function RoadmapPage() {
 					<FeatureNavigation onFeatureClick={(feature) => {
 						if (feature === "roadmap") return; // Stay on roadmap
 						if (feature === "dashboard") router.push("/dashboard");
-						if (feature === "timeline") router.push("/timeline-demo");
+						if (feature === "timeline") router.push("/roadmap"); // Timeline demo removed
 						// Add other feature routes as needed
 					}} />
 					<RoadmapInner />

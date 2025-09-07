@@ -30,7 +30,8 @@ function DashboardInner() {
 
 	const handleFeatureClick = (feature: string) => {
 		if (feature === "timeline") {
-			router.push("/timeline-demo")
+			// Timeline demo removed - redirect to roadmap instead
+			router.push("/roadmap")
 			return
 		}
 		setCurrentView(feature)

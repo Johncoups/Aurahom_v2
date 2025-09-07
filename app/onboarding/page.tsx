@@ -364,7 +364,11 @@ function WizardInner() {
 export default function OnboardingPage() {
 	console.log('🚀 OnboardingPage component rendering');
 	
-	return <WizardInner />;
+	return (
+		<RoadmapProvider>
+			<WizardInner />
+		</RoadmapProvider>
+	);
 }
 
 

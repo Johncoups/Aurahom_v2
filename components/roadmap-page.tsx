@@ -121,7 +121,7 @@ function RoadmapPageInner() {
             <h1 className="text-3xl font-bold text-gray-900">AI-Generated Roadmap</h1>
           </div>
           <p className="text-gray-600">
-            Your personalized construction roadmap powered by Gemini AI. 
+            Your personalized construction roadmap powered by AI. 
             {profile && (
               <span className="ml-2 text-sm bg-cyan-100 px-2 py-1 rounded">
                 {profile.role === "gc_only" ? "Licensed General Contractor (hiring all subcontractors)" : 

@@ -2,8 +2,10 @@
 
 import { createContext, useContext, useState, type ReactNode, useMemo, useEffect } from "react";
 import type { OnboardingProfile, RoadmapData } from "@/lib/roadmap-types";
-import { generateRoadmap } from "@/app/actions/generateRoadmap";
+import { generateHybridRoadmap } from "@/lib/hybrid-roadmap-generator";
+import type { CompleteProjectResponse } from "@/lib/unified-response-types";
 import { supabase } from "@/lib/supabase";
+import { getPhasesForMethod } from "@/lib/roadmap-phases";
 
 interface RoadmapContextType {
 	profile: OnboardingProfile | null;
@@ -18,6 +20,153 @@ interface RoadmapContextType {
 }
 
 const RoadmapContext = createContext<RoadmapContextType | undefined>(undefined);
+
+/**
+ * Converts hybrid response format to legacy RoadmapData format for UI compatibility
+ */
+function convertHybridToLegacyFormat(hybridResponse: CompleteProjectResponse): RoadmapData {
+	try {
+		console.log('🔄 Converting hybrid response to legacy format...');
+		console.log('🔍 Hybrid response structure:', {
+			hasPhaseResponses: !!hybridResponse.phaseResponses,
+			phaseCount: hybridResponse.phaseResponses?.length || 0,
+			samplePhase: hybridResponse.phaseResponses?.[0] ? {
+				phaseId: hybridResponse.phaseResponses[0].phaseId,
+				phaseTitle: hybridResponse.phaseResponses[0].phaseTitle,
+				hasTasks: !!hybridResponse.phaseResponses[0].tasks,
+				hasExpertInsights: !!hybridResponse.phaseResponses[0].expertInsights
+			} : 'No phases'
+		});
+		
+		// Get the construction method from the project context
+		const constructionMethod = hybridResponse.projectContext?.constructionMethod?.method || 'traditional-frame';
+		console.log('🔍 Using construction method:', constructionMethod);
+		
+		// Get hardcoded baseline phases for this construction method
+		const baselinePhases = getPhasesForMethod(constructionMethod);
+		console.log(`📋 Found ${baselinePhases.length} baseline phases for ${constructionMethod}`);
+		
+		// Create a map of AI-generated content by phase ID
+		const aiContentMap = new Map();
+		hybridResponse.phaseResponses.forEach(phaseResponse => {
+			aiContentMap.set(phaseResponse.phaseId, phaseResponse);
+		});
+		
+		// Extract phases by combining baseline content with AI-generated content
+		const phases = baselinePhases.map(baselinePhase => {
+			const aiContent = aiContentMap.get(baselinePhase.id);
+			
+			console.log(`🔍 Processing phase ${baselinePhase.id}:`, {
+				hasBaselineContent: !!baselinePhase.tasks,
+				baselineTasksCount: baselinePhase.tasks?.length || 0,
+				hasHelpfulInfo: !!baselinePhase.helpfulInformation,
+				helpfulInfoCount: baselinePhase.helpfulInformation?.length || 0,
+				hasAIContent: !!aiContent,
+				aiTasksCount: aiContent?.tasks ? Object.values(aiContent.tasks).flat().length : 0
+			});
+			
+			// Extract AI-generated content if available
+			const aiTaskData = aiContent?.tasks || {};
+			const aiHelpfulInfo = aiContent?.helpfulInformation || {};
+			const aiExpertInsights = aiContent?.expertInsights || {};
+			const aiRegionalAdjustments = aiContent?.regionalAdjustments || {};
+			
+			// Combine baseline content with AI-generated content
+			const steps = [
+				...(baselinePhase.tasks || []),
+				...(aiTaskData.steps || []),
+				...(aiHelpfulInfo.steps || [])
+			].filter(Boolean);
+			
+			const qaChecks = [
+				...(aiTaskData.qaChecks || []),
+				...(aiHelpfulInfo.qaChecks || []),
+				...(aiExpertInsights.qualityCheckpoints || [])
+			].filter(Boolean);
+			
+			// Extract vendor questions and needs from baseline helpfulInformation
+			const vendorQuestions = (baselinePhase.helpfulInformation || [])
+				.filter(info => info.includes('quotes from') || info.includes('Get 3+'))
+				.map(info => info.replace('Get 3+ quotes from', 'Ask for quotes from')
+					.replace('Research 3 different', 'Ask about different')
+					.replace('Contact 3+', 'Contact multiple'));
+			
+			const vendorNeeds = (baselinePhase.helpfulInformation || [])
+				.filter(info => info.includes('compare') || info.includes('Research'))
+				.map(info => info.replace('compare their', 'provide details about their')
+					.replace('Research 3 different', 'Provide information about different'));
+			
+			// Add AI-generated vendor content if available
+			vendorQuestions.push(...(aiTaskData.vendorQuestions || []));
+			vendorQuestions.push(...(aiHelpfulInfo.vendorQuestions || []));
+			vendorNeeds.push(...(aiTaskData.vendorNeeds || []));
+			vendorNeeds.push(...(aiHelpfulInfo.vendorNeeds || []));
+			
+			// Create comprehensive notes from all available information
+			const notes = [
+				...(aiExpertInsights.proTips || []),
+				...(aiExpertInsights.commonMistakes || []),
+				...(aiExpertInsights.costSavingTips || []),
+				...(aiRegionalAdjustments.weatherConsiderations || []),
+				...(aiRegionalAdjustments.permitRequirements || []),
+				...(aiRegionalAdjustments.localVendorRecommendations || []),
+				...(aiRegionalAdjustments.seasonalTiming || [])
+			].filter(Boolean).join(' | ');
+			
+			return {
+				id: baselinePhase.id,
+				title: baselinePhase.title,
+				detailLevel: 'standard' as const,
+				tasks: [
+					{
+						id: `hybrid-${baselinePhase.id}`,
+						title: baselinePhase.title,
+						description: baselinePhase.description || `AI-enhanced tasks for ${baselinePhase.title} phase`,
+						steps: steps,
+						qaChecks: qaChecks,
+						vendorQuestions: vendorQuestions,
+						vendorNeeds: vendorNeeds,
+						notes: notes || `AI-generated guidance for ${baselinePhase.title} phase`
+					}
+				]
+			};
+		});
+		
+		console.log(`✅ Converted ${phases.length} phases to legacy format`);
+		console.log('🔍 Sample converted phase:', phases[0] ? {
+			id: phases[0].id,
+			title: phases[0].title,
+			stepsCount: phases[0].tasks[0]?.steps?.length || 0,
+			qaChecksCount: phases[0].tasks[0]?.qaChecks?.length || 0,
+			vendorQuestionsCount: phases[0].tasks[0]?.vendorQuestions?.length || 0,
+			vendorNeedsCount: phases[0].tasks[0]?.vendorNeeds?.length || 0,
+			hasNotes: !!phases[0].tasks[0]?.notes
+		} : 'No phases converted');
+		
+		return {
+			phases,
+			timelineEstimates: [], // Will be populated by timeline API
+			parsedTimelineEstimates: {} // Will be populated by timeline API
+		};
+		
+	} catch (error) {
+		console.error('❌ Error converting hybrid response:', error);
+		console.error('❌ Error details:', {
+			message: error instanceof Error ? error.message : 'Unknown error',
+			stack: error instanceof Error ? error.stack : 'No stack trace',
+			hybridResponse: hybridResponse ? {
+				hasPhaseResponses: !!hybridResponse.phaseResponses,
+				phaseCount: hybridResponse.phaseResponses?.length || 0
+			} : 'No hybrid response'
+		});
+		// Return empty roadmap as fallback
+		return {
+			phases: [],
+			timelineEstimates: [],
+			parsedTimelineEstimates: {}
+		};
+	}
+}
 
 export function RoadmapProvider({ children }: { children: ReactNode }) {
 	const [profile, setProfile] = useState<OnboardingProfile | null>(null);
@@ -88,21 +237,12 @@ export function RoadmapProvider({ children }: { children: ReactNode }) {
 		setIsLoading(true);
 		setProfile(p);
 		try {
-			console.log('🔄 Starting roadmap generation...');
+			console.log('🔄 Starting hybrid roadmap generation...');
 			
 			// Get current user first
 			const { data: { user }, error: userError } = await supabase.auth.getUser();
 			if (userError || !user?.id) {
 				throw new Error('User not authenticated');
-			}
-			
-			// Generate roadmap first to get baseline data
-			const roadmapData = await generateRoadmap(p);
-			console.log('✅ Roadmap generated:', roadmapData);
-			console.log('🔍 Roadmap phases structure:', roadmapData.phases);
-			if (roadmapData.phases && roadmapData.phases.length > 0) {
-				console.log('🔍 First phase structure:', roadmapData.phases[0]);
-				console.log('🔍 First phase tasks:', roadmapData.phases[0].tasks);
 			}
 			
 			// Create project first
@@ -130,10 +270,18 @@ export function RoadmapProvider({ children }: { children: ReactNode }) {
 			
 			console.log('✅ Project created:', project.id);
 			
-			// Now generate timeline estimates with user and project IDs
+			// Generate hybrid roadmap with project ID
+			const hybridResponse = await generateHybridRoadmap(p, project.id);
+			console.log('✅ Hybrid roadmap generated:', hybridResponse);
+			
+			// Convert hybrid response to legacy format for UI compatibility
+			const roadmapData = convertHybridToLegacyFormat(hybridResponse);
+			console.log('✅ Converted to legacy format:', roadmapData);
+			
+			// Generate timeline estimates in parallel (maintaining existing parallel processing)
 			const timelineResponse = await fetch('/api/generate-timeline-estimates', {
-					method: 'POST',
-					headers: { 'Content-Type': 'application/json' },
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
 				body: JSON.stringify({ 
 					userProfile: p,
 					userId: user.id,
@@ -143,17 +291,6 @@ export function RoadmapProvider({ children }: { children: ReactNode }) {
 			
 			let timelineData = await timelineResponse.json();
 			console.log('🔍 Timeline API response status:', timelineResponse.status);
-			console.log('🔍 Timeline API response data:', timelineData);
-			
-			console.log('🔍 Timeline API response:', {
-				success: timelineData.success,
-				hasTimelines: !!timelineData.timelines,
-				timelineCount: timelineData.timelines?.length || 0,
-				hasRawResponses: !!timelineData.rawOpenAIResponses,
-				hasParsedEstimates: !!timelineData.parsedTimelineEstimates,
-				rawResponsesKeys: timelineData.rawOpenAIResponses ? Object.keys(timelineData.rawOpenAIResponses) : [],
-				parsedEstimatesKeys: timelineData.parsedTimelineEstimates ? Object.keys(timelineData.parsedTimelineEstimates) : []
-			});
 			
 			// Validate timeline data
 			if (!timelineData || !timelineData.success) {
@@ -168,19 +305,7 @@ export function RoadmapProvider({ children }: { children: ReactNode }) {
 				};
 			}
 			
-			// Verify IDs match what we sent
-			if (timelineData.userId !== user.id || timelineData.projectId !== project.id) {
-				console.warn('⚠️ Timeline API returned different IDs than expected');
-			}
-			
-			console.log('🔍 Timeline API response IDs:', {
-				expectedUserId: user.id,
-				receivedUserId: timelineData.userId,
-				expectedProjectId: project.id,
-				receivedProjectId: timelineData.projectId
-			});
-			
-			// Combine roadmap and timeline data
+			// Combine hybrid roadmap and timeline data
 			const combinedData = {
 				...roadmapData,
 				timelineEstimates: timelineData.success ? timelineData.timelines : [],
@@ -188,29 +313,16 @@ export function RoadmapProvider({ children }: { children: ReactNode }) {
 			};
 			
 			console.log('🔍 Combined data structure:', {
-				hasTimelineEstimates: !!combinedData.timelineEstimates,
-				timelineEstimatesCount: combinedData.timelineEstimates?.length || 0,
-				hasParsedEstimates: !!combinedData.parsedTimelineEstimates,
-				parsedEstimatesKeys: combinedData.parsedTimelineEstimates ? Object.keys(combinedData.parsedTimelineEstimates) : [],
-				sampleParsedData: combinedData.parsedTimelineEstimates ? Object.keys(combinedData.parsedTimelineEstimates).slice(0, 3).map(key => ({
-					phase: key,
-					data: combinedData.parsedTimelineEstimates[key]
-				})) : []
-			});
-			
-			console.log('🔍 Setting roadmap state with combined data:', {
 				hasPhases: !!combinedData.phases,
 				phaseCount: combinedData.phases?.length || 0,
 				hasTimelineEstimates: !!combinedData.timelineEstimates,
 				timelineCount: combinedData.timelineEstimates?.length || 0,
 				hasParsedEstimates: !!combinedData.parsedTimelineEstimates,
-				parsedEstimatesKeys: combinedData.parsedTimelineEstimates ? Object.keys(combinedData.parsedTimelineEstimates) : [],
-				sampleParsedData: combinedData.parsedTimelineEstimates ? 
-					Object.entries(combinedData.parsedTimelineEstimates).slice(0, 2) : 'No parsed data'
+				parsedEstimatesKeys: combinedData.parsedTimelineEstimates ? Object.keys(combinedData.parsedTimelineEstimates) : []
 			});
 			
 			setRoadmap(combinedData);
-			console.log('✅ Roadmap state updated with combined data');
+			console.log('✅ Roadmap state updated with hybrid data');
 			
 			// Store in Supabase using IDs from API response
 			await storeRoadmapInSupabase(p, combinedData, timelineData);
@@ -426,24 +538,62 @@ export function RoadmapProvider({ children }: { children: ReactNode }) {
 			if (roadmapRecords && roadmapRecords.length > 0) {
 				const storedRoadmap = roadmapRecords[0];
 				console.log('✅ Loaded stored roadmap:', storedRoadmap.id);
-				console.log('🔍 Raw API response content:', {
-					hasRawResponses: !!storedRoadmap.raw_api_response?.rawOpenAIResponses,
-					rawResponsesCount: storedRoadmap.raw_api_response?.rawOpenAIResponses ? Object.keys(storedRoadmap.raw_api_response.rawOpenAIResponses).length : 0,
-					hasParsedEstimates: !!storedRoadmap.raw_api_response?.parsedTimelineEstimates,
-					parsedEstimatesCount: storedRoadmap.raw_api_response?.parsedTimelineEstimates ? Object.keys(storedRoadmap.raw_api_response.parsedTimelineEstimates).length : 0
-				});
+				
+				// Check if this is hybrid approach data
+				const isHybridData = storedRoadmap.raw_api_response?.hybrid_approach === true;
+				console.log('🔍 Data type:', isHybridData ? 'Hybrid Approach' : 'Legacy');
 				
 				// Only reconstruct if we don't have current session data
 				if (!roadmap || !roadmap.parsedTimelineEstimates || Object.keys(roadmap.parsedTimelineEstimates).length === 0) {
-					const reconstructedRoadmap = {
-						phases: storedRoadmap.raw_api_response?.baseline_phases || [],
-						timelineEstimates: [], // We don't store the full timeline estimates
-						parsedTimelineEstimates: storedRoadmap.raw_api_response?.parsedTimelineEstimates || {}
-					};
+					let reconstructedRoadmap: RoadmapData;
+					
+					if (isHybridData) {
+						// Handle hybrid approach data
+						console.log('🔄 Processing hybrid approach data...');
+						
+						// Parse stored hybrid responses
+						const { getStoredRawResponses, parseStoredResponses } = await import('@/lib/hybrid-roadmap-generator');
+						
+						const rawResponses = await getStoredRawResponses(storedRoadmap.project_id, user.id);
+						if (rawResponses) {
+							// Get project data to determine construction method
+							const { data: projectData } = await supabase
+								.from('projects')
+								.select('construction_method')
+								.eq('id', storedRoadmap.project_id)
+								.single();
+							
+							const constructionMethod = projectData?.construction_method || 'post-frame';
+							const hybridResponse = await parseStoredResponses(
+								rawResponses,
+								storedRoadmap.project_id,
+								user.id,
+								constructionMethod
+							);
+							
+							reconstructedRoadmap = convertHybridToLegacyFormat(hybridResponse);
+							console.log('✅ Hybrid roadmap restored from database');
+						} else {
+							// Fallback to empty roadmap
+							reconstructedRoadmap = {
+								phases: [],
+								timelineEstimates: [],
+								parsedTimelineEstimates: {}
+							};
+						}
+					} else {
+						// Handle legacy data
+						console.log('🔄 Processing legacy data...');
+						reconstructedRoadmap = {
+							phases: storedRoadmap.raw_api_response?.baseline_phases || [],
+							timelineEstimates: [], // We don't store the full timeline estimates
+							parsedTimelineEstimates: storedRoadmap.raw_api_response?.parsedTimelineEstimates || {}
+						};
+						console.log('✅ Legacy roadmap restored from database');
+					}
 					
 					// Restore the roadmap
 					setRoadmap(reconstructedRoadmap);
-					console.log('✅ Roadmap restored from database');
 					
 					// Now fetch the profile from the projects table using project_id
 					if (storedRoadmap.project_id) {
@@ -501,13 +651,47 @@ export function RoadmapProvider({ children }: { children: ReactNode }) {
 		
 		setIsLoading(true)
 		try {
-			// Create a new profile with the updated detail level for this phase
-			const updatedProfile = { ...profile }
-			// For now, just regenerate the whole roadmap. Later you can optimize to regenerate just one phase
-			const data = await generateRoadmap(updatedProfile)
-			setRoadmap(data)
+			console.log(`🔄 Regenerating phase ${phaseId} with detail level ${detailLevel}...`);
+			
+			// Get current user
+			const { data: { user }, error: userError } = await supabase.auth.getUser();
+			if (userError || !user?.id) {
+				throw new Error('User not authenticated');
+			}
+			
+			// Get the current project ID from the roadmap data
+			// For now, we'll need to find the project ID from the stored data
+			// This is a simplified approach - in production you might want to store project ID in state
+			const { data: projects } = await supabase
+				.from('projects')
+				.select('id')
+				.eq('user_id', user.id)
+				.order('created_at', { ascending: false })
+				.limit(1)
+				.single();
+			
+			if (!projects?.id) {
+				throw new Error('No project found for regeneration');
+			}
+			
+			// Regenerate the entire hybrid roadmap
+			const hybridResponse = await generateHybridRoadmap(profile, projects.id);
+			const roadmapData = convertHybridToLegacyFormat(hybridResponse);
+			
+			// Combine with existing timeline data
+			const combinedData = {
+				...roadmapData,
+				timelineEstimates: roadmap.timelineEstimates || [],
+				parsedTimelineEstimates: roadmap.parsedTimelineEstimates || {}
+			};
+			
+			setRoadmap(combinedData);
+			console.log(`✅ Phase ${phaseId} regenerated successfully`);
+			
+		} catch (error) {
+			console.error(`❌ Error regenerating phase ${phaseId}:`, error);
 		} finally {
-			setIsLoading(false)
+			setIsLoading(false);
 		}
 	}
 

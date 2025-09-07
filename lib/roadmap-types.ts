@@ -49,6 +49,7 @@ export interface RoadmapPhase {
 	id: string;
 	title: string;
 	detailLevel: "low" | "standard" | "high";
+	duration?: string;
 	tasks: RoadmapTask[];
 }
 

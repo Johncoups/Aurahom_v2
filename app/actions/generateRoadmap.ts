@@ -3,6 +3,8 @@
 import { createClient } from '@supabase/supabase-js';
 import type { OnboardingProfile, RoadmapData, RoadmapPhase, RoadmapTask } from "@/lib/roadmap-types";
 import { generateRoadmapContent, generateStructuredContent } from "@/lib/openai";
+import { generateHybridRoadmap } from "@/lib/hybrid-roadmap-generator";
+import type { CompleteProjectResponse } from "@/lib/unified-response-types";
 
 // Helper functions to provide phase-specific content
 function getQAChecksForPhase(phaseId: string): string[] {
@@ -304,11 +306,68 @@ async function getBaselinePhases(): Promise<any> {
   }
 }
 
-// Enhanced roadmap generator with OpenAI integration
-export async function generateRoadmap(profile: OnboardingProfile): Promise<RoadmapData> {
+/**
+ * Converts hybrid response format to legacy RoadmapData format for backward compatibility
+ */
+function convertHybridToLegacyFormat(hybridResponse: CompleteProjectResponse): RoadmapData {
+	try {
+		console.log('🔄 Converting hybrid response to legacy format...');
+		
+		// Extract phases from the hybrid response
+		const phases = hybridResponse.phaseResponses.map(phaseResponse => ({
+			id: phaseResponse.phaseId,
+			title: phaseResponse.phaseTitle,
+			detailLevel: 'standard' as const, // Default detail level
+			tasks: [
+				{
+					id: `hybrid-${phaseResponse.phaseId}`,
+					title: phaseResponse.phaseTitle,
+					description: `AI-enhanced tasks for ${phaseResponse.phaseTitle} phase`,
+					steps: [], // Will be populated from baseline phases if needed
+					qaChecks: [], // Will be populated from baseline phases if needed
+					vendorQuestions: [], // Will be populated from baseline phases if needed
+					vendorNeeds: [], // Will be populated from baseline phases if needed
+					notes: phaseResponse.expertInsights?.proTips?.join(' ') || ''
+				}
+			]
+		}));
+		
+		console.log(`✅ Converted ${phases.length} phases to legacy format`);
+		
+		return {
+			phases,
+			timelineEstimates: [], // Will be populated by timeline API
+			parsedTimelineEstimates: {} // Will be populated by timeline API
+		};
+		
+	} catch (error) {
+		console.error('❌ Error converting hybrid response:', error);
+		// Return empty roadmap as fallback
+		return {
+			phases: [],
+			timelineEstimates: [],
+			parsedTimelineEstimates: {}
+		};
+	}
+}
+
+// Enhanced roadmap generator with hybrid approach integration
+export async function generateRoadmap(profile: OnboardingProfile, projectId?: string): Promise<RoadmapData> {
 	console.log('🚀 generateRoadmap called with profile:', profile);
 	
 	try {
+		// Check if we have a project ID for hybrid approach
+		if (projectId) {
+			console.log('🤖 Using hybrid approach for roadmap generation...');
+			const hybridResponse = await generateHybridRoadmap(profile, projectId);
+			const legacyRoadmap = convertHybridToLegacyFormat(hybridResponse);
+			console.log('✅ Hybrid roadmap generation successful');
+			return legacyRoadmap;
+		}
+		
+		// Fallback to legacy approach if no project ID
+		console.log('⚠️ No project ID provided, falling back to legacy approach');
+		
 		// Check if OpenAI API key is available
 		if (!process.env.OPENAI_API_KEY) {
 			console.warn('⚠️ OPENAI_API_KEY not found, falling back to baseline');
@@ -325,6 +384,26 @@ export async function generateRoadmap(profile: OnboardingProfile): Promise<Roadm
 		console.warn('🔄 Falling back to baseline data');
 		// Fallback to baseline data
 		return generateBaselineRoadmap(profile);
+	}
+}
+
+/**
+ * Hybrid roadmap generator that uses the new hybrid approach
+ * This is the recommended function for new implementations
+ */
+export async function generateHybridRoadmapAction(
+	profile: OnboardingProfile, 
+	projectId: string
+): Promise<CompleteProjectResponse> {
+	console.log('🚀 generateHybridRoadmapAction called with profile:', profile, 'projectId:', projectId);
+	
+	try {
+		const hybridResponse = await generateHybridRoadmap(profile, projectId);
+		console.log('✅ Hybrid roadmap generation successful');
+		return hybridResponse;
+	} catch (error) {
+		console.error('❌ Hybrid roadmap generation failed:', error);
+		throw new Error(`Failed to generate hybrid roadmap: ${error instanceof Error ? error.message : 'Unknown error'}`);
 	}
 }
 

@@ -1,9 +1,10 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import type { RoadmapData, RoadmapPhase } from "@/lib/roadmap-types"
 import { getPhaseById, getPhasesForMethod, CONSTRUCTION_PHASES } from "@/lib/roadmap-phases"
 import { useRoadmap } from "@/contexts/roadmap-context"
+import { supabase } from "@/lib/supabase"
 
 interface RoadmapViewProps {
 	data: RoadmapData
@@ -12,7 +13,63 @@ interface RoadmapViewProps {
 export function RoadmapView({ data }: RoadmapViewProps) {
 	const { profile } = useRoadmap();
 	const [expandedPhases, setExpandedPhases] = useState<Set<string>>(new Set());
+	const [regionalContext, setRegionalContext] = useState<any>(null);
+	const [expertInsights, setExpertInsights] = useState<Record<string, any>>({});
 	
+	// Load hybrid data for enhanced display
+	useEffect(() => {
+		async function loadHybridData() {
+			try {
+				const { data: { user } } = await supabase.auth.getUser();
+				if (!user?.id) return;
+
+				// Get the most recent roadmap data to check for hybrid approach
+				const { data: roadmapRecords } = await supabase
+					.from('roadmap_data')
+					.select('raw_api_response, project_id')
+					.eq('user_id', user.id)
+					.eq('raw_api_response->>hybrid_approach', 'true')
+					.order('created_at', { ascending: false })
+					.limit(1)
+					.single();
+
+				if (roadmapRecords?.raw_api_response) {
+					const rawResponse = roadmapRecords.raw_api_response;
+					
+					// Parse regional analysis if available
+					if (rawResponse.regionalAnalysis) {
+						try {
+							const regionalData = JSON.parse(rawResponse.regionalAnalysis);
+							setRegionalContext(regionalData);
+						} catch (error) {
+							console.warn('Failed to parse regional analysis:', error);
+						}
+					}
+
+					// Parse phase responses for expert insights
+					if (rawResponse.phaseResponses) {
+						const insights: Record<string, any> = {};
+						for (const [phaseId, rawPhaseResponse] of Object.entries(rawResponse.phaseResponses)) {
+							try {
+								const phaseData = JSON.parse(rawPhaseResponse as string);
+								if (phaseData.expertInsights) {
+									insights[phaseId] = phaseData.expertInsights;
+								}
+							} catch (error) {
+								console.warn(`Failed to parse phase response for ${phaseId}:`, error);
+							}
+						}
+						setExpertInsights(insights);
+					}
+				}
+			} catch (error) {
+				console.error('Failed to load hybrid data:', error);
+			}
+		}
+
+		loadHybridData();
+	}, []);
+
 	// Debug logging when component renders
 	console.log('🔍 RoadmapView rendered with data:', {
 		hasData: !!data,
@@ -23,7 +80,9 @@ export function RoadmapView({ data }: RoadmapViewProps) {
 		hasParsedEstimates: !!data?.parsedTimelineEstimates,
 		parsedEstimatesKeys: data?.parsedTimelineEstimates ? Object.keys(data.parsedTimelineEstimates) : [],
 		sampleParsedData: data?.parsedTimelineEstimates ? 
-			Object.entries(data.parsedTimelineEstimates).slice(0, 2) : 'No parsed data'
+			Object.entries(data.parsedTimelineEstimates).slice(0, 2) : 'No parsed data',
+		hasRegionalContext: !!regionalContext,
+		expertInsightsCount: Object.keys(expertInsights).length
 	});
 
 	const togglePhase = (phaseId: string) => {
@@ -109,8 +168,81 @@ export function RoadmapView({ data }: RoadmapViewProps) {
 					</div>
 				</div>
 			)}
+
+			{/* Regional Context Section */}
+			{regionalContext && (
+				<div className="p-6 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg border border-blue-200 shadow-sm">
+					<h2 className="text-xl font-semibold mb-4 text-blue-900">Regional Context & Insights</h2>
+					<div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+						{regionalContext.primaryClassification && (
+							<div className="bg-white p-4 rounded-lg border border-blue-100">
+								<h3 className="font-semibold text-blue-800 mb-2">Region Classification</h3>
+								<p className="text-blue-700">{regionalContext.primaryClassification}</p>
+								{regionalContext.secondaryClassifications && regionalContext.secondaryClassifications.length > 0 && (
+									<div className="mt-2">
+										<p className="text-sm text-blue-600">Additional factors:</p>
+										<ul className="list-disc pl-5 text-sm text-blue-600">
+											{regionalContext.secondaryClassifications?.map((classification: string, index: number) => (
+												<li key={index}>{classification}</li>
+											))}
+										</ul>
+									</div>
+								)}
+							</div>
+						)}
+						
+						{regionalContext.climateZone && (
+							<div className="bg-white p-4 rounded-lg border border-blue-100">
+								<h3 className="font-semibold text-blue-800 mb-2">Climate Zone</h3>
+								<p className="text-blue-700">{regionalContext.climateZone}</p>
+							</div>
+						)}
+
+						{regionalContext.seasonalFactors && (
+							<div className="bg-white p-4 rounded-lg border border-blue-100">
+								<h3 className="font-semibold text-blue-800 mb-2">Seasonal Considerations</h3>
+								<div className="space-y-2 text-sm text-blue-700">
+									{regionalContext.seasonalFactors.winterLimitations && (
+										<p>❄️ Winter construction limitations</p>
+									)}
+									{regionalContext.seasonalFactors.summerChallenges && (
+										<p>☀️ Summer construction challenges</p>
+									)}
+									{regionalContext.seasonalFactors.optimalConstructionMonths && regionalContext.seasonalFactors.optimalConstructionMonths.length > 0 && (
+										<div>
+											<p className="font-medium">Optimal months:</p>
+											<p>{regionalContext.seasonalFactors.optimalConstructionMonths.join(', ')}</p>
+										</div>
+									)}
+								</div>
+							</div>
+						)}
+
+						{regionalContext.regulatoryEnvironment && (
+							<div className="bg-white p-4 rounded-lg border border-blue-100">
+								<h3 className="font-semibold text-blue-800 mb-2">Regulatory Environment</h3>
+								<div className="space-y-2 text-sm text-blue-700">
+									<p><strong>Permit Complexity:</strong> {regionalContext.regulatoryEnvironment.permitComplexity}</p>
+									<p><strong>Inspection Frequency:</strong> {regionalContext.regulatoryEnvironment.inspectionFrequency}</p>
+									<p><strong>Code Strictness:</strong> {regionalContext.regulatoryEnvironment.codeStrictness}</p>
+									{regionalContext.regulatoryEnvironment.specialRequirements && regionalContext.regulatoryEnvironment.specialRequirements.length > 0 && (
+										<div>
+											<p className="font-medium">Special Requirements:</p>
+											<ul className="list-disc pl-5">
+												{regionalContext.regulatoryEnvironment.specialRequirements?.map((req: string, index: number) => (
+													<li key={index}>{req}</li>
+												))}
+											</ul>
+										</div>
+									)}
+								</div>
+							</div>
+						)}
+					</div>
+				</div>
+			)}
 			
-			{data.phases && data.phases.length > 0 ? data.phases
+			{data.phases && data.phases.length > 0 ? (data.phases
 				// Filter out roofing phase for Post Frame construction since it's covered in post-frame-structure
 				.filter(phase => {
 					if (profile?.constructionMethod === "post-frame" && phase.id === "roofing") {
@@ -132,7 +264,7 @@ export function RoadmapView({ data }: RoadmapViewProps) {
 					phaseInfoTitle: phaseInfo?.title
 				});
 				return (
-					<section key={phase.id || `phase-${Math.random()}`} className="border rounded-lg p-6 bg-white shadow-sm">
+					<section key={phase.id} className="border rounded-lg p-6 bg-white shadow-sm">
 						<div 
 							className="flex items-center justify-between mb-6 cursor-pointer hover:bg-gray-100 p-3 rounded-lg transition-all duration-200 ease-in-out"
 							onClick={() => togglePhase(phase.id)}
@@ -224,7 +356,7 @@ export function RoadmapView({ data }: RoadmapViewProps) {
 									<div className="mb-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
 										<h3 className="font-semibold text-blue-900 mb-3">Tasks</h3>
 										<ul className="grid grid-cols-1 md:grid-cols-2 gap-2">
-											{phaseInfo.tasks.map((task: any, index: number) => (
+											{phaseInfo.tasks?.map((task: any, index: number) => (
 												<li key={index} className="flex items-start gap-2 text-sm text-blue-800">
 													<span className="text-blue-600 mt-0.5">•</span>
 													<span>{task}</span>
@@ -234,80 +366,149 @@ export function RoadmapView({ data }: RoadmapViewProps) {
 									</div>
 								)}
 
-								{/* AI-Generated Tasks */}
-								<div className="space-y-4">
-									<h3 className="font-semibold text-gray-900 border-b pb-2">Helpful Information</h3>
-									{phase.tasks && phase.tasks.length > 0 ? (
-										<ul className="space-y-4">
-											{phase.tasks.map(task => (
-												<li key={task.id} className="border rounded-lg p-4 bg-gray-50">
-													
-													{/* Vendor Information - Moved to Top */}
-													<div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-														<div className="bg-white p-3 rounded border">
-															<div className="text-sm font-semibold text-gray-700 mb-2">Questions to ask vendors:</div>
-															{task.vendorQuestions && task.vendorQuestions.length > 0 ? (
-																<ul className="list-disc pl-5 text-sm text-gray-600 space-y-1">
-																	{task.vendorQuestions.map((q, i) => (
-																	<li key={i}>{q}</li>
-																))}
-																</ul>
-															) : (
-																<p className="text-gray-500 text-sm">No vendor questions available</p>
-															)}
-														</div>
-														<div className="bg-white p-3 rounded border">
-															<div className="text-sm font-semibold text-gray-700 mb-2">What vendors need from you:</div>
-															{task.vendorNeeds && task.vendorNeeds.length > 0 ? (
-																<ul className="list-disc pl-5 text-sm text-gray-600 space-y-1">
-																	{task.vendorNeeds.map((q, i) => (
-																	<li key={i}>{q}</li>
-																))}
-																</ul>
-															) : (
-																<p className="text-gray-500 text-sm">No vendor requirements available</p>
-															)}
-														</div>
-													</div>
+								{/* Expert Insights from Hybrid Approach */}
+								{expertInsights[phase.id] && (
+									<div className="mb-6 p-4 bg-gradient-to-r from-green-50 to-emerald-50 rounded-lg border border-green-200">
+										<h3 className="font-semibold text-green-900 mb-3">Expert Insights</h3>
+										<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+											{expertInsights[phase.id].proTips && expertInsights[phase.id].proTips.length > 0 && (
+												<div className="bg-white p-3 rounded border border-green-100">
+													<h4 className="font-medium text-green-800 mb-2">Pro Tips</h4>
+													<ul className="list-disc pl-5 text-sm text-green-700 space-y-1">
+														{expertInsights[phase.id].proTips?.map((tip: string, i: number) => (
+															<li key={i}>{tip}</li>
+														))}
+													</ul>
+												</div>
+											)}
+											
+											{expertInsights[phase.id].commonMistakes && expertInsights[phase.id].commonMistakes.length > 0 && (
+												<div className="bg-white p-3 rounded border border-green-100">
+													<h4 className="font-medium text-green-800 mb-2">Common Mistakes to Avoid</h4>
+													<ul className="list-disc pl-5 text-sm text-green-700 space-y-1">
+														{expertInsights[phase.id].commonMistakes?.map((mistake: string, i: number) => (
+															<li key={i}>{mistake}</li>
+														))}
+													</ul>
+												</div>
+											)}
+											
+											{expertInsights[phase.id].costSavingTips && expertInsights[phase.id].costSavingTips.length > 0 && (
+												<div className="bg-white p-3 rounded border border-green-100">
+													<h4 className="font-medium text-green-800 mb-2">Cost-Saving Tips</h4>
+													<ul className="list-disc pl-5 text-sm text-green-700 space-y-1">
+														{expertInsights[phase.id].costSavingTips?.map((tip: string, i: number) => (
+															<li key={i}>{tip}</li>
+														))}
+													</ul>
+												</div>
+											)}
+											
+											{expertInsights[phase.id].qualityCheckpoints && expertInsights[phase.id].qualityCheckpoints.length > 0 && (
+												<div className="bg-white p-3 rounded border border-green-100">
+													<h4 className="font-medium text-green-800 mb-2">Quality Checkpoints</h4>
+													<ul className="list-disc pl-5 text-sm text-green-700 space-y-1">
+														{expertInsights[phase.id].qualityCheckpoints?.map((checkpoint: string, i: number) => (
+															<li key={i}>{checkpoint}</li>
+														))}
+													</ul>
+												</div>
+											)}
+										</div>
+									</div>
+								)}
 
-													{/* Steps - Moved Below Vendor Info */}
-													{task.steps && task.steps.length > 0 && (
-														<div className="mb-3">
-															<div className="text-sm font-semibold text-gray-700 mb-2">Steps:</div>
-															<ul className="list-disc pl-5 text-sm text-gray-600 space-y-1">
-																{task.steps.map(step => (
-																	<li key={step.id}>{step.description || 'Step description not available'}</li>
-																))}
-															</ul>
-														</div>
-													)}
+								{/* Helpful Information from Hardcoded Data */}
+								{phaseInfo?.helpfulInformation && phaseInfo.helpfulInformation.length > 0 && (
+									<div className="space-y-4">
+										<h3 className="font-semibold text-gray-900 border-b pb-2">Helpful Information</h3>
+										<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+											<div className="bg-white p-4 rounded border">
+												<div className="text-sm font-semibold text-gray-700 mb-3">Questions to ask vendors:</div>
+												<ul className="list-disc pl-5 text-sm text-gray-600 space-y-1">
+													{phaseInfo.helpfulInformation
+														?.filter(info => info.toLowerCase().includes('quote') || info.toLowerCase().includes('compare'))
+														?.map((info, i) => (
+															<li key={i}>{info}</li>
+														))
+													}
+												</ul>
+											</div>
+											<div className="bg-white p-4 rounded border">
+												<div className="text-sm font-semibold text-gray-700 mb-3">What vendors need from you:</div>
+												<ul className="list-disc pl-5 text-sm text-gray-600 space-y-1">
+													{phaseInfo.helpfulInformation
+														?.filter(info => info.toLowerCase().includes('research') || info.toLowerCase().includes('create') || info.toLowerCase().includes('apply'))
+														?.map((info, i) => (
+															<li key={i}>{info}</li>
+														))
+													}
+												</ul>
+											</div>
+										</div>
+										
+										<div className="bg-white p-4 rounded border">
+											<div className="text-sm font-semibold text-gray-700 mb-3">Steps:</div>
+											<ul className="list-disc pl-5 text-sm text-gray-600 space-y-1">
+												{phaseInfo.helpfulInformation
+													?.filter(info => !info.toLowerCase().includes('quote') && !info.toLowerCase().includes('compare') && !info.toLowerCase().includes('research') && !info.toLowerCase().includes('create') && !info.toLowerCase().includes('apply'))
+													?.map((info, i) => (
+														<li key={i}>{info}</li>
+													))
+												}
+											</ul>
+										</div>
+									</div>
+								)}
 
-													{/* Quality Checks - Moved Below Steps */}
-													{task.qaChecks && task.qaChecks.length > 0 && (
-														<div className="mb-3">
-															<div className="text-sm font-semibold text-gray-700 mb-2">Quality checks:</div>
-															<ul className="list-disc pl-5 text-sm text-gray-600 space-y-1">
-																{task.qaChecks.map((q, i) => (
-																	<li key={i}>{q || 'Quality check not available'}</li>
-																))}
-															</ul>
-														</div>
-													)}
-									</li>
-								))}
-								</ul>
-							) : (
-								<div className="text-gray-500 text-center py-8">
-									<p>No detailed tasks available for this phase.</p>
-									<p className="text-sm mt-2">Tasks will be generated when you select this phase for AI enhancement.</p>
-								</div>
-							)}
-								</div>
+								{/* Helpful Information from Hardcoded Data */}
+								{phaseInfo?.helpfulInformation && phaseInfo.helpfulInformation.length > 0 && (
+									<div className="space-y-4">
+										<h3 className="font-semibold text-gray-900 border-b pb-2">Helpful Information</h3>
+										<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+											<div className="bg-white p-4 rounded border">
+												<div className="text-sm font-semibold text-gray-700 mb-3">Questions to ask vendors:</div>
+												<ul className="list-disc pl-5 text-sm text-gray-600 space-y-1">
+													{phaseInfo.helpfulInformation
+														?.filter(info => info.toLowerCase().includes('quote') || info.toLowerCase().includes('compare'))
+														?.map((info, i) => (
+															<li key={i}>{info}</li>
+														))
+													}
+												</ul>
+											</div>
+											<div className="bg-white p-4 rounded border">
+												<div className="text-sm font-semibold text-gray-700 mb-3">What vendors need from you:</div>
+												<ul className="list-disc pl-5 text-sm text-gray-600 space-y-1">
+													{phaseInfo.helpfulInformation
+														?.filter(info => info.toLowerCase().includes('research') || info.toLowerCase().includes('create') || info.toLowerCase().includes('apply'))
+														?.map((info, i) => (
+															<li key={i}>{info}</li>
+														))
+													}
+												</ul>
+											</div>
+										</div>
+										
+										<div className="bg-white p-4 rounded border">
+											<div className="text-sm font-semibold text-gray-700 mb-3">Steps:</div>
+											<ul className="list-disc pl-5 text-sm text-gray-600 space-y-1">
+												{phaseInfo.helpfulInformation
+													?.filter(info => !info.toLowerCase().includes('quote') && !info.toLowerCase().includes('compare') && !info.toLowerCase().includes('research') && !info.toLowerCase().includes('create') && !info.toLowerCase().includes('apply'))
+													?.map((info, i) => (
+														<li key={i}>{info}</li>
+													))
+												}
+											</ul>
+										</div>
+									</div>
+								)}
+
 							</div>
 						)}
 					</section>
 				)
-			}) : (
+			})) : (
 				<div className="text-center py-12">
 					<p className="text-gray-500 text-lg">No roadmap phases available.</p>
 					<p className="text-gray-400 text-sm mt-2">Please generate a roadmap to see construction phases.</p>
