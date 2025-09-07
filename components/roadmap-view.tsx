@@ -10,6 +10,242 @@ interface RoadmapViewProps {
 	data: RoadmapData
 }
 
+// Helper function to get phase-specific helpful information
+function getPhaseHelpfulInfo(phaseId: string) {
+	const helpfulInfo: Record<string, { vendorQuestions: string[], vendorNeeds: string[], qaChecks: string[] }> = {
+		'just-starting': {
+			vendorQuestions: [
+				'What is your experience with project planning and assessment?',
+				'Can you help define project scope and requirements?',
+				'What construction methods do you recommend for my situation?',
+				'How do you handle budget planning and cost estimation?',
+				'What is your process for code compliance research?'
+			],
+			vendorNeeds: [
+				'Project goals and vision description',
+				'Budget constraints and financial situation',
+				'Property information and site details',
+				'Timeline preferences and constraints',
+				'Construction method preferences or questions'
+			],
+			qaChecks: [
+				'Is project scope clearly defined?',
+				'Are project goals documented?',
+				'Is budget range established?',
+				'Are construction method options researched?',
+				'Are local building codes reviewed?'
+			]
+		},
+		'pre-construction': {
+			vendorQuestions: [
+				'What is your experience with this type of project?',
+				'Can you provide references from similar projects?',
+				'What is your estimated timeline for completion?',
+				'Do you have the necessary licenses and insurance?',
+				'What is your payment schedule and terms?'
+			],
+			vendorNeeds: [
+				'Complete project specifications and plans',
+				'Permit documentation and approvals',
+				'Site access and staging area',
+				'Utility connections and temporary power',
+				'Project timeline and milestone dates'
+			],
+			qaChecks: [
+				'Are all permits obtained and displayed?',
+				'Are architectural plans finalized and approved?',
+				'Are contractors licensed and insured?',
+				'Is financing secured and documented?',
+				'Are material orders confirmed with delivery dates?'
+			]
+		},
+		'site-prep-excavation': {
+			vendorQuestions: [
+				'What equipment will you use for excavation?',
+				'How will you handle excess soil removal?',
+				'What erosion control measures do you implement?',
+				'How do you ensure proper site drainage?',
+				'What is your process for site cleanup?'
+			],
+			vendorNeeds: [
+				'Property survey and site plans',
+				'Utility locates and permits',
+				'Access to site and staging area',
+				'Clearance for equipment and materials',
+				'Contact information for coordination'
+			],
+			qaChecks: [
+				'Is site properly cleared and graded?',
+				'Are erosion control measures in place?',
+				'Is construction access road established?',
+				'Are temporary utilities installed?',
+				'Is site drainage working properly?'
+			]
+		},
+		'foundation': {
+			vendorQuestions: [
+				'What concrete mix design do you recommend?',
+				'How do you ensure proper curing?',
+				'What waterproofing system do you use?',
+				'How do you handle weather delays?',
+				'What is your quality control process?'
+			],
+			vendorNeeds: [
+				'Approved foundation plans',
+				'Soil test reports and engineering',
+				'Concrete specifications and mix design',
+				'Access for concrete trucks and equipment',
+				'Weather protection and curing conditions'
+			],
+			qaChecks: [
+				'Are concrete forms properly aligned and braced?',
+				'Is rebar correctly placed and tied?',
+				'Is concrete properly mixed and poured?',
+				'Are anchor bolts correctly positioned?',
+				'Is foundation waterproofing applied?'
+			]
+		},
+		'rough-framing': {
+			vendorQuestions: [
+				'What lumber grade do you use for framing?',
+				'How do you ensure proper wall alignment?',
+				'What fasteners do you use for connections?',
+				'How do you handle roof truss installation?',
+				'What is your process for quality checks?'
+			],
+			vendorNeeds: [
+				'Approved framing plans and details',
+				'Lumber and material specifications',
+				'Access for delivery and staging',
+				'Power and lighting for work areas',
+				'Coordination with other trades'
+			],
+			qaChecks: [
+				'Are wall studs properly spaced and plumb?',
+				'Is roof truss spacing correct?',
+				'Are all connections properly fastened?',
+				'Is blocking installed for utilities?',
+				'Are windows and doors properly framed?'
+			]
+		},
+		'plumbing-rough': {
+			vendorQuestions: [
+				'What pipe materials do you recommend?',
+				'How do you ensure proper pipe slopes?',
+				'What is your testing procedure?',
+				'How do you handle code compliance?',
+				'What warranty do you provide?'
+			],
+			vendorNeeds: [
+				'Approved plumbing plans and specs',
+				'Fixture and material specifications',
+				'Access to work areas and staging',
+				'Power for tools and equipment',
+				'Coordination with framing and electrical'
+			],
+			qaChecks: [
+				'Are all pipes properly supported?',
+				'Are drain slopes correct?',
+				'Are vent pipes properly installed?',
+				'Is water pressure adequate?',
+				'Are all connections leak-free?'
+			]
+		},
+		'electrical-rough': {
+			vendorQuestions: [
+				'What wire types do you use?',
+				'How do you ensure proper grounding?',
+				'What is your testing procedure?',
+				'How do you handle code compliance?',
+				'What warranty do you provide?'
+			],
+			vendorNeeds: [
+				'Approved electrical plans and specs',
+				'Fixture and material specifications',
+				'Access to work areas and staging',
+				'Power for tools and equipment',
+				'Coordination with framing and plumbing'
+			],
+			qaChecks: [
+				'Are all wires properly secured?',
+				'Are outlet and switch boxes level?',
+				'Is grounding system complete?',
+				'Are all circuits properly labeled?',
+				'Is panel wiring neat and organized?'
+			]
+		},
+		'insulation': {
+			vendorQuestions: [
+				'What insulation materials do you use?',
+				'How do you ensure proper installation?',
+				'What R-value do you recommend?',
+				'How do you handle air sealing?',
+				'What is your quality guarantee?'
+			],
+			vendorNeeds: [
+				'Approved insulation specifications',
+				'Access to all wall and ceiling cavities',
+				'Power for tools and equipment',
+				'Proper ventilation and safety measures',
+				'Coordination with other trades'
+			],
+			qaChecks: [
+				'Is insulation properly installed without gaps?',
+				'Are vapor barriers correctly placed?',
+				'Is air sealing complete?',
+				'Are all penetrations sealed?',
+				'Is R-value adequate for climate zone?'
+			]
+		},
+		'drywall': {
+			vendorQuestions: [
+				'What drywall thickness do you use?',
+				'How many coats of mud do you apply?',
+				'What is your sanding process?',
+				'How do you ensure smooth finishes?',
+				'What is your timeline for completion?'
+			],
+			vendorNeeds: [
+				'Approved drywall specifications',
+				'Access to all work areas',
+				'Power and lighting for work',
+				'Proper ventilation and dust control',
+				'Coordination with other trades'
+			],
+			qaChecks: [
+				'Are all joints properly taped and mudded?',
+				'Are screw heads properly recessed?',
+				'Is drywall properly secured to framing?',
+				'Are corners and edges straight?',
+				'Is surface smooth and ready for paint?'
+			]
+		}
+	};
+
+	return helpfulInfo[phaseId] || {
+		vendorQuestions: [
+			'What is your experience with this type of work?',
+			'Can you provide references?',
+			'What is your timeline and pricing?',
+			'What warranty do you provide?',
+			'How do you ensure quality?'
+		],
+		vendorNeeds: [
+			'Complete project specifications',
+			'Access to work areas',
+			'Power and utilities',
+			'Coordination with other trades',
+			'Proper safety measures'
+		],
+		qaChecks: [
+			'Check all work meets building codes',
+			'Verify materials are properly installed',
+			'Ensure safety measures are in place',
+			'Confirm quality standards are met'
+		]
+	};
+}
+
 export function RoadmapView({ data }: RoadmapViewProps) {
 	const { profile } = useRoadmap();
 	const [expandedPhases, setExpandedPhases] = useState<Set<string>>(new Set());
@@ -261,7 +497,10 @@ export function RoadmapView({ data }: RoadmapViewProps) {
 					userPhasesCount: userPhases.length,
 					phaseInfoFound: !!phaseInfo,
 					phaseInfoOrder: phaseInfo?.order,
-					phaseInfoTitle: phaseInfo?.title
+					phaseInfoTitle: phaseInfo?.title,
+					hasHelpfulInfo: !!phaseInfo?.helpfulInformation,
+					helpfulInfoLength: phaseInfo?.helpfulInformation?.length || 0,
+					sampleHelpfulInfo: phaseInfo?.helpfulInformation?.slice(0, 2) || []
 				});
 				return (
 					<section key={phase.id} className="border rounded-lg p-6 bg-white shadow-sm">
@@ -418,48 +657,42 @@ export function RoadmapView({ data }: RoadmapViewProps) {
 									</div>
 								)}
 
-								{/* Helpful Information from Hardcoded Data */}
-								{phaseInfo?.helpfulInformation && phaseInfo.helpfulInformation.length > 0 && (
-									<div className="space-y-4">
-										<h3 className="font-semibold text-gray-900 border-b pb-2">Helpful Information</h3>
-										<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-											<div className="bg-white p-4 rounded border">
-												<div className="text-sm font-semibold text-gray-700 mb-3">Questions to ask vendors:</div>
-												<ul className="list-disc pl-5 text-sm text-gray-600 space-y-1">
-													{phaseInfo.helpfulInformation
-														?.filter(info => info.toLowerCase().includes('quote') || info.toLowerCase().includes('compare'))
-														?.map((info, i) => (
-															<li key={i}>{info}</li>
-														))
-													}
-												</ul>
+								{/* Helpful Information - Show for all phases */}
+								{(() => {
+									const helpfulInfo = getPhaseHelpfulInfo(phase.id);
+									return (
+										<div className="space-y-4">
+											<h3 className="font-semibold text-gray-900 border-b pb-2">Helpful Information</h3>
+											<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+												<div className="bg-white p-4 rounded border">
+													<div className="text-sm font-semibold text-gray-700 mb-3">Questions to ask vendors:</div>
+													<ul className="list-disc pl-5 text-sm text-gray-600 space-y-1">
+														{helpfulInfo.vendorQuestions.map((question, i) => (
+															<li key={i}>{question}</li>
+														))}
+													</ul>
+												</div>
+												<div className="bg-white p-4 rounded border">
+													<div className="text-sm font-semibold text-gray-700 mb-3">What vendors need from you:</div>
+													<ul className="list-disc pl-5 text-sm text-gray-600 space-y-1">
+														{helpfulInfo.vendorNeeds.map((need, i) => (
+															<li key={i}>{need}</li>
+														))}
+													</ul>
+												</div>
 											</div>
+											
 											<div className="bg-white p-4 rounded border">
-												<div className="text-sm font-semibold text-gray-700 mb-3">What vendors need from you:</div>
+												<div className="text-sm font-semibold text-gray-700 mb-3">Quality checks:</div>
 												<ul className="list-disc pl-5 text-sm text-gray-600 space-y-1">
-													{phaseInfo.helpfulInformation
-														?.filter(info => info.toLowerCase().includes('research') || info.toLowerCase().includes('create') || info.toLowerCase().includes('apply'))
-														?.map((info, i) => (
-															<li key={i}>{info}</li>
-														))
-													}
+													{helpfulInfo.qaChecks.map((check, i) => (
+														<li key={i}>{check}</li>
+													))}
 												</ul>
 											</div>
 										</div>
-										
-										<div className="bg-white p-4 rounded border">
-											<div className="text-sm font-semibold text-gray-700 mb-3">Steps:</div>
-											<ul className="list-disc pl-5 text-sm text-gray-600 space-y-1">
-												{phaseInfo.helpfulInformation
-													?.filter(info => !info.toLowerCase().includes('quote') && !info.toLowerCase().includes('compare') && !info.toLowerCase().includes('research') && !info.toLowerCase().includes('create') && !info.toLowerCase().includes('apply'))
-													?.map((info, i) => (
-														<li key={i}>{info}</li>
-													))
-												}
-											</ul>
-										</div>
-									</div>
-								)}
+									);
+								})()}
 
 								{/* Helpful Information from Hardcoded Data */}
 								{phaseInfo?.helpfulInformation && phaseInfo.helpfulInformation.length > 0 && (

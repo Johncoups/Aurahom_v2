@@ -342,11 +342,46 @@ export function RoadmapTimeline({ data, onPhaseClick }: RoadmapTimelineProps) {
 											))}
 										</div>
 										
-										{phase.tasks && phase.tasks.length > 0 && (
-											<div className="mt-4 pt-4 border-t">
-												<h4 className="font-semibold text-gray-900 mb-3">AI-Generated Tasks</h4>
-												<div className="text-sm text-gray-600">
-													{phase.tasks.length} detailed task{phase.tasks.length !== 1 ? 's' : ''} available
+										{/* Helpful Information - QA Checks, Vendor Questions, Vendor Needs */}
+										{phaseInfo?.helpfulInformation && phaseInfo.helpfulInformation.length > 0 && (
+											<div className="mt-6 pt-4 border-t">
+												<h4 className="font-semibold text-gray-900 mb-4">Helpful Information</h4>
+												
+												<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+													<div className="bg-white p-4 rounded border">
+														<div className="text-sm font-semibold text-gray-700 mb-3">Questions to ask vendors:</div>
+														<ul className="list-disc pl-5 text-sm text-gray-600 space-y-1">
+															{phaseInfo.helpfulInformation
+																?.filter(info => info.toLowerCase().includes('quote') || info.toLowerCase().includes('compare'))
+																?.map((info, i) => (
+																	<li key={i}>{info}</li>
+																))
+															}
+														</ul>
+													</div>
+													<div className="bg-white p-4 rounded border">
+														<div className="text-sm font-semibold text-gray-700 mb-3">What vendors need from you:</div>
+														<ul className="list-disc pl-5 text-sm text-gray-600 space-y-1">
+															{phaseInfo.helpfulInformation
+																?.filter(info => info.toLowerCase().includes('research') || info.toLowerCase().includes('create') || info.toLowerCase().includes('apply'))
+																?.map((info, i) => (
+																	<li key={i}>{info}</li>
+																))
+															}
+														</ul>
+													</div>
+												</div>
+												
+												<div className="bg-white p-4 rounded border mt-4">
+													<div className="text-sm font-semibold text-gray-700 mb-3">Quality checks:</div>
+													<ul className="list-disc pl-5 text-sm text-gray-600 space-y-1">
+														{phaseInfo.helpfulInformation
+															?.filter(info => !info.toLowerCase().includes('quote') && !info.toLowerCase().includes('compare') && !info.toLowerCase().includes('research') && !info.toLowerCase().includes('create') && !info.toLowerCase().includes('apply'))
+															?.map((info, i) => (
+																<li key={i}>{info}</li>
+															))
+														}
+													</ul>
 												</div>
 											</div>
 										)}

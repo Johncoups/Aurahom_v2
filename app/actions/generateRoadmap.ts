@@ -324,9 +324,9 @@ function convertHybridToLegacyFormat(hybridResponse: CompleteProjectResponse): R
 					title: phaseResponse.phaseTitle,
 					description: `AI-enhanced tasks for ${phaseResponse.phaseTitle} phase`,
 					steps: [], // Will be populated from baseline phases if needed
-					qaChecks: [], // Will be populated from baseline phases if needed
-					vendorQuestions: [], // Will be populated from baseline phases if needed
-					vendorNeeds: [], // Will be populated from baseline phases if needed
+					qaChecks: getQAChecksForPhase(phaseResponse.phaseId),
+					vendorQuestions: getVendorQuestionsForPhase(phaseResponse.phaseId),
+					vendorNeeds: getVendorNeedsForPhase(phaseResponse.phaseId),
 					notes: phaseResponse.expertInsights?.proTips?.join(' ') || ''
 				}
 			]

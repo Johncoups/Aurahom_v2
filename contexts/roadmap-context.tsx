@@ -6,6 +6,7 @@ import { generateHybridRoadmap } from "@/lib/hybrid-roadmap-generator";
 import type { CompleteProjectResponse } from "@/lib/unified-response-types";
 import { supabase } from "@/lib/supabase";
 import { getPhasesForMethod } from "@/lib/roadmap-phases";
+import { generateRoadmap } from "@/app/actions/generateRoadmap";
 
 interface RoadmapContextType {
 	profile: OnboardingProfile | null;
@@ -52,6 +53,240 @@ function convertHybridToLegacyFormat(hybridResponse: CompleteProjectResponse): R
 			aiContentMap.set(phaseResponse.phaseId, phaseResponse);
 		});
 		
+		// Helper functions for phase-specific content
+		const getQAChecksForPhase = (phaseId: string): string[] => {
+			const qaChecks: Record<string, string[]> = {
+				'just-starting': [
+					'Is project scope clearly defined?',
+					'Are project goals documented?',
+					'Is budget range established?',
+					'Are construction method options researched?',
+					'Are local building codes reviewed?'
+				],
+				'pre-construction': [
+					'Are all permits obtained and displayed?',
+					'Are architectural plans finalized and approved?',
+					'Are contractors licensed and insured?',
+					'Is financing secured and documented?',
+					'Are material orders confirmed with delivery dates?'
+				],
+				'site-prep-excavation': [
+					'Is site properly cleared and graded?',
+					'Are erosion control measures in place?',
+					'Is construction access road established?',
+					'Are temporary utilities installed?',
+					'Is site drainage working properly?',
+					'Is excavation complete and properly graded?',
+					'Are foundation trenches properly dug?'
+				],
+				'foundation': [
+					'Are concrete forms properly aligned and braced?',
+					'Is rebar correctly placed and tied?',
+					'Is concrete properly mixed and poured?',
+					'Are anchor bolts correctly positioned?',
+					'Is foundation waterproofing applied?'
+				],
+				'rough-framing': [
+					'Are wall studs properly spaced and plumb?',
+					'Is roof truss spacing correct?',
+					'Are all connections properly fastened?',
+					'Is blocking installed for utilities?',
+					'Are windows and doors properly framed?'
+				],
+				'plumbing-rough': [
+					'Are all pipes properly supported?',
+					'Are drain slopes correct?',
+					'Are vent pipes properly installed?',
+					'Is water pressure adequate?',
+					'Are all connections leak-free?'
+				],
+				'electrical-rough': [
+					'Are all wires properly secured?',
+					'Are outlet and switch boxes level?',
+					'Is grounding system complete?',
+					'Are all circuits properly labeled?',
+					'Is panel wiring neat and organized?'
+				],
+				'insulation': [
+					'Is insulation properly installed without gaps?',
+					'Are vapor barriers correctly placed?',
+					'Is air sealing complete?',
+					'Are all penetrations sealed?',
+					'Is R-value adequate for climate zone?'
+				],
+				'drywall': [
+					'Are all joints properly taped and mudded?',
+					'Are screw heads properly recessed?',
+					'Is drywall properly secured to framing?',
+					'Are corners and edges straight?',
+					'Is surface smooth and ready for paint?'
+				]
+			};
+			
+			return qaChecks[phaseId] || [
+				'Check all work meets building codes',
+				'Verify materials are properly installed',
+				'Ensure safety measures are in place',
+				'Confirm quality standards are met'
+			];
+		};
+
+		const getVendorQuestionsForPhase = (phaseId: string): string[] => {
+			const vendorQuestions: Record<string, string[]> = {
+				'just-starting': [
+					'What is your experience with project planning and assessment?',
+					'Can you help define project scope and requirements?',
+					'What construction methods do you recommend for my situation?',
+					'How do you handle budget planning and cost estimation?',
+					'What is your process for code compliance research?'
+				],
+				'pre-construction': [
+					'What is your experience with this type of project?',
+					'Can you provide references from similar projects?',
+					'What is your estimated timeline for completion?',
+					'Do you have the necessary licenses and insurance?',
+					'What is your payment schedule and terms?'
+				],
+				'site-prep-excavation': [
+					'What equipment will you use for excavation?',
+					'How will you handle excess soil removal?',
+					'What erosion control measures do you implement?',
+					'How do you ensure proper site drainage?',
+					'What is your process for site cleanup?',
+					'How do you handle rock removal and blasting if needed?',
+					'What is your process for foundation trenching?'
+				],
+				'foundation': [
+					'What concrete mix design do you recommend?',
+					'How do you ensure proper curing?',
+					'What waterproofing system do you use?',
+					'How do you handle weather delays?',
+					'What is your quality control process?'
+				],
+				'rough-framing': [
+					'What lumber grade do you use for framing?',
+					'How do you ensure proper wall alignment?',
+					'What fasteners do you use for connections?',
+					'How do you handle roof truss installation?',
+					'What is your process for quality checks?'
+				],
+				'plumbing-rough': [
+					'What pipe materials do you recommend?',
+					'How do you ensure proper pipe slopes?',
+					'What is your testing procedure?',
+					'How do you handle code compliance?',
+					'What warranty do you provide?'
+				],
+				'electrical-rough': [
+					'What wire types do you use?',
+					'How do you ensure proper grounding?',
+					'What is your testing procedure?',
+					'How do you handle code compliance?',
+					'What warranty do you provide?'
+				],
+				'insulation': [
+					'What insulation materials do you use?',
+					'How do you ensure proper installation?',
+					'What R-value do you recommend?',
+					'How do you handle air sealing?',
+					'What is your quality guarantee?'
+				],
+				'drywall': [
+					'What drywall thickness do you use?',
+					'How many coats of mud do you apply?',
+					'What is your sanding process?',
+					'How do you ensure smooth finishes?',
+					'What is your timeline for completion?'
+				]
+			};
+			
+			return vendorQuestions[phaseId] || [
+				'What is your experience with this type of work?',
+				'Can you provide references?',
+				'What is your timeline and pricing?',
+				'What warranty do you provide?',
+				'How do you ensure quality?'
+			];
+		};
+
+		const getVendorNeedsForPhase = (phaseId: string): string[] => {
+			const vendorNeeds: Record<string, string[]> = {
+				'just-starting': [
+					'Project goals and vision description',
+					'Budget constraints and financial situation',
+					'Property information and site details',
+					'Timeline preferences and constraints',
+					'Construction method preferences or questions'
+				],
+				'pre-construction': [
+					'Complete project specifications and plans',
+					'Permit documentation and approvals',
+					'Site access and staging area',
+					'Utility connections and temporary power',
+					'Project timeline and milestone dates'
+				],
+				'site-prep-excavation': [
+					'Property survey and site plans',
+					'Utility locates and permits',
+					'Access to site and staging area',
+					'Clearance for equipment and materials',
+					'Contact information for coordination',
+					'Excavation equipment and operators',
+					'Foundation trenching specifications'
+				],
+				'foundation': [
+					'Approved foundation plans',
+					'Soil test reports and engineering',
+					'Concrete specifications and mix design',
+					'Access for concrete trucks and equipment',
+					'Weather protection and curing conditions'
+				],
+				'rough-framing': [
+					'Approved framing plans and details',
+					'Lumber and material specifications',
+					'Access for delivery and staging',
+					'Power and lighting for work areas',
+					'Coordination with other trades'
+				],
+				'plumbing-rough': [
+					'Approved plumbing plans and specs',
+					'Fixture and material specifications',
+					'Access to work areas and staging',
+					'Power for tools and equipment',
+					'Coordination with framing and electrical'
+				],
+				'electrical-rough': [
+					'Approved electrical plans and specs',
+					'Fixture and material specifications',
+					'Access to work areas and staging',
+					'Power for tools and equipment',
+					'Coordination with framing and plumbing'
+				],
+				'insulation': [
+					'Approved insulation specifications',
+					'Access to all wall and ceiling cavities',
+					'Power for tools and equipment',
+					'Proper ventilation and safety measures',
+					'Coordination with other trades'
+				],
+				'drywall': [
+					'Approved drywall specifications',
+					'Access to all work areas',
+					'Power and lighting for work',
+					'Proper ventilation and dust control',
+					'Coordination with other trades'
+				]
+			};
+			
+			return vendorNeeds[phaseId] || [
+				'Complete project specifications',
+				'Access to work areas',
+				'Power and utilities',
+				'Coordination with other trades',
+				'Proper safety measures'
+			];
+		};
+
 		// Extract phases by combining baseline content with AI-generated content
 		const phases = baselinePhases.map(baselinePhase => {
 			const aiContent = aiContentMap.get(baselinePhase.id);
@@ -79,22 +314,15 @@ function convertHybridToLegacyFormat(hybridResponse: CompleteProjectResponse): R
 			].filter(Boolean);
 			
 			const qaChecks = [
+				...getQAChecksForPhase(baselinePhase.id),
 				...(aiTaskData.qaChecks || []),
 				...(aiHelpfulInfo.qaChecks || []),
 				...(aiExpertInsights.qualityCheckpoints || [])
 			].filter(Boolean);
 			
-			// Extract vendor questions and needs from baseline helpfulInformation
-			const vendorQuestions = (baselinePhase.helpfulInformation || [])
-				.filter(info => info.includes('quotes from') || info.includes('Get 3+'))
-				.map(info => info.replace('Get 3+ quotes from', 'Ask for quotes from')
-					.replace('Research 3 different', 'Ask about different')
-					.replace('Contact 3+', 'Contact multiple'));
-			
-			const vendorNeeds = (baselinePhase.helpfulInformation || [])
-				.filter(info => info.includes('compare') || info.includes('Research'))
-				.map(info => info.replace('compare their', 'provide details about their')
-					.replace('Research 3 different', 'Provide information about different'));
+			// Get phase-specific vendor questions and needs
+			const vendorQuestions = getVendorQuestionsForPhase(baselinePhase.id);
+			const vendorNeeds = getVendorNeedsForPhase(baselinePhase.id);
 			
 			// Add AI-generated vendor content if available
 			vendorQuestions.push(...(aiTaskData.vendorQuestions || []));
@@ -210,14 +438,29 @@ export function RoadmapProvider({ children }: { children: ReactNode }) {
 				return;
 			}
 			
+			// Also check for existing roadmap data
+			const { data: roadmapData, error: roadmapError } = await supabase
+				.from('roadmap_data')
+				.select('id, created_at')
+				.eq('user_id', user.id)
+				.limit(1);
+			
 			console.log('🔍 Projects query result:', {
 				projectCount: projects?.length || 0,
 				projects: projects || []
 			});
 			
+			console.log('🔍 Roadmap data query result:', {
+				roadmapCount: roadmapData?.length || 0,
+				roadmapData: roadmapData || []
+			});
+			
 			const hasProject = projects && projects.length > 0;
-			setHasExistingProject(hasProject);
-			console.log(`✅ User ${hasProject ? 'has' : 'does not have'} existing project`);
+			const hasRoadmap = roadmapData && roadmapData.length > 0;
+			const hasExistingData = hasProject || hasRoadmap;
+			
+			setHasExistingProject(hasExistingData);
+			console.log(`✅ User ${hasExistingData ? 'has' : 'does not have'} existing project or roadmap data`);
 			
 		} catch (error) {
 			console.error('❌ Error checking existing project:', error);
@@ -237,46 +480,48 @@ export function RoadmapProvider({ children }: { children: ReactNode }) {
 		setIsLoading(true);
 		setProfile(p);
 		try {
-			console.log('🔄 Starting hybrid roadmap generation...');
-			
-			// Get current user first
-			const { data: { user }, error: userError } = await supabase.auth.getUser();
-			if (userError || !user?.id) {
-				throw new Error('User not authenticated');
-			}
-			
-			// Create project first
-			const projectData = {
-				user_id: user.id,
-				name: `Project - ${p.cityState}`,
-				city_state: p.cityState,
-				property_address: p.propertyAddress || null,
-				house_size: p.houseSize,
-				foundation_type: p.foundationType,
-				number_of_stories: p.numberOfStories,
-				target_start_date: p.targetStartDate || null,
-				background: p.background || null
-			};
-			
-			const { data: project, error: projectError } = await supabase
-				.from('projects')
-				.insert(projectData)
-				.select()
-				.single();
-			
-			if (projectError) {
-				throw new Error(`Project creation failed: ${projectError.message}`);
-			}
-			
-			console.log('✅ Project created:', project.id);
-			
-			// Generate hybrid roadmap with project ID
-			const hybridResponse = await generateHybridRoadmap(p, project.id);
-			console.log('✅ Hybrid roadmap generated:', hybridResponse);
-			
-			// Convert hybrid response to legacy format for UI compatibility
-			const roadmapData = convertHybridToLegacyFormat(hybridResponse);
-			console.log('✅ Converted to legacy format:', roadmapData);
+			// Try hybrid approach first, fall back to baseline if it fails
+			try {
+				console.log('🔄 Starting hybrid roadmap generation...');
+				
+				// Get current user first
+				const { data: { user }, error: userError } = await supabase.auth.getUser();
+				if (userError || !user?.id) {
+					throw new Error('User not authenticated');
+				}
+				
+				// Create project first
+				const projectData = {
+					user_id: user.id,
+					name: `Project - ${p.cityState}`,
+					city_state: p.cityState,
+					property_address: p.propertyAddress || null,
+					house_size: p.houseSize,
+					foundation_type: p.foundationType,
+					number_of_stories: p.numberOfStories,
+					target_start_date: p.targetStartDate || null,
+					background: p.background || null
+				};
+				
+				const { data: project, error: projectError } = await supabase
+					.from('projects')
+					.insert(projectData)
+					.select()
+					.single();
+				
+				if (projectError) {
+					throw new Error(`Project creation failed: ${projectError.message}`);
+				}
+				
+				console.log('✅ Project created:', project.id);
+				
+				// Generate hybrid roadmap with project ID
+				const hybridResponse = await generateHybridRoadmap(p, project.id);
+				console.log('✅ Hybrid roadmap generated:', hybridResponse);
+				
+				// Convert hybrid response to legacy format for UI compatibility
+				const roadmapData = convertHybridToLegacyFormat(hybridResponse);
+				console.log('✅ Converted to legacy format:', roadmapData);
 			
 			// Generate timeline estimates in parallel (maintaining existing parallel processing)
 			const timelineResponse = await fetch('/api/generate-timeline-estimates', {
@@ -326,6 +571,13 @@ export function RoadmapProvider({ children }: { children: ReactNode }) {
 			
 			// Store in Supabase using IDs from API response
 			await storeRoadmapInSupabase(p, combinedData, timelineData);
+			
+			} catch (hybridError) {
+				console.warn('⚠️ Hybrid approach failed, falling back to baseline:', hybridError);
+				// Fall back to baseline approach
+				const baselineRoadmap = await generateRoadmap(p);
+				setRoadmap(baselineRoadmap);
+			}
 			
 		} catch (error) {
 			console.error('❌ Error in setProfileAndGenerate:', error);
