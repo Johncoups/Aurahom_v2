@@ -1,0 +1,427 @@
+{
+    "generated_at": "2025-09-06T22:17:07.947Z",
+    "baseline_phases": [{
+            "id": "just-starting",
+            "tasks": [{
+                    "id": "hybrid-just-starting",
+                    "notes": "AI-generated guidance for Just Starting phase",
+                    "steps": [],
+                    "title": "Just Starting",
+                    "qaChecks": [],
+                    "description": "AI-enhanced tasks for Just Starting phase",
+                    "vendorNeeds": [],
+                    "vendorQuestions": []
+                }
+            ],
+            "title": "Just Starting",
+            "detailLevel": "standard"
+        }, {
+            "id": "pre-construction",
+            "tasks": [{
+                    "id": "hybrid-pre-construction",
+                    "notes": "AI-generated guidance for Pre-Construction Planning phase",
+                    "steps": [],
+                    "title": "Pre-Construction Planning",
+                    "qaChecks": [],
+                    "description": "AI-enhanced tasks for Pre-Construction Planning phase",
+                    "vendorNeeds": [],
+                    "vendorQuestions": []
+                }
+            ],
+            "title": "Pre-Construction Planning",
+            "detailLevel": "standard"
+        }, {
+            "id": "site-prep-excavation",
+            "tasks": [{
+                    "id": "hybrid-site-prep-excavation",
+                    "notes": "AI-generated guidance for Site Preparation & Excavation phase",
+                    "steps": [],
+                    "title": "Site Preparation & Excavation",
+                    "qaChecks": [],
+                    "description": "AI-enhanced tasks for Site Preparation & Excavation phase",
+                    "vendorNeeds": [],
+                    "vendorQuestions": []
+                }
+            ],
+            "title": "Site Preparation & Excavation",
+            "detailLevel": "standard"
+        }, {
+            "id": "utilities-septic",
+            "tasks": [{
+                    "id": "hybrid-utilities-septic",
+                    "notes": "AI-generated guidance for Utilities & Septic phase",
+                    "steps": [],
+                    "title": "Utilities & Septic",
+                    "qaChecks": [],
+                    "description": "AI-enhanced tasks for Utilities & Septic phase",
+                    "vendorNeeds": [],
+                    "vendorQuestions": []
+                }
+            ],
+            "title": "Utilities & Septic",
+            "detailLevel": "standard"
+        }, {
+            "id": "foundation",
+            "tasks": [{
+                    "id": "hybrid-foundation",
+                    "notes": "AI-generated guidance for Foundation phase",
+                    "steps": [],
+                    "title": "Foundation",
+                    "qaChecks": [],
+                    "description": "AI-enhanced tasks for Foundation phase",
+                    "vendorNeeds": [],
+                    "vendorQuestions": []
+                }
+            ],
+            "title": "Foundation",
+            "detailLevel": "standard"
+        }, {
+            "id": "rough-framing",
+            "tasks": [{
+                    "id": "hybrid-rough-framing",
+                    "notes": "AI-generated guidance for Rough Framing phase",
+                    "steps": [],
+                    "title": "Rough Framing",
+                    "qaChecks": [],
+                    "description": "AI-enhanced tasks for Rough Framing phase",
+                    "vendorNeeds": [],
+                    "vendorQuestions": []
+                }
+            ],
+            "title": "Rough Framing",
+            "detailLevel": "standard"
+        }, {
+            "id": "roofing",
+            "tasks": [{
+                    "id": "hybrid-roofing",
+                    "notes": "AI-generated guidance for Roofing phase",
+                    "steps": [],
+                    "title": "Roofing",
+                    "qaChecks": [],
+                    "description": "AI-enhanced tasks for Roofing phase",
+                    "vendorNeeds": [],
+                    "vendorQuestions": []
+                }
+            ],
+            "title": "Roofing",
+            "detailLevel": "standard"
+        }, {
+            "id": "exterior",
+            "tasks": [{
+                    "id": "hybrid-exterior",
+                    "notes": "AI-generated guidance for Exterior Finishes phase",
+                    "steps": [],
+                    "title": "Exterior Finishes",
+                    "qaChecks": [],
+                    "description": "AI-enhanced tasks for Exterior Finishes phase",
+                    "vendorNeeds": [],
+                    "vendorQuestions": []
+                }
+            ],
+            "title": "Exterior Finishes",
+            "detailLevel": "standard"
+        }, {
+            "id": "plumbing-rough",
+            "tasks": [{
+                    "id": "hybrid-plumbing-rough",
+                    "notes": "AI-generated guidance for Plumbing Rough-In phase",
+                    "steps": [],
+                    "title": "Plumbing Rough-In",
+                    "qaChecks": [],
+                    "description": "AI-enhanced tasks for Plumbing Rough-In phase",
+                    "vendorNeeds": [],
+                    "vendorQuestions": []
+                }
+            ],
+            "title": "Plumbing Rough-In",
+            "detailLevel": "standard"
+        }, {
+            "id": "electrical-rough",
+            "tasks": [{
+                    "id": "hybrid-electrical-rough",
+                    "notes": "AI-generated guidance for Electrical Rough-In phase",
+                    "steps": [],
+                    "title": "Electrical Rough-In",
+                    "qaChecks": [],
+                    "description": "AI-enhanced tasks for Electrical Rough-In phase",
+                    "vendorNeeds": [],
+                    "vendorQuestions": []
+                }
+            ],
+            "title": "Electrical Rough-In",
+            "detailLevel": "standard"
+        }, {
+            "id": "hvac-rough",
+            "tasks": [{
+                    "id": "hybrid-hvac-rough",
+                    "notes": "AI-generated guidance for HVAC Rough-In phase",
+                    "steps": [],
+                    "title": "HVAC Rough-In",
+                    "qaChecks": [],
+                    "description": "AI-enhanced tasks for HVAC Rough-In phase",
+                    "vendorNeeds": [],
+                    "vendorQuestions": []
+                }
+            ],
+            "title": "HVAC Rough-In",
+            "detailLevel": "standard"
+        }, {
+            "id": "concrete-slabs",
+            "tasks": [{
+                    "id": "hybrid-concrete-slabs",
+                    "notes": "AI-generated guidance for Concrete Slabs & Flatwork phase",
+                    "steps": [],
+                    "title": "Concrete Slabs & Flatwork",
+                    "qaChecks": [],
+                    "description": "AI-enhanced tasks for Concrete Slabs & Flatwork phase",
+                    "vendorNeeds": [],
+                    "vendorQuestions": []
+                }
+            ],
+            "title": "Concrete Slabs & Flatwork",
+            "detailLevel": "standard"
+        }, {
+            "id": "insulation",
+            "tasks": [{
+                    "id": "hybrid-insulation",
+                    "notes": "AI-generated guidance for Insulation & Air Sealing phase",
+                    "steps": [],
+                    "title": "Insulation & Air Sealing",
+                    "qaChecks": [],
+                    "description": "AI-enhanced tasks for Insulation & Air Sealing phase",
+                    "vendorNeeds": [],
+                    "vendorQuestions": []
+                }
+            ],
+            "title": "Insulation & Air Sealing",
+            "detailLevel": "standard"
+        }, {
+            "id": "drywall",
+            "tasks": [{
+                    "id": "hybrid-drywall",
+                    "notes": "AI-generated guidance for Drywall phase",
+                    "steps": [],
+                    "title": "Drywall",
+                    "qaChecks": [],
+                    "description": "AI-enhanced tasks for Drywall phase",
+                    "vendorNeeds": [],
+                    "vendorQuestions": []
+                }
+            ],
+            "title": "Drywall",
+            "detailLevel": "standard"
+        }, {
+            "id": "paint",
+            "tasks": [{
+                    "id": "hybrid-paint",
+                    "notes": "AI-generated guidance for Paint phase",
+                    "steps": [],
+                    "title": "Paint",
+                    "qaChecks": [],
+                    "description": "AI-enhanced tasks for Paint phase",
+                    "vendorNeeds": [],
+                    "vendorQuestions": []
+                }
+            ],
+            "title": "Paint",
+            "detailLevel": "standard"
+        }, {
+            "id": "trim-carpentry",
+            "tasks": [{
+                    "id": "hybrid-trim-carpentry",
+                    "notes": "AI-generated guidance for Trim Carpentry phase",
+                    "steps": [],
+                    "title": "Trim Carpentry",
+                    "qaChecks": [],
+                    "description": "AI-enhanced tasks for Trim Carpentry phase",
+                    "vendorNeeds": [],
+                    "vendorQuestions": []
+                }
+            ],
+            "title": "Trim Carpentry",
+            "detailLevel": "standard"
+        }, {
+            "id": "flooring",
+            "tasks": [{
+                    "id": "hybrid-flooring",
+                    "notes": "AI-generated guidance for Flooring phase",
+                    "steps": [],
+                    "title": "Flooring",
+                    "qaChecks": [],
+                    "description": "AI-enhanced tasks for Flooring phase",
+                    "vendorNeeds": [],
+                    "vendorQuestions": []
+                }
+            ],
+            "title": "Flooring",
+            "detailLevel": "standard"
+        }, {
+            "id": "kitchen-bath",
+            "tasks": [{
+                    "id": "hybrid-kitchen-bath",
+                    "notes": "AI-generated guidance for Kitchen & Bath phase",
+                    "steps": [],
+                    "title": "Kitchen & Bath",
+                    "qaChecks": [],
+                    "description": "AI-enhanced tasks for Kitchen & Bath phase",
+                    "vendorNeeds": [],
+                    "vendorQuestions": []
+                }
+            ],
+            "title": "Kitchen & Bath",
+            "detailLevel": "standard"
+        }, {
+            "id": "final-touches",
+            "tasks": [{
+                    "id": "hybrid-final-touches",
+                    "notes": "AI-generated guidance for Final Touches & Punch List phase",
+                    "steps": [],
+                    "title": "Final Touches & Punch List",
+                    "qaChecks": [],
+                    "description": "AI-enhanced tasks for Final Touches & Punch List phase",
+                    "vendorNeeds": [],
+                    "vendorQuestions": []
+                }
+            ],
+            "title": "Final Touches & Punch List",
+            "detailLevel": "standard"
+        }
+    ],
+    "rawOpenAIResponses": {
+        "paint": "🔨 DIY Phase  \n**Phase: Paint (DIY Phase)**  \n- **Duration**: [6] weeks ← MUST USE BRACKETS  \n- **DIY Hours**: [150] hours ← MUST USE BRACKETS  \n\n🏗 Contractor Phase  \n**Phase: Paint (Contractor Phase)**  \n- **Contractor Duration**: [4] weeks ← MUST USE BRACKETS",
+        "drywall": "🏗 Contractor Phase  \n**Phase: Drywall (Contractor Phase)**  \n- **Contractor Duration**: [6] weeks  \n\n🔨 DIY Phase  \n**Phase: Drywall (DIY Phase)**  \n- **Duration**: [6] weeks  \n- **DIY Hours**: [150] hours",
+        "roofing": "🔨 DIY Phase  \n**Phase: Roofing (DIY Phase)**  \n- **Duration**: [12] weeks  \n- **DIY Hours**: [300] hours  \n\n🏗 Contractor Phase  \n**Phase: Roofing (Contractor Phase)**  \n- **Contractor Duration**: [6] weeks",
+        "exterior": "🔨 DIY Phase  \n**Phase: Exterior Finishes (DIY Phase)**  \n- **Duration**: [12] weeks  \n- **DIY Hours**: [300] hours  \n\n🏗 Contractor Phase  \n**Phase: Exterior Finishes (Contractor Phase)**  \n- **Contractor Duration**: [8] weeks",
+        "flooring": "🔨 DIY Phase  \n**Phase: Flooring (DIY Phase)**  \n- **Duration**: [12] weeks ← MUST USE BRACKETS  \n- **DIY Hours**: [300] hours ← MUST USE BRACKETS  \n\n🏗 Contractor Phase  \n**Phase: Flooring (Contractor Phase)**  \n- **Contractor Duration**: [6] weeks ← MUST USE BRACKETS",
+        "foundation": "🔨 DIY Phase  \n**Phase: Foundation (DIY Phase)**  \n- **Duration**: [12] weeks ← MUST USE BRACKETS  \n- **DIY Hours**: [300] hours ← MUST USE BRACKETS  \n\n🏗 Contractor Phase  \n**Phase: Foundation (Contractor Phase)**  \n- **Contractor Duration**: [8] weeks ← MUST USE BRACKETS",
+        "hvac-rough": "🔨 DIY Phase  \n**Phase: HVAC Rough-In (DIY Phase)**  \n- **Duration**: [6] weeks  \n- **DIY Hours**: [150] hours  \n\n🏗 Contractor Phase  \n**Phase: HVAC Rough-In (Contractor Phase)**  \n- **Contractor Duration**: [3] weeks",
+        "insulation": "🔨 DIY Phase  \n**Phase: Insulation & Air Sealing (DIY Phase)**  \n- **Duration**: [8] weeks  \n- **DIY Hours**: [200] hours  \n\n🏗 Contractor Phase  \n**Phase: Insulation & Air Sealing (Contractor Phase)**  \n- **Contractor Duration**: [4] weeks",
+        "kitchen-bath": "🔨 DIY Phase  \n**Phase: Kitchen & Bath (DIY Phase)**  \n- **Duration**: [12] weeks ← MUST USE BRACKETS  \n- **DIY Hours**: [300] hours ← MUST USE BRACKETS  \n\n🏗 Contractor Phase  \n**Phase: Kitchen & Bath (Contractor Phase)**  \n- **Contractor Duration**: [8] weeks ← MUST USE BRACKETS",
+        "final-touches": "🔨 DIY Phase  \n**Phase: Final Touches & Punch List (DIY Phase)**  \n- **Duration**: [6] weeks  \n- **DIY Hours**: [150] hours  \n\n🏗 Contractor Phase  \n**Phase: Final Touches & Punch List (Contractor Phase)**  \n- **Contractor Duration**: [4] weeks",
+        "just-starting": "🔨 DIY Phase  \n**Phase: Just Starting (DIY Phase)**  \n- **Duration**: [16] weeks  \n- **DIY Hours**: [400] hours  \n\n🏗 Contractor Phase  \n**Phase: Just Starting (Contractor Phase)**  \n- **Contractor Duration**: [12] weeks",
+        "rough-framing": "🔨 DIY Phase  \n**Phase: Rough Framing (DIY Phase)**  \n- **Duration**: [12] weeks  \n- **DIY Hours**: [300] hours  \n\n🏗 Contractor Phase  \n**Phase: Rough Framing (Contractor Phase)**  \n- **Contractor Duration**: [8] weeks",
+        "concrete-slabs": "🔨 DIY Phase  \n**Phase: Concrete Slabs & Flatwork (DIY Phase)**  \n- **Duration**: [8] weeks  \n- **DIY Hours**: [200] hours  \n\n🏗 Contractor Phase  \n**Phase: Concrete Slabs & Flatwork (Contractor Phase)**  \n- **Contractor Duration**: [4] weeks",
+        "plumbing-rough": "🔨 DIY Phase  \n**Phase: Plumbing Rough-In (DIY Phase)**  \n- **Duration**: [6] weeks  \n- **DIY Hours**: [150] hours  \n\n🏗 Contractor Phase  \n**Phase: Plumbing Rough-In (Contractor Phase)**  \n- **Contractor Duration**: [4] weeks",
+        "trim-carpentry": "🔨 DIY Phase  \n**Phase: Trim Carpentry (DIY Phase)**  \n- **Duration**: [8] weeks  \n- **DIY Hours**: [200] hours  \n\n🏗 Contractor Phase  \n**Phase: Trim Carpentry (Contractor Phase)**  \n- **Contractor Duration**: [4] weeks",
+        "electrical-rough": "🔨 DIY Phase  \n**Phase: Electrical Rough-In (DIY Phase)**  \n- **Duration**: [8] weeks  \n- **DIY Hours**: [200] hours  \n\n🏗 Contractor Phase  \n**Phase: Electrical Rough-In (Contractor Phase)**  \n- **Contractor Duration**: [4] weeks",
+        "pre-construction": "🔨 DIY Phase  \n**Phase: Pre-Construction Planning (DIY Phase)**  \n- **Duration**: [8] weeks  \n- **DIY Hours**: [200] hours  \n\n🏗 Contractor Phase  \n**Phase: Pre-Construction Planning (Contractor Phase)**  \n- **Contractor Duration**: [6] weeks",
+        "utilities-septic": "🔨 DIY Phase  \n**Phase: Utilities & Septic (DIY Phase)**  \n- **Duration**: [10] weeks  \n- **DIY Hours**: [250] hours  \n\n🏗 Contractor Phase  \n**Phase: Utilities & Septic (Contractor Phase)**  \n- **Contractor Duration**: [6] weeks",
+        "site-prep-excavation": "🔨 DIY Phase  \n**Phase: Site Preparation & Excavation (DIY Phase)**  \n- **Duration**: [10] weeks  \n- **DIY Hours**: [250] hours  \n\n🏗 Contractor Phase  \n**Phase: Site Preparation & Excavation (Contractor Phase)**  \n- **Contractor Duration**: [6] weeks"
+    },
+    "parsedTimelineEstimates": {
+        "paint": {
+            "diyHours": "150 hours",
+            "diyDuration": "6 weeks",
+            "rawTimeline": "🔨 DIY Phase  \n**Phase: Paint (DIY Phase)**  \n- **Duration**: [6] weeks ← MUST USE BRACKETS  \n- **DIY Hours**: [150] hours ← MUST USE BRACKETS  \n\n🏗 Contractor Phase  \n**Phase: Paint (Contractor Phase)**  \n- **Contractor Duration**: [4] weeks ← MUST USE BRACKETS",
+            "contractorDuration": "4 weeks"
+        },
+        "drywall": {
+            "diyHours": "150 hours",
+            "diyDuration": "6 weeks",
+            "rawTimeline": "🏗 Contractor Phase  \n**Phase: Drywall (Contractor Phase)**  \n- **Contractor Duration**: [6] weeks  \n\n🔨 DIY Phase  \n**Phase: Drywall (DIY Phase)**  \n- **Duration**: [6] weeks  \n- **DIY Hours**: [150] hours",
+            "contractorDuration": "6 weeks"
+        },
+        "roofing": {
+            "diyHours": "300 hours",
+            "diyDuration": "12 weeks",
+            "rawTimeline": "🔨 DIY Phase  \n**Phase: Roofing (DIY Phase)**  \n- **Duration**: [12] weeks  \n- **DIY Hours**: [300] hours  \n\n🏗 Contractor Phase  \n**Phase: Roofing (Contractor Phase)**  \n- **Contractor Duration**: [6] weeks",
+            "contractorDuration": "6 weeks"
+        },
+        "exterior": {
+            "diyHours": "300 hours",
+            "diyDuration": "12 weeks",
+            "rawTimeline": "🔨 DIY Phase  \n**Phase: Exterior Finishes (DIY Phase)**  \n- **Duration**: [12] weeks  \n- **DIY Hours**: [300] hours  \n\n🏗 Contractor Phase  \n**Phase: Exterior Finishes (Contractor Phase)**  \n- **Contractor Duration**: [8] weeks",
+            "contractorDuration": "8 weeks"
+        },
+        "flooring": {
+            "diyHours": "300 hours",
+            "diyDuration": "12 weeks",
+            "rawTimeline": "🔨 DIY Phase  \n**Phase: Flooring (DIY Phase)**  \n- **Duration**: [12] weeks ← MUST USE BRACKETS  \n- **DIY Hours**: [300] hours ← MUST USE BRACKETS  \n\n🏗 Contractor Phase  \n**Phase: Flooring (Contractor Phase)**  \n- **Contractor Duration**: [6] weeks ← MUST USE BRACKETS",
+            "contractorDuration": "6 weeks"
+        },
+        "foundation": {
+            "diyHours": "300 hours",
+            "diyDuration": "12 weeks",
+            "rawTimeline": "🔨 DIY Phase  \n**Phase: Foundation (DIY Phase)**  \n- **Duration**: [12] weeks ← MUST USE BRACKETS  \n- **DIY Hours**: [300] hours ← MUST USE BRACKETS  \n\n🏗 Contractor Phase  \n**Phase: Foundation (Contractor Phase)**  \n- **Contractor Duration**: [8] weeks ← MUST USE BRACKETS",
+            "contractorDuration": "8 weeks"
+        },
+        "hvac-rough": {
+            "diyHours": "150 hours",
+            "diyDuration": "6 weeks",
+            "rawTimeline": "🔨 DIY Phase  \n**Phase: HVAC Rough-In (DIY Phase)**  \n- **Duration**: [6] weeks  \n- **DIY Hours**: [150] hours  \n\n🏗 Contractor Phase  \n**Phase: HVAC Rough-In (Contractor Phase)**  \n- **Contractor Duration**: [3] weeks",
+            "contractorDuration": "3 weeks"
+        },
+        "insulation": {
+            "diyHours": "200 hours",
+            "diyDuration": "8 weeks",
+            "rawTimeline": "🔨 DIY Phase  \n**Phase: Insulation & Air Sealing (DIY Phase)**  \n- **Duration**: [8] weeks  \n- **DIY Hours**: [200] hours  \n\n🏗 Contractor Phase  \n**Phase: Insulation & Air Sealing (Contractor Phase)**  \n- **Contractor Duration**: [4] weeks",
+            "contractorDuration": "4 weeks"
+        },
+        "kitchen-bath": {
+            "diyHours": "300 hours",
+            "diyDuration": "12 weeks",
+            "rawTimeline": "🔨 DIY Phase  \n**Phase: Kitchen & Bath (DIY Phase)**  \n- **Duration**: [12] weeks ← MUST USE BRACKETS  \n- **DIY Hours**: [300] hours ← MUST USE BRACKETS  \n\n🏗 Contractor Phase  \n**Phase: Kitchen & Bath (Contractor Phase)**  \n- **Contractor Duration**: [8] weeks ← MUST USE BRACKETS",
+            "contractorDuration": "8 weeks"
+        },
+        "final-touches": {
+            "diyHours": "150 hours",
+            "diyDuration": "6 weeks",
+            "rawTimeline": "🔨 DIY Phase  \n**Phase: Final Touches & Punch List (DIY Phase)**  \n- **Duration**: [6] weeks  \n- **DIY Hours**: [150] hours  \n\n🏗 Contractor Phase  \n**Phase: Final Touches & Punch List (Contractor Phase)**  \n- **Contractor Duration**: [4] weeks",
+            "contractorDuration": "4 weeks"
+        },
+        "just-starting": {
+            "diyHours": "400 hours",
+            "diyDuration": "16 weeks",
+            "rawTimeline": "🔨 DIY Phase  \n**Phase: Just Starting (DIY Phase)**  \n- **Duration**: [16] weeks  \n- **DIY Hours**: [400] hours  \n\n🏗 Contractor Phase  \n**Phase: Just Starting (Contractor Phase)**  \n- **Contractor Duration**: [12] weeks",
+            "contractorDuration": "12 weeks"
+        },
+        "rough-framing": {
+            "diyHours": "300 hours",
+            "diyDuration": "12 weeks",
+            "rawTimeline": "🔨 DIY Phase  \n**Phase: Rough Framing (DIY Phase)**  \n- **Duration**: [12] weeks  \n- **DIY Hours**: [300] hours  \n\n🏗 Contractor Phase  \n**Phase: Rough Framing (Contractor Phase)**  \n- **Contractor Duration**: [8] weeks",
+            "contractorDuration": "8 weeks"
+        },
+        "concrete-slabs": {
+            "diyHours": "200 hours",
+            "diyDuration": "8 weeks",
+            "rawTimeline": "🔨 DIY Phase  \n**Phase: Concrete Slabs & Flatwork (DIY Phase)**  \n- **Duration**: [8] weeks  \n- **DIY Hours**: [200] hours  \n\n🏗 Contractor Phase  \n**Phase: Concrete Slabs & Flatwork (Contractor Phase)**  \n- **Contractor Duration**: [4] weeks",
+            "contractorDuration": "4 weeks"
+        },
+        "plumbing-rough": {
+            "diyHours": "150 hours",
+            "diyDuration": "6 weeks",
+            "rawTimeline": "🔨 DIY Phase  \n**Phase: Plumbing Rough-In (DIY Phase)**  \n- **Duration**: [6] weeks  \n- **DIY Hours**: [150] hours  \n\n🏗 Contractor Phase  \n**Phase: Plumbing Rough-In (Contractor Phase)**  \n- **Contractor Duration**: [4] weeks",
+            "contractorDuration": "4 weeks"
+        },
+        "trim-carpentry": {
+            "diyHours": "200 hours",
+            "diyDuration": "8 weeks",
+            "rawTimeline": "🔨 DIY Phase  \n**Phase: Trim Carpentry (DIY Phase)**  \n- **Duration**: [8] weeks  \n- **DIY Hours**: [200] hours  \n\n🏗 Contractor Phase  \n**Phase: Trim Carpentry (Contractor Phase)**  \n- **Contractor Duration**: [4] weeks",
+            "contractorDuration": "4 weeks"
+        },
+        "electrical-rough": {
+            "diyHours": "200 hours",
+            "diyDuration": "8 weeks",
+            "rawTimeline": "🔨 DIY Phase  \n**Phase: Electrical Rough-In (DIY Phase)**  \n- **Duration**: [8] weeks  \n- **DIY Hours**: [200] hours  \n\n🏗 Contractor Phase  \n**Phase: Electrical Rough-In (Contractor Phase)**  \n- **Contractor Duration**: [4] weeks",
+            "contractorDuration": "4 weeks"
+        },
+        "pre-construction": {
+            "diyHours": "200 hours",
+            "diyDuration": "8 weeks",
+            "rawTimeline": "🔨 DIY Phase  \n**Phase: Pre-Construction Planning (DIY Phase)**  \n- **Duration**: [8] weeks  \n- **DIY Hours**: [200] hours  \n\n🏗 Contractor Phase  \n**Phase: Pre-Construction Planning (Contractor Phase)**  \n- **Contractor Duration**: [6] weeks",
+            "contractorDuration": "6 weeks"
+        },
+        "utilities-septic": {
+            "diyHours": "250 hours",
+            "diyDuration": "10 weeks",
+            "rawTimeline": "🔨 DIY Phase  \n**Phase: Utilities & Septic (DIY Phase)**  \n- **Duration**: [10] weeks  \n- **DIY Hours**: [250] hours  \n\n🏗 Contractor Phase  \n**Phase: Utilities & Septic (Contractor Phase)**  \n- **Contractor Duration**: [6] weeks",
+            "contractorDuration": "6 weeks"
+        },
+        "site-prep-excavation": {
+            "diyHours": "250 hours",
+            "diyDuration": "10 weeks",
+            "rawTimeline": "🔨 DIY Phase  \n**Phase: Site Preparation & Excavation (DIY Phase)**  \n- **Duration**: [10] weeks  \n- **DIY Hours**: [250] hours  \n\n🏗 Contractor Phase  \n**Phase: Site Preparation & Excavation (Contractor Phase)**  \n- **Contractor Duration**: [6] weeks",
+            "contractorDuration": "6 weeks"
+        }
+    }
+}
