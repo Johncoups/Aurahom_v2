@@ -648,7 +648,7 @@ export const TRADITIONAL_FRAME_PHASES: ConstructionPhase[] = [
   }
 ]
 
-// Post-frame construction phases (different sequence)
+// Post-frame construction phases (updated to match reference document sequence)
 export const POST_FRAME_PHASES: ConstructionPhase[] = [
   {
     id: "just-starting",
@@ -686,8 +686,8 @@ export const POST_FRAME_PHASES: ConstructionPhase[] = [
       "Schedule pre-construction meeting with trades"
     ],
     dependencies: [],
-     constructionMethods: ["post-frame"],
-     estimatedDuration: "2-4 weeks"
+    constructionMethods: ["post-frame"],
+    estimatedDuration: "2-4 weeks"
   },
   {
     id: "site-prep-excavation",
@@ -713,8 +713,8 @@ export const POST_FRAME_PHASES: ConstructionPhase[] = [
       "Site inspection(s) per jurisdiction"
     ],
     dependencies: ["pre-construction"],
-     constructionMethods: ["post-frame"],
-     estimatedDuration: "2-3 weeks"
+    constructionMethods: ["post-frame"],
+    estimatedDuration: "2-3 weeks"
   },
   {
     id: "utilities-septic",
@@ -737,7 +737,6 @@ export const POST_FRAME_PHASES: ConstructionPhase[] = [
     constructionMethods: ["post-frame"],
     estimatedDuration: "1-2 weeks"
   },
-
   {
     id: "foundation",
     title: "Foundation",
@@ -766,9 +765,47 @@ export const POST_FRAME_PHASES: ConstructionPhase[] = [
     estimatedDuration: "2-3 weeks"
   },
   {
+    id: "post-frame-structure",
+    title: "Post Frame Structure",
+    order: 5,
+    description: "Post frame construction with trusses, metal siding, windows, exterior doors, and roof",
+    tasks: [
+      "Set posts in concrete or on piers",
+      "Install post frame trusses",
+      "Install roof purlins and girts",
+      "Install roof decking",
+      "Install metal roofing",
+      "Install metal siding",
+      "Install windows and exterior doors",
+      "Post frame inspection and QC"
+    ],
+    dependencies: ["foundation"],
+    constructionMethods: ["post-frame"],
+    estimatedDuration: "3-5 weeks"
+  },
+  {
+    id: "concrete-slabs",
+    title: "Slab and Flatwork",
+    order: 6,
+    description: "Interior slabs, garage, and exterior concrete",
+    tasks: [
+      "Verify radiant tubing protection if applicable",
+      "Confirm slab thickness and reinforcement",
+      "Place, finish, and cure slabs",
+      "Saw-cut control joints",
+      "Install garage apron and driveway",
+      "Install porches and walkways",
+      "Apply sealers and hardeners",
+      "Final concrete inspection"
+    ],
+    dependencies: ["foundation"],
+    constructionMethods: ["post-frame"],
+    estimatedDuration: "2-3 weeks"
+  },
+  {
     id: "rough-framing",
     title: "Rough Framing",
-    order: 5,
+    order: 7,
     description: "Complete structural framing including floors, walls, roof, and interior partitions",
     tasks: [
       "Install sill plates and seal",
@@ -802,33 +839,14 @@ export const POST_FRAME_PHASES: ConstructionPhase[] = [
       "Create a framing inspection checklist with photos and measurements",
       "Develop a weather protection plan for exposed framing during construction"
     ],
-    dependencies: ["foundation"],
+    dependencies: ["post-frame-structure"],
     constructionMethods: ["post-frame"],
     estimatedDuration: "4-8 weeks"
   },
   {
-    id: "post-frame-structure",
-    title: "Post Frame Structure",
-    order: 6,
-    description: "Post frame construction with trusses, metal siding, windows, exterior doors, and roof",
-    tasks: [
-      "Set posts in concrete or on piers",
-      "Install post frame trusses",
-      "Install roof purlins and girts",
-      "Install roof decking",
-      "Install metal roofing",
-      "Install metal siding",
-      "Install windows and exterior doors",
-      "Post frame inspection and QC"
-    ],
-    dependencies: ["foundation"],
-    constructionMethods: ["post-frame"],
-    estimatedDuration: "3-5 weeks"
-  },
-  {
     id: "exterior",
     title: "Exterior Finishes",
-    order: 7,
+    order: 8,
     description: "Exterior siding, trim, and weather protection",
     tasks: [
       "Install exterior windows and doors",
@@ -842,92 +860,14 @@ export const POST_FRAME_PHASES: ConstructionPhase[] = [
       "Install exterior stairs and landings",
       "Final exterior inspection"
     ],
-    dependencies: ["post-frame-structure"],
-    constructionMethods: ["post-frame"],
-    estimatedDuration: "2-3 weeks"
-  },
-  {
-    id: "plumbing-rough",
-    title: "Plumbing Rough-In",
-    order: 8,
-    description: "Underground and wall plumbing installation",
-    tasks: [
-      "Install DWV piping with proper slope",
-      "Install water supply piping (PEX/copper)",
-      "Install gas piping if applicable",
-      "Set tubs and shower pans",
-      "Install blocking for fixtures",
-      "Install hose bibbs and freeze protection",
-      "Pressure test all systems",
-      "Plumbing rough-in inspection",
-      "Install water heater and treatment"
-    ],
     dependencies: ["rough-framing"],
-    constructionMethods: ["post-frame"],
-    estimatedDuration: "2-3 weeks"
-  },
-  {
-    id: "electrical-rough",
-    title: "Electrical Rough-In",
-    order: 9,
-    description: "Underground electrical wiring and panel installation",
-    tasks: [
-      "Install service panel and sub-panels",
-      "Rough-in electrical wiring",
-      "Install phone, cable, and internet wiring",
-      "Install smoke and CO detectors",
-      "Install bath fans and dedicated circuits",
-      "Install exterior lighting and receptacles",
-      "Generator and EV charger rough-in",
-      "Label all circuits",
-      "Electrical rough-in inspection"
-    ],
-    dependencies: ["rough-framing"],
-    constructionMethods: ["post-frame"],
-    estimatedDuration: "2-3 weeks"
-  },
-  {
-    id: "concrete-slabs",
-    title: "Slab and Flatwork",
-    order: 10,
-    description: "Interior slabs, garage, and exterior concrete",
-    tasks: [
-      "Verify radiant tubing protection if applicable",
-      "Confirm slab thickness and reinforcement",
-      "Place, finish, and cure slabs",
-      "Saw-cut control joints",
-      "Install garage apron and driveway",
-      "Install porches and walkways",
-      "Apply sealers and hardeners",
-      "Final concrete inspection"
-    ],
-    dependencies: ["foundation"],
-    constructionMethods: ["post-frame"],
-    estimatedDuration: "2-3 weeks"
-  },
-  {
-    id: "insulation",
-    title: "Insulation & Air Sealing",
-    order: 11,
-    description: "Thermal and sound insulation installation",
-    tasks: [
-      "Complete air sealing pass",
-      "Install vent baffles and eave chutes",
-      "Install wall insulation (batts/blown/foam)",
-      "Install attic insulation",
-      "Install sound batts where specified",
-      "Install vapor retarder if required",
-      "Blower door test and remediation",
-      "Insulation inspection"
-    ],
-    dependencies: ["exterior", "rough-framing"],
     constructionMethods: ["post-frame"],
     estimatedDuration: "2-3 weeks"
   },
   {
     id: "rough-framing-post-frame",
     title: "Rough Framing",
-    order: 13,
+    order: 9,
     description: "Interior walls, blocking, and soundproofing",
     tasks: [
       "Frame interior partition walls",
@@ -940,14 +880,54 @@ export const POST_FRAME_PHASES: ConstructionPhase[] = [
       "Pre-drywall walk and documentation",
       "Interior framing inspection"
     ],
-    dependencies: ["insulation"],
+    dependencies: ["exterior"],
+    constructionMethods: ["post-frame"],
+    estimatedDuration: "2-3 weeks"
+  },
+  {
+    id: "plumbing-rough",
+    title: "Plumbing Rough-In",
+    order: 10,
+    description: "Underground and wall plumbing installation",
+    tasks: [
+      "Install DWV piping with proper slope",
+      "Install water supply piping (PEX/copper)",
+      "Install gas piping if applicable",
+      "Set tubs and shower pans",
+      "Install blocking for fixtures",
+      "Install hose bibbs and freeze protection",
+      "Pressure test all systems",
+      "Plumbing rough-in inspection",
+      "Install water heater and treatment"
+    ],
+    dependencies: ["rough-framing-post-frame"],
+    constructionMethods: ["post-frame"],
+    estimatedDuration: "2-3 weeks"
+  },
+  {
+    id: "electrical-rough",
+    title: "Electrical Rough-In",
+    order: 11,
+    description: "Underground electrical wiring and panel installation",
+    tasks: [
+      "Install service panel and sub-panels",
+      "Rough-in electrical wiring",
+      "Install phone, cable, and internet wiring",
+      "Install smoke and CO detectors",
+      "Install bath fans and dedicated circuits",
+      "Install exterior lighting and receptacles",
+      "Generator and EV charger rough-in",
+      "Label all circuits",
+      "Electrical rough-in inspection"
+    ],
+    dependencies: ["plumbing-rough"],
     constructionMethods: ["post-frame"],
     estimatedDuration: "2-3 weeks"
   },
   {
     id: "hvac-rough",
     title: "HVAC Rough-In",
-    order: 11,
+    order: 12,
     description: "Heating, ventilation, and air conditioning installation",
     tasks: [
       "Complete Manual J/S/D calculations",
@@ -960,7 +940,26 @@ export const POST_FRAME_PHASES: ConstructionPhase[] = [
       "Set thermostat locations",
       "HVAC rough-in inspection"
     ],
-    dependencies: ["rough-framing-post-frame"],
+    dependencies: ["electrical-rough"],
+    constructionMethods: ["post-frame"],
+    estimatedDuration: "2-3 weeks"
+  },
+  {
+    id: "insulation",
+    title: "Insulation & Air Sealing",
+    order: 13,
+    description: "Thermal and sound insulation installation",
+    tasks: [
+      "Complete air sealing pass",
+      "Install vent baffles and eave chutes",
+      "Install wall insulation (batts/blown/foam)",
+      "Install attic insulation",
+      "Install sound batts where specified",
+      "Install vapor retarder if required",
+      "Blower door test and remediation",
+      "Insulation inspection"
+    ],
+    dependencies: ["hvac-rough"],
     constructionMethods: ["post-frame"],
     estimatedDuration: "2-3 weeks"
   },
@@ -978,7 +977,7 @@ export const POST_FRAME_PHASES: ConstructionPhase[] = [
       "Ready-for-paint inspection",
       "Final drywall inspection"
     ],
-    dependencies: ["hvac-rough"],
+    dependencies: ["insulation"],
     constructionMethods: ["post-frame"],
     estimatedDuration: "3-5 weeks"
   },
