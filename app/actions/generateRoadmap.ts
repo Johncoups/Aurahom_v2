@@ -41,6 +41,15 @@ function getQAChecksForPhase(phaseId: string, isDiy: boolean = false): string[] 
 			'Are anchor bolts correctly positioned?',
 			'Is foundation waterproofing applied?'
 		],
+		'under-slab-services': [
+			'Are all under-slab utilities properly installed?',
+			'Are plumbing pressure tests completed and passed?',
+			'Are electrical conduits at correct depths?',
+			'Is vapor barrier properly installed?',
+			'Are all utility sleeves properly positioned?',
+			'Is sand bedding properly compacted?',
+			'Are all inspections completed and approved?'
+		],
 		'rough-framing': [
 			'Are wall studs properly spaced and plumb?',
 			'Is roof truss spacing correct?',
@@ -110,6 +119,15 @@ function getQAChecksForPhase(phaseId: string, isDiy: boolean = false): string[] 
 			'Is concrete properly mixed and poured?',
 			'Are anchor bolts correctly positioned?',
 			'Is foundation waterproofing applied?'
+		],
+		'under-slab-services': [
+			'Are all under-slab utilities properly installed?',
+			'Are plumbing pressure tests completed and passed?',
+			'Are electrical conduits at correct depths?',
+			'Is vapor barrier properly installed?',
+			'Are all utility sleeves properly positioned?',
+			'Is sand bedding properly compacted?',
+			'Are all inspections completed and approved?'
 		],
 		'rough-framing': [
 			'Are wall studs properly spaced and plumb?',
@@ -189,6 +207,13 @@ function getVendorQuestionsForPhase(phaseId: string, isDiy: boolean = false): st
 			'How do you handle weather delays?',
 			'What is your quality control process?'
 		],
+		'under-slab-services': [
+			'What plumbing and electrical services do you install under-slab?',
+			'How do you ensure proper pipe slopes and depths?',
+			'What is your pressure testing procedure?',
+			'How do you coordinate between plumbing and electrical trades?',
+			'What warranty do you provide on under-slab work?'
+		],
 		'rough-framing': [
 			'What lumber grade do you use for framing?',
 			'How do you ensure proper wall alignment?',
@@ -266,6 +291,13 @@ function getVendorNeedsForPhase(phaseId: string, isDiy: boolean = false): string
 			'Concrete specifications and mix design',
 			'Access for concrete trucks and equipment',
 			'Weather protection and curing conditions'
+		],
+		'under-slab-services': [
+			'Complete foundation inspection and approval',
+			'Access to foundation area for utility installation',
+			'Coordination between plumbing and electrical contractors',
+			'Proper excavation and backfill equipment',
+			'Pressure testing equipment and procedures'
 		],
 		'rough-framing': [
 			'Approved framing plans and details',
