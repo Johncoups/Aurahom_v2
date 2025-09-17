@@ -1,7 +1,7 @@
 "use client";
 
 import { createContext, useContext, useState, type ReactNode, useMemo, useEffect } from "react";
-import type { OnboardingProfile, RoadmapData } from "@/lib/roadmap-types";
+import type { OnboardingProfile, RoadmapData, ConstructionMethod } from "@/lib/roadmap-types";
 import { generateHybridRoadmap } from "@/lib/hybrid-roadmap-generator";
 import type { CompleteProjectResponse } from "@/lib/unified-response-types";
 import { supabase } from "@/lib/supabase";
@@ -40,9 +40,23 @@ function convertHybridToLegacyFormat(hybridResponse: CompleteProjectResponse, pr
 			} : 'No phases'
 		});
 		
-		// Get the construction method from the project context
-		const constructionMethod = (hybridResponse.projectContext?.projectDetails?.constructionMethod || 'traditional-frame') as any;
-		console.log('🔍 Using construction method:', constructionMethod);
+		// Get the construction method from the project context with proper validation
+		const rawConstructionMethod = hybridResponse.projectContext?.projectDetails?.constructionMethod;
+		const validConstructionMethods: ConstructionMethod[] = ['traditional-frame', 'post-frame', 'icf', 'sip', 'modular', 'other'];
+		
+		// Validate and set construction method with proper fallback
+		let constructionMethod: ConstructionMethod;
+		if (rawConstructionMethod && validConstructionMethods.includes(rawConstructionMethod as ConstructionMethod)) {
+			constructionMethod = rawConstructionMethod as ConstructionMethod;
+			console.log('✅ Using valid construction method from project context:', constructionMethod);
+		} else {
+			constructionMethod = 'traditional-frame'; // Default fallback
+			console.warn('⚠️ Invalid or missing construction method, falling back to traditional-frame:', {
+				rawValue: rawConstructionMethod,
+				validOptions: validConstructionMethods,
+				fallbackUsed: constructionMethod
+			});
+		}
 		
 		// Get hardcoded baseline phases for this construction method
 		const baselinePhases = getPhasesForMethod(constructionMethod);
@@ -879,7 +893,12 @@ export function RoadmapProvider({ children }: { children: ReactNode }) {
 								.eq('id', storedRoadmap.project_id)
 								.single();
 							
-							const constructionMethod = projectData?.construction_method || 'post-frame';
+							// Validate construction method with proper fallback
+							const rawConstructionMethod = projectData?.construction_method;
+							const validConstructionMethods = ['traditional-frame', 'post-frame', 'icf', 'sip', 'modular', 'other'];
+							const constructionMethod = (rawConstructionMethod && validConstructionMethods.includes(rawConstructionMethod)) 
+								? rawConstructionMethod 
+								: 'traditional-frame'; // Default fallback
 							const hybridResponse = await parseStoredResponses(
 								rawResponses,
 								storedRoadmap.project_id,
@@ -941,7 +960,9 @@ export function RoadmapProvider({ children }: { children: ReactNode }) {
 									role: projectData.role || 'owner_plus_diy',
 									experience: projectData.experience || 'diy_permitting',
 									subcontractorHelp: projectData.subcontractor_help || 'yes',
-									constructionMethod: projectData.construction_method || 'post-frame',
+									constructionMethod: (projectData.construction_method && ['traditional-frame', 'post-frame', 'icf', 'sip', 'modular', 'other'].includes(projectData.construction_method)) 
+										? projectData.construction_method 
+										: 'traditional-frame', // Default fallback
 									currentPhaseId: projectData.current_phase_id || 'just-starting',
 									diyPhaseIds: projectData.diy_phase_ids || [],
 									weeklyHourlyCommitment: projectData.weekly_hourly_commitment || '25',
