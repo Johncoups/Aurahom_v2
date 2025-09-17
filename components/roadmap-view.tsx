@@ -219,6 +219,31 @@ function getPhaseHelpfulInfo(phaseId: string) {
 				'Are corners and edges straight?',
 				'Is surface smooth and ready for paint?'
 			]
+		},
+		'under-slab-services': {
+			vendorQuestions: [
+				'What plumbing and electrical services do you install under-slab?',
+				'How do you ensure proper pipe slopes and depths?',
+				'What is your pressure testing procedure?',
+				'What is your timeline for under-slab work completion?',
+				'What warranty do you provide on under-slab work?'
+			],
+			vendorNeeds: [
+				'Complete foundation inspection and approval',
+				'Access to foundation area for utility installation',
+				'Coordination between plumbing and electrical contractors',
+				'Proper excavation and backfill equipment',
+				'Pressure testing equipment and procedures'
+			],
+			qaChecks: [
+				'Are all under-slab utilities properly installed?',
+				'Are plumbing pressure tests completed and passed?',
+				'Are electrical conduits at correct depths?',
+				'Is vapor barrier properly installed?',
+				'Are all utility sleeves properly positioned?',
+				'Is sand bedding properly compacted?',
+				'Are all inspections completed and approved?'
+			]
 		}
 	};
 

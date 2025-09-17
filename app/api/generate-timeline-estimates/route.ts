@@ -212,12 +212,12 @@ ${isDIYPhase ? 'Mode: DIY SELF-PERFORMANCE' : 'Mode: CONTRACTOR HIRED'}
 
 CRITICAL REGIONAL ADJUSTMENTS
 
-**Permit/Inspection Heavy Phases** (pre-construction, foundation, framing, rough-ins, final):
+**Permit/Inspection Heavy Phases** (pre-construction, foundation, framing, rough-ins, under-slab services, final):
 ${isCaliforniaBased ? '- California: Add 3-8x baseline time for permits/inspections (CEQA, seismic, energy codes)' : ''}
 ${isHighRegulationState ? '- High Regulation State: Add 2-4x baseline time for permits/inspections' : ''}
 ${isMidwestBased ? '- Midwest: Use baseline permit/inspection times' : ''}
 
-**Construction-Heavy Phases** (site preparation & excavation, foundation, framing, roofing, exterior finishes, interior finishes):
+**Construction-Heavy Phases** (site preparation & excavation, foundation, framing, under-slab services, roofing, exterior finishes, interior finishes):
 ${isCaliforniaBased ? '- California: Add 1.5-2.2x baseline time for construction complexity (Title 24, seismic, inspections)' : ''}
 ${isHighRegulationState ? '- High Regulation State: Add 1.2-1.8x baseline time for construction complexity' : ''}
 ${isMidwestBased ? '- Midwest: Use baseline construction times' : ''}
@@ -228,7 +228,7 @@ ${location.includes('fl') || location.includes('florida') || location.includes('
 ${location.includes('az') || location.includes('arizona') || location.includes('nv') || location.includes('nevada') ? '- Desert Climate: Summer heat limitations 10am-6pm work windows' : ''}
 - Southern/Mild Climate: Minimal weather impact
 
-**Code Complexity Phases** (framing, electrical, HVAC, insulation):
+**Code Complexity Phases** (framing, electrical, HVAC, insulation, under-slab services):
 ${isCaliforniaBased ? '- California: Title 24 energy codes, seismic requirements, solar mandates add 1.5-2.2x time' : ''}
 ${isHighRegulationState ? '- High Regulation: Complex codes add 1.2-1.5x time' : ''}
 ${location.includes('fl') || location.includes('florida') ? '- Florida: Hurricane strapping, flood elevation requirements add 1.2-1.4x time' : ''}
@@ -290,8 +290,8 @@ CALCULATION METHODOLOGY
 1. Use industry-standard durations for ${userProfile.constructionMethod}
 2. Scale by ${userProfile.houseSize}, ${userProfile.numberOfStories}, ${userProfile.foundationType}
 3. Apply Regional Adjustment Multipliers:
-   ${isCaliforniaBased ? '- California Permit-Heavy Phases (pre-construction, foundation, framing, rough-ins, final): 3-8x baseline' : ''}
-   ${isCaliforniaBased ? '- California Construction-Heavy Phases (site preparation & excavation, roofing, exterior finishes, interior): 1.5-2.2x baseline' : ''}
+   ${isCaliforniaBased ? '- California Permit-Heavy Phases (pre-construction, foundation, framing, rough-ins, under-slab services, final): 3-8x baseline' : ''}
+   ${isCaliforniaBased ? '- California Construction-Heavy Phases (site preparation & excavation, under-slab services, roofing, exterior finishes, interior): 1.5-2.2x baseline' : ''}
    ${isHighRegulationState ? '- High Regulation States: 1.5-2.5x baseline' : ''}
    ${isMidwestBased ? '- Midwest States: 1.0x baseline' : ''}
 4. Apply Labor Market Multipliers:
@@ -317,6 +317,13 @@ ${isCaliforniaBased ? '- Neighborhood Notification & Appeal Periods: 2-6 weeks a
 ${isCaliforniaBased ? '- California: Seismic engineering requirements, special rebar, extended inspections' : ''}
 ${isNorthernClimate ? '- Northern Climate: Frost line requirements, winter concrete limitations' : ''}
 
+**Under-Slab Services:**
+${isCaliforniaBased ? '- California: Radon mitigation requirements, seismic gas shutoff valves, Title 24 energy compliance, extensive inspection requirements' : ''}
+${isHighRegulationState ? '- High Regulation: Radon testing mandates, extensive inspection requirements, gas line regulations' : ''}
+${location.includes('co') || location.includes('colorado') ? '- Colorado: Radon mitigation required, gas line pressure testing' : ''}
+${location.includes('pa') || location.includes('pennsylvania') ? '- Pennsylvania: Radon testing required, extensive gas line inspections' : ''}
+${isMidwestBased ? '- Midwest: Standard under-slab requirements, minimal radon concerns' : ''}
+
 **Rough-in Phases:**
 ${isCaliforniaBased ? '- California: Solar-ready electrical, Title 24 HVAC compliance, water efficiency' : ''}
 ${isHighRegulationState ? '- High Regulation: Energy code compliance, extensive inspection requirements' : ''}
@@ -339,7 +346,7 @@ CRITICAL RULES - BRACKETS ARE ABSOLUTELY REQUIRED
 - For California locations: ALWAYS use the HIGHER end of the range for pre-planning phases
 - For California locations: Apply MAXIMUM regional multipliers for permit-heavy phases
 - For California locations: Exterior finishes, roofing, and interior work use CONSTRUCTION multipliers (1.5-2.2x), NOT permit multipliers (3-8x)
-- For California locations: Only pre-construction, foundation, framing, rough-ins, and final phases use permit multipliers
+- For California locations: Only pre-construction, foundation, framing, rough-ins, under-slab services, and final phases use permit multipliers
 
 VALIDATION CHECKLIST
 ✓ Applied appropriate regional multiplier for ${userProfile.cityState}
