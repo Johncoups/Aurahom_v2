@@ -2,7 +2,7 @@
 
 import { createContext, useContext, useState, type ReactNode, useMemo, useEffect } from "react";
 import type { OnboardingProfile, RoadmapData, ConstructionMethod } from "@/lib/roadmap-types";
-import { generateHybridRoadmap } from "@/lib/hybrid-roadmap-generator";
+// generateHybridRoadmap is now called via server action
 import type { CompleteProjectResponse } from "@/lib/unified-response-types";
 import { supabase } from "@/lib/supabase";
 import { getPhasesForMethod } from "@/lib/roadmap-phases";
@@ -562,7 +562,7 @@ export function RoadmapProvider({ children }: { children: ReactNode }) {
 					throw new Error('User not authenticated');
 				}
 				
-				// Create project first
+				// Create project first - using only basic columns that should exist
 				const projectData = {
 					user_id: user.id,
 					name: `Project - ${p.cityState}`,
@@ -575,20 +575,62 @@ export function RoadmapProvider({ children }: { children: ReactNode }) {
 					background: p.background || null
 				};
 				
+				// Store profile data in a separate way for now
+				const profileData = {
+					role: p.role,
+					experience: p.experience,
+					subcontractor_help: p.subcontractorHelp,
+					construction_method: p.constructionMethod,
+					current_phase_id: p.currentPhaseId,
+					diy_phase_ids: Array.isArray(p.diyPhaseIds) ? p.diyPhaseIds : [],
+					weekly_hourly_commitment: p.weeklyHourlyCommitment
+				};
+				
+				console.log('🔍 Attempting to save project data:', projectData);
+				console.log('🔍 Profile data (will be stored separately):', profileData);
+				console.log('🔍 User ID:', user.id);
+				console.log('🔍 Supabase URL:', process.env.NEXT_PUBLIC_SUPABASE_URL ? 'Set' : 'Missing');
+				console.log('🔍 DIY Phase IDs type:', typeof profileData.diy_phase_ids, profileData.diy_phase_ids);
+				console.log('🔍 DIY Phase IDs length:', Array.isArray(profileData.diy_phase_ids) ? profileData.diy_phase_ids.length : 'Not an array');
+				
+				// First, test if we can query the projects table
+				console.log('🔍 Testing projects table access...');
+				const { data: testQuery, error: testError } = await supabase
+					.from('projects')
+					.select('id')
+					.limit(1);
+				
+				if (testError) {
+					console.error('❌ Cannot access projects table:', testError);
+					throw new Error(`Cannot access projects table: ${testError.message}`);
+				} else {
+					console.log('✅ Projects table is accessible');
+				}
+				
 				const { data: project, error: projectError } = await supabase
 					.from('projects')
 					.insert(projectData)
 					.select()
 					.single();
 				
+				console.log('🔍 Insert result:', { data: project, error: projectError });
+				
 				if (projectError) {
-					throw new Error(`Project creation failed: ${projectError.message}`);
+					console.error('❌ Project creation failed:', projectError);
+					console.error('❌ Error details:', {
+						message: projectError.message,
+						details: projectError.details,
+						hint: projectError.hint,
+						code: projectError.code
+					});
+					throw new Error(`Project creation failed: ${projectError.message || 'Unknown error'}`);
 				}
 				
-				console.log('✅ Project created:', project.id);
+				console.log('✅ Project created successfully:', project.id);
 				
-				// Generate hybrid roadmap with project ID
-				const hybridResponse = await generateHybridRoadmap(p, project.id);
+				// Generate hybrid roadmap using server action
+				const { generateHybridRoadmapAction } = await import('@/app/actions/generateRoadmap');
+				const hybridResponse = await generateHybridRoadmapAction(p, project.id);
 				console.log('✅ Hybrid roadmap generated:', hybridResponse);
 				
 				// Convert hybrid response to legacy format for UI compatibility
@@ -655,10 +697,74 @@ export function RoadmapProvider({ children }: { children: ReactNode }) {
 				// Fall back to baseline approach
 				const baselineRoadmap = await generateRoadmap(p);
 				setRoadmap(baselineRoadmap);
+				
+				// Still save the project data to database even in fallback case
+				try {
+					// Get current user
+					const { data: { user }, error: userError } = await supabase.auth.getUser();
+					if (userError || !user?.id) {
+						throw new Error('User not authenticated');
+					}
+					
+					// Create project with basic data only
+					const projectData = {
+						user_id: user.id,
+						name: `Project - ${p.cityState}`,
+						city_state: p.cityState,
+						property_address: p.propertyAddress || null,
+						house_size: p.houseSize,
+						foundation_type: p.foundationType,
+						number_of_stories: p.numberOfStories,
+						target_start_date: p.targetStartDate || null,
+						background: p.background || null
+					};
+					
+					// Store profile data separately
+					const profileData = {
+						role: p.role,
+						experience: p.experience,
+						subcontractor_help: p.subcontractorHelp,
+						construction_method: p.constructionMethod,
+						current_phase_id: p.currentPhaseId,
+						diy_phase_ids: Array.isArray(p.diyPhaseIds) ? p.diyPhaseIds : [],
+						weekly_hourly_commitment: p.weeklyHourlyCommitment
+					};
+					
+					console.log('🔍 Attempting to save project data in fallback case:', projectData);
+					console.log('🔍 Profile data in fallback (will be stored separately):', profileData);
+					console.log('🔍 User ID in fallback:', user.id);
+					
+					const { data: project, error: projectError } = await supabase
+						.from('projects')
+						.insert(projectData)
+						.select()
+						.single();
+					
+					console.log('🔍 Fallback insert result:', { data: project, error: projectError });
+					
+					if (projectError) {
+						console.error('❌ Failed to save project in fallback case:', projectError);
+						console.error('❌ Fallback error details:', {
+							message: projectError.message,
+							details: projectError.details,
+							hint: projectError.hint,
+							code: projectError.code
+						});
+					} else {
+						console.log('✅ Project saved successfully in fallback case:', project.id);
+					}
+				} catch (fallbackError) {
+					console.error('❌ Error saving project in fallback case:', fallbackError);
+				}
 			}
 			
 		} catch (error) {
 			console.error('❌ Error in setProfileAndGenerate:', error);
+			console.error('❌ Error details:', {
+				message: error instanceof Error ? error.message : 'Unknown error',
+				stack: error instanceof Error ? error.stack : 'No stack trace',
+				profile: p
+			});
 		} finally {
 			setIsLoading(false);
 		}
@@ -764,9 +870,20 @@ export function RoadmapProvider({ children }: { children: ReactNode }) {
 				user_id: user.id,
 				project_id: project.id,
 				raw_api_response: {
+					hybrid_approach: true, // Mark this as hybrid approach data
 					rawOpenAIResponses: rawOpenAIResponses,
 					parsedTimelineEstimates: timelineData.parsedTimelineEstimates || {},
 					baseline_phases: roadmapData.phases,
+					// Store profile data here since projects table doesn't have the columns yet
+					profile_data: {
+						role: profile.role,
+						experience: profile.experience,
+						subcontractor_help: profile.subcontractorHelp,
+						construction_method: profile.constructionMethod,
+						current_phase_id: profile.currentPhaseId,
+						diy_phase_ids: profile.diyPhaseIds,
+						weekly_hourly_commitment: profile.weeklyHourlyCommitment
+					},
 					generated_at: new Date().toISOString()
 				}
 			};
@@ -852,13 +969,28 @@ export function RoadmapProvider({ children }: { children: ReactNode }) {
 			
 			console.log('🔍 Loading stored roadmap for user:', user.id);
 			
-			// Get the most recent roadmap data for this user
-			const { data: roadmapRecords, error: roadmapError } = await supabase
+			// First try to get hybrid approach data, then fall back to any roadmap data
+			let { data: roadmapRecords, error: roadmapError } = await supabase
 				.from('roadmap_data')
 				.select('*')
 				.eq('user_id', user.id)
+				.eq('raw_api_response->>hybrid_approach', 'true')
 				.order('created_at', { ascending: false })
 				.limit(1);
+			
+			// If no hybrid data found, get any roadmap data
+			if (!roadmapRecords || roadmapRecords.length === 0) {
+				console.log('🔍 No hybrid approach data found, falling back to any roadmap data...');
+				const fallbackResult = await supabase
+					.from('roadmap_data')
+					.select('*')
+					.eq('user_id', user.id)
+					.order('created_at', { ascending: false })
+					.limit(1);
+				
+				roadmapRecords = fallbackResult.data;
+				roadmapError = fallbackResult.error;
+			}
 			
 			if (roadmapError) {
 				console.error('❌ Error loading roadmap:', roadmapError);
@@ -868,6 +1000,15 @@ export function RoadmapProvider({ children }: { children: ReactNode }) {
 			if (roadmapRecords && roadmapRecords.length > 0) {
 				const storedRoadmap = roadmapRecords[0];
 				console.log('✅ Loaded stored roadmap:', storedRoadmap.id);
+				console.log('🔍 Raw API response structure:', {
+					hasRawApiResponse: !!storedRoadmap.raw_api_response,
+					hasHybridApproach: !!storedRoadmap.raw_api_response?.hybrid_approach,
+					hybridApproachValue: storedRoadmap.raw_api_response?.hybrid_approach,
+					hasParsedTimelineEstimates: !!storedRoadmap.raw_api_response?.parsedTimelineEstimates,
+					parsedTimelineEstimatesKeys: Object.keys(storedRoadmap.raw_api_response?.parsedTimelineEstimates || {}),
+					hasRawOpenAIResponses: !!storedRoadmap.raw_api_response?.rawOpenAIResponses,
+					rawOpenAIResponsesKeys: Object.keys(storedRoadmap.raw_api_response?.rawOpenAIResponses || {})
+				});
 				
 				// Check if this is hybrid approach data
 				const isHybridData = storedRoadmap.raw_api_response?.hybrid_approach === true;
@@ -881,51 +1022,14 @@ export function RoadmapProvider({ children }: { children: ReactNode }) {
 						// Handle hybrid approach data
 						console.log('🔄 Processing hybrid approach data...');
 						
-						// Parse stored hybrid responses
-						const { getStoredRawResponses, parseStoredResponses } = await import('@/lib/hybrid-roadmap-generator');
-						
-						const rawResponses = await getStoredRawResponses(storedRoadmap.project_id, user.id);
-						if (rawResponses) {
-							// Get project data to determine construction method
-							const { data: projectData } = await supabase
-								.from('projects')
-								.select('construction_method')
-								.eq('id', storedRoadmap.project_id)
-								.single();
-							
-							// Validate construction method with proper fallback
-							const rawConstructionMethod = projectData?.construction_method;
-							const validConstructionMethods = ['traditional-frame', 'post-frame', 'icf', 'sip', 'modular', 'other'];
-							const constructionMethod = (rawConstructionMethod && validConstructionMethods.includes(rawConstructionMethod)) 
-								? rawConstructionMethod 
-								: 'traditional-frame'; // Default fallback
-							const hybridResponse = await parseStoredResponses(
-								rawResponses,
-								storedRoadmap.project_id,
-								user.id,
-								constructionMethod
-							);
-							
-							reconstructedRoadmap = convertHybridToLegacyFormat(hybridResponse, profile || undefined);
-							console.log('✅ Hybrid roadmap restored from database');
-						} else {
-							// Fallback to empty roadmap
-							reconstructedRoadmap = {
-								phases: [],
-								timelineEstimates: [],
-								parsedTimelineEstimates: {}
-							};
-						}
-						
-						// Ensure duration data is loaded from raw_api_response for hybrid data too
-						if (storedRoadmap.raw_api_response?.parsedTimelineEstimates) {
-							reconstructedRoadmap.parsedTimelineEstimates = storedRoadmap.raw_api_response.parsedTimelineEstimates;
-							console.log('🔍 Duration data loaded for hybrid approach:', {
-								hasParsedEstimates: !!storedRoadmap.raw_api_response?.parsedTimelineEstimates,
-								parsedEstimatesKeys: Object.keys(storedRoadmap.raw_api_response?.parsedTimelineEstimates || {}),
-								sampleDuration: storedRoadmap.raw_api_response?.parsedTimelineEstimates?.['just-starting']
-							});
-						}
+						// We already have the parsed data, no need to re-parse it
+						// Just reconstruct the roadmap from the stored parsed data
+						reconstructedRoadmap = {
+							phases: storedRoadmap.raw_api_response?.baseline_phases || [],
+							timelineEstimates: [], // We don't store the full timeline estimates
+							parsedTimelineEstimates: storedRoadmap.raw_api_response?.parsedTimelineEstimates || {}
+						};
+						console.log('✅ Hybrid roadmap restored from database');
 					} else {
 						// Handle legacy data
 						console.log('🔄 Processing legacy data...');
@@ -935,6 +1039,11 @@ export function RoadmapProvider({ children }: { children: ReactNode }) {
 							parsedTimelineEstimates: storedRoadmap.raw_api_response?.parsedTimelineEstimates || {}
 						};
 						console.log('✅ Legacy roadmap restored from database');
+					}
+					
+					// Ensure duration data is loaded from raw_api_response
+					if (storedRoadmap.raw_api_response?.parsedTimelineEstimates) {
+						reconstructedRoadmap.parsedTimelineEstimates = storedRoadmap.raw_api_response.parsedTimelineEstimates;
 						console.log('🔍 Duration data loaded:', {
 							hasParsedEstimates: !!storedRoadmap.raw_api_response?.parsedTimelineEstimates,
 							parsedEstimatesKeys: Object.keys(storedRoadmap.raw_api_response?.parsedTimelineEstimates || {}),
@@ -942,30 +1051,58 @@ export function RoadmapProvider({ children }: { children: ReactNode }) {
 						});
 					}
 					
-					// First, fetch the profile from the projects table using project_id
+					// Load profile data from roadmap_data table (stored in raw_api_response)
 					let profileData: OnboardingProfile | null = null;
-					if (storedRoadmap.project_id) {
+					
+					// Try to get profile data from roadmap_data first
+					if (storedRoadmap.raw_api_response?.profile_data) {
+						const storedProfile = storedRoadmap.raw_api_response.profile_data;
+						profileData = {
+							role: storedProfile.role || 'owner_plus_diy',
+							experience: storedProfile.experience || 'diy_permitting',
+							subcontractorHelp: storedProfile.subcontractor_help || 'yes',
+							constructionMethod: (storedProfile.construction_method && ['traditional-frame', 'post-frame', 'icf', 'sip', 'modular', 'other'].includes(storedProfile.construction_method)) 
+								? storedProfile.construction_method 
+								: 'traditional-frame', // Default fallback
+							currentPhaseId: storedProfile.current_phase_id || 'just-starting',
+							diyPhaseIds: Array.isArray(storedProfile.diy_phase_ids) ? storedProfile.diy_phase_ids : [],
+							weeklyHourlyCommitment: storedProfile.weekly_hourly_commitment || '25',
+							// Get basic project info from projects table
+							cityState: '', // Will be filled from projects table
+							propertyAddress: '',
+							houseSize: '',
+							foundationType: 'pier-and-beam',
+							numberOfStories: '2-story',
+							targetStartDate: '',
+							background: ''
+						};
+						
+						console.log('✅ Profile loaded from roadmap_data:', {
+							diyPhaseIds: profileData.diyPhaseIds,
+							role: profileData.role,
+							experience: profileData.experience
+						});
+					}
+					
+					// If no profile data in roadmap_data, try to get basic info from projects table
+					if (!profileData && storedRoadmap.project_id) {
 						try {
 							const { data: projectData, error: projectError } = await supabase
 								.from('projects')
-								.select('*')
+								.select('city_state, property_address, house_size, foundation_type, number_of_stories, target_start_date, background')
 								.eq('id', storedRoadmap.project_id)
 								.single();
 							
-							if (projectError) {
-								console.error('❌ Error loading project profile:', projectError);
-							} else if (projectData) {
-								// Convert project data to OnboardingProfile format
+							if (!projectError && projectData) {
+								// Create minimal profile with basic project info
 								profileData = {
-									role: projectData.role || 'owner_plus_diy',
-									experience: projectData.experience || 'diy_permitting',
-									subcontractorHelp: projectData.subcontractor_help || 'yes',
-									constructionMethod: (projectData.construction_method && ['traditional-frame', 'post-frame', 'icf', 'sip', 'modular', 'other'].includes(projectData.construction_method)) 
-										? projectData.construction_method 
-										: 'traditional-frame', // Default fallback
-									currentPhaseId: projectData.current_phase_id || 'just-starting',
-									diyPhaseIds: projectData.diy_phase_ids || [],
-									weeklyHourlyCommitment: projectData.weekly_hourly_commitment || '25',
+									role: 'owner_plus_diy',
+									experience: 'diy_permitting',
+									subcontractorHelp: 'yes',
+									constructionMethod: 'traditional-frame',
+									currentPhaseId: 'just-starting',
+									diyPhaseIds: [],
+									weeklyHourlyCommitment: '25',
 									cityState: projectData.city_state || '',
 									propertyAddress: projectData.property_address || '',
 									houseSize: projectData.house_size || '',
@@ -975,11 +1112,7 @@ export function RoadmapProvider({ children }: { children: ReactNode }) {
 									background: projectData.background || ''
 								};
 								
-								console.log('✅ Profile loaded from projects table:', {
-									diyPhaseIds: profileData.diyPhaseIds,
-									role: profileData.role,
-									experience: profileData.experience
-								});
+								console.log('✅ Basic profile loaded from projects table (no DIY phases)');
 							}
 						} catch (error) {
 							console.error('❌ Error fetching project profile:', error);
@@ -1035,8 +1168,9 @@ export function RoadmapProvider({ children }: { children: ReactNode }) {
 				throw new Error('No project found for regeneration');
 			}
 			
-			// Regenerate the entire hybrid roadmap
-			const hybridResponse = await generateHybridRoadmap(profile, projects.id);
+			// Regenerate the entire hybrid roadmap using server action
+			const { generateHybridRoadmapAction } = await import('@/app/actions/generateRoadmap');
+			const hybridResponse = await generateHybridRoadmapAction(profile, projects.id);
 			const roadmapData = convertHybridToLegacyFormat(hybridResponse, profile);
 			
 			// Combine with existing timeline data
