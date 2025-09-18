@@ -1,5 +1,10 @@
 import { OpenAI } from 'openai';
 
+// Ensure environment variables are loaded
+if (typeof window === 'undefined') {
+  require('dotenv').config({ path: '.env.local' });
+}
+
 // Available models
 export const OPENAI_MODELS = {
   GPT4: 'gpt-4',
@@ -38,11 +43,6 @@ export async function generateText(
 ) {
   try {
     console.log('generateText called with model:', model);
-    
-    if (!process.env.OPENAI_API_KEY) {
-      throw new Error('OPENAI_API_KEY environment variable is not set');
-    }
-
     console.log('API key found, initializing OpenAI model...');
     console.log('Generating content with prompt length:', prompt.length);
     

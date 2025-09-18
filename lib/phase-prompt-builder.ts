@@ -44,6 +44,11 @@ export const PHASE_EXPERTS = {
     expertise: 'Concrete work, foundation systems, waterproofing, structural integrity',
     experience: '25+ years in foundation construction and structural engineering'
   },
+  'under-slab-services': {
+    title: 'UNDER-SLAB SERVICES EXPERT',
+    expertise: 'Under-slab plumbing, electrical conduits, utility installation, pressure testing',
+    experience: '25+ years in under-slab utility installation and pre-slab work'
+  },
   'icf-foundation-walls': {
     title: 'ICF FOUNDATION WALLS EXPERT',
     expertise: 'Insulated Concrete Forms, foundation walls, energy efficiency',
