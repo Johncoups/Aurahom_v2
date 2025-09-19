@@ -443,10 +443,42 @@ function convertHybridToLegacyFormat(hybridResponse: CompleteProjectResponse, pr
 			hasNotes: !!phases[0].tasks[0]?.notes
 		} : 'No phases converted');
 		
+		// Extract timeline data from hybrid phase responses
+		const timelineEstimates: any[] = [];
+		const parsedTimelineEstimates: Record<string, any> = {};
+		
+		hybridResponse.phaseResponses.forEach(phaseResponse => {
+			if (phaseResponse.timeline) {
+				const timeline = phaseResponse.timeline;
+				
+				// Add to timelineEstimates array (for backward compatibility)
+				timelineEstimates.push({
+					phaseId: phaseResponse.phaseId,
+					phaseTitle: phaseResponse.phaseTitle,
+					rawOpenAIResponse: timeline.rawTimeline || '',
+					error: undefined
+				});
+				
+				// Add to parsedTimelineEstimates object (main format used by UI)
+				parsedTimelineEstimates[phaseResponse.phaseId] = {
+					diyDuration: timeline.diyDuration,
+					contractorDuration: timeline.contractorDuration,
+					diyHours: timeline.diyHours,
+					rawTimeline: timeline.rawTimeline || ''
+				};
+			}
+		});
+		
+		console.log('✅ Extracted timeline data from hybrid system:', {
+			timelineCount: timelineEstimates.length,
+			parsedEstimatesCount: Object.keys(parsedTimelineEstimates).length,
+			phases: Object.keys(parsedTimelineEstimates)
+		});
+		
 		return {
 			phases,
-			timelineEstimates: [], // Will be populated by timeline API
-			parsedTimelineEstimates: {} // Will be populated by timeline API
+			timelineEstimates,
+			parsedTimelineEstimates
 		};
 		
 	} catch (error) {
@@ -633,43 +665,12 @@ export function RoadmapProvider({ children }: { children: ReactNode }) {
 				const hybridResponse = await generateHybridRoadmapAction(p, project.id);
 				console.log('✅ Hybrid roadmap generated:', hybridResponse);
 				
-				// Convert hybrid response to legacy format for UI compatibility
-				const roadmapData = convertHybridToLegacyFormat(hybridResponse, p);
-				console.log('✅ Converted to legacy format:', roadmapData);
-			
-			// Generate timeline estimates in parallel (maintaining existing parallel processing)
-			const timelineResponse = await fetch('/api/generate-timeline-estimates', {
-				method: 'POST',
-				headers: { 'Content-Type': 'application/json' },
-				body: JSON.stringify({ 
-					userProfile: p,
-					userId: user.id,
-					projectId: project.id
-				})
-			});
-			
-			let timelineData = await timelineResponse.json();
-			console.log('🔍 Timeline API response status:', timelineResponse.status);
-			
-			// Validate timeline data
-			if (!timelineData || !timelineData.success) {
-				console.warn('⚠️ Timeline API failed or returned invalid data, using fallback');
-				timelineData = {
-					success: false,
-					userId: user.id,
-					projectId: project.id,
-					timelines: [],
-					rawOpenAIResponses: {},
-					parsedTimelineEstimates: {}
-				};
-			}
-			
-			// Combine hybrid roadmap and timeline data
-			const combinedData = {
-				...roadmapData,
-				timelineEstimates: timelineData.success ? timelineData.timelines : [],
-				parsedTimelineEstimates: timelineData.success ? timelineData.parsedTimelineEstimates : {}
-			};
+			// Convert hybrid response to legacy format for UI compatibility (now includes timeline data)
+			const roadmapData = convertHybridToLegacyFormat(hybridResponse, p);
+			console.log('✅ Converted to legacy format with timeline data:', roadmapData);
+		
+		// Use the timeline data already extracted from hybrid system
+		const combinedData = roadmapData;
 			
 			console.log('🔍 Combined data with duration info:', {
 				hasParsedEstimates: !!combinedData.parsedTimelineEstimates,
@@ -689,8 +690,20 @@ export function RoadmapProvider({ children }: { children: ReactNode }) {
 			setRoadmap(combinedData);
 			console.log('✅ Roadmap state updated with hybrid data');
 			
-			// Store in Supabase using IDs from API response
-			await storeRoadmapInSupabase(p, combinedData, timelineData);
+		// Store in Supabase - create timeline data structure for storage compatibility
+		const timelineDataForStorage = {
+			success: true,
+			userId: user.id,
+			projectId: project.id,
+			timelines: combinedData.timelineEstimates,
+			rawOpenAIResponses: (combinedData.timelineEstimates || []).reduce((acc: Record<string, string>, timeline: any) => {
+				acc[timeline.phaseId] = timeline.rawOpenAIResponse || '';
+				return acc;
+			}, {}),
+			parsedTimelineEstimates: combinedData.parsedTimelineEstimates
+		};
+		
+		await storeRoadmapInSupabase(p, combinedData, timelineDataForStorage);
 			
 			} catch (hybridError) {
 				console.warn('⚠️ Hybrid approach failed, falling back to baseline:', hybridError);

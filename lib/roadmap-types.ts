@@ -8,7 +8,7 @@ export type WeeklyHourlyCommitment = string;
 
 export type ConstructionMethod = "" | "traditional-frame" | "post-frame" | "icf" | "sip" | "modular" | "other";
 
-export type FoundationType = "" | "slab-on-grade" | "crawlspace" | "full-basement" | "partial-basement" | "pier-and-beam" | "other";
+export type FoundationType = "" | "slab-on-grade" | "crawlspace" | "full-basement" | "partial-basement" | "pier" | "pier-and-beam" | "other";
 
 export type NumberOfStories = "" | "1-story" | "1.5-story" | "2-story" | "2.5-story" | "3-story" | "other";
 

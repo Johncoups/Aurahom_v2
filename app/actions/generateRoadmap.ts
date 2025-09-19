@@ -440,11 +440,43 @@ function convertHybridToLegacyFormat(hybridResponse: CompleteProjectResponse, pr
 		
 		console.log(`✅ Converted ${phases.length} phases to legacy format`);
 		
-		return {
-			phases,
-			timelineEstimates: [], // Will be populated by timeline API
-			parsedTimelineEstimates: {} // Will be populated by timeline API
-		};
+	// Extract timeline data from hybrid phase responses
+	const timelineEstimates: any[] = [];
+	const parsedTimelineEstimates: Record<string, any> = {};
+	
+	hybridResponse.phaseResponses.forEach(phaseResponse => {
+		if (phaseResponse.timeline) {
+			const timeline = phaseResponse.timeline;
+			
+			// Add to timelineEstimates array (for backward compatibility)
+			timelineEstimates.push({
+				phaseId: phaseResponse.phaseId,
+				phaseTitle: phaseResponse.phaseTitle,
+				rawOpenAIResponse: timeline.rawTimeline || '',
+				error: undefined
+			});
+			
+			// Add to parsedTimelineEstimates object (main format used by UI)
+			parsedTimelineEstimates[phaseResponse.phaseId] = {
+				diyDuration: timeline.diyDuration,
+				contractorDuration: timeline.contractorDuration,
+				diyHours: timeline.diyHours,
+				rawTimeline: timeline.rawTimeline || ''
+			};
+		}
+	});
+	
+	console.log('✅ Extracted timeline data from hybrid system:', {
+		timelineCount: timelineEstimates.length,
+		parsedEstimatesCount: Object.keys(parsedTimelineEstimates).length,
+		phases: Object.keys(parsedTimelineEstimates)
+	});
+	
+	return {
+		phases,
+		timelineEstimates,
+		parsedTimelineEstimates
+	};
 		
 	} catch (error) {
 		console.error('❌ Error converting hybrid response:', error);

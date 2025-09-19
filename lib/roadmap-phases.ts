@@ -920,29 +920,9 @@ export const POST_FRAME_PHASES: ConstructionPhase[] = [
     estimatedDuration: "2-3 weeks"
   },
   {
-    id: "rough-framing-post-frame",
-    title: "Rough Framing",
-    order: 10,
-    description: "Interior walls, blocking, and soundproofing",
-    tasks: [
-      "Frame interior partition walls",
-      "Install blocking for cabinets and vanities",
-      "Reinforce walls for wall-hung fixtures",
-      "Frame niches, benches, and curbs",
-      "Straighten and plane walls",
-      "Install soundproofing details",
-      "Frame pocket and hidden doors",
-      "Pre-drywall walk and documentation",
-      "Interior framing inspection"
-    ],
-    dependencies: ["exterior"],
-    constructionMethods: ["post-frame"],
-    estimatedDuration: "2-3 weeks"
-  },
-  {
     id: "plumbing-rough",
     title: "Plumbing Rough-In",
-    order: 11,
+    order: 10,
     description: "Underground and wall plumbing installation",
     tasks: [
       "Install DWV piping with proper slope",
@@ -955,14 +935,14 @@ export const POST_FRAME_PHASES: ConstructionPhase[] = [
       "Plumbing rough-in inspection",
       "Install water heater and treatment"
     ],
-    dependencies: ["rough-framing-post-frame"],
+    dependencies: ["rough-framing"],
     constructionMethods: ["post-frame"],
     estimatedDuration: "2-3 weeks"
   },
   {
     id: "electrical-rough",
     title: "Electrical Rough-In",
-    order: 12,
+    order: 11,
     description: "Underground electrical wiring and panel installation",
     tasks: [
       "Install service panel and sub-panels",
@@ -982,7 +962,7 @@ export const POST_FRAME_PHASES: ConstructionPhase[] = [
   {
     id: "hvac-rough",
     title: "HVAC Rough-In",
-    order: 13,
+    order: 12,
     description: "Heating, ventilation, and air conditioning installation",
     tasks: [
       "Complete Manual J/S/D calculations",
@@ -1002,7 +982,7 @@ export const POST_FRAME_PHASES: ConstructionPhase[] = [
   {
     id: "insulation",
     title: "Insulation & Air Sealing",
-    order: 14,
+    order: 13,
     description: "Thermal and sound insulation installation",
     tasks: [
       "Complete air sealing pass",
@@ -1021,7 +1001,7 @@ export const POST_FRAME_PHASES: ConstructionPhase[] = [
   {
     id: "drywall",
     title: "Drywall",
-    order: 15,
+    order: 14,
     description: "Interior wall and ceiling finishing",
     tasks: [
       "Hang drywall (MR board where needed)",
@@ -1039,7 +1019,7 @@ export const POST_FRAME_PHASES: ConstructionPhase[] = [
   {
     id: "trim-carpentry",
     title: "Trim Carpentry",
-    order: 16,
+    order: 15,
     description: "Interior trim, doors, and hardware",
     tasks: [
       "Install interior doors and jambs",
@@ -1058,7 +1038,7 @@ export const POST_FRAME_PHASES: ConstructionPhase[] = [
   {
     id: "paint",
     title: "Paint",
-    order: 17,
+    order: 16,
     description: "Interior and exterior painting",
     tasks: [
       "Surface preparation and caulking",
@@ -1076,7 +1056,7 @@ export const POST_FRAME_PHASES: ConstructionPhase[] = [
   {
     id: "flooring",
     title: "Flooring",
-    order: 18,
+    order: 17,
     description: "Floor covering installation",
     tasks: [
       "Inspect subfloor flatness",
@@ -1095,7 +1075,7 @@ export const POST_FRAME_PHASES: ConstructionPhase[] = [
   {
     id: "kitchen-bath",
     title: "Kitchen & Bath",
-    order: 19,
+    order: 18,
     description: "Kitchen and bathroom finishing",
     tasks: [
       "Install kitchen cabinets",
@@ -1113,7 +1093,7 @@ export const POST_FRAME_PHASES: ConstructionPhase[] = [
   {
     id: "final-touches",
     title: "Final Touches & Punch List",
-    order: 20,
+    order: 19,
     description: "Final details and project completion",
     tasks: [
       "Complete punch list items",

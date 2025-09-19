@@ -427,6 +427,21 @@ export function RoadmapView({ data }: RoadmapViewProps) {
 							<div className="text-sm text-purple-700">Contractor Weeks</div>
 						</div>
 					</div>
+					
+					{/* Important Notes Disclaimer */}
+					<div className="mt-4 p-4 bg-amber-50 border border-amber-200 rounded-lg">
+						<div className="flex items-start gap-2">
+							<span className="text-amber-600 text-lg">📋</span>
+							<div>
+								<h3 className="font-semibold text-amber-800 mb-2">Important Notes:</h3>
+								<ul className="text-sm text-amber-700 space-y-1">
+									<li>• These are conservative estimates based on typical project scenarios, including permitting, work, and inspection processes</li>
+									<li>• DIY timeframe assumes {profile?.weeklyHourlyCommitment || 'X'} hours/week commitment level</li>
+									<li>• Actual completion times may vary based on complexity, skill level, and availability</li>
+								</ul>
+							</div>
+						</div>
+					</div>
 				</div>
 			)}
 
