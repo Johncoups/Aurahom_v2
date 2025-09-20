@@ -1441,29 +1441,9 @@ export const ICF_PHASES: ConstructionPhase[] = [
     estimatedDuration: "2-3 weeks"
   },
   {
-    id: "rough-framing-icf",
-    title: "Rough Framing",
-    order: 14,
-    description: "Interior walls, blocking, and soundproofing",
-    tasks: [
-      "Frame interior partition walls",
-      "Install blocking for cabinets and vanities",
-      "Reinforce walls for wall-hung fixtures",
-      "Frame niches, benches, and curbs",
-      "Straighten and plane walls",
-      "Install soundproofing details",
-      "Frame pocket and hidden doors",
-      "Pre-drywall walk and documentation",
-      "Rough framing inspection"
-    ],
-    dependencies: ["insulation"],
-    constructionMethods: ["icf"],
-    estimatedDuration: "2-4 weeks"
-  },
-  {
     id: "drywall",
     title: "Drywall",
-    order: 15,
+    order: 14,
     description: "Interior wall and ceiling finishing",
     tasks: [
       "Hang drywall (MR board where needed)",
@@ -1474,14 +1454,14 @@ export const ICF_PHASES: ConstructionPhase[] = [
       "Ready-for-paint inspection",
       "Final drywall inspection"
     ],
-    dependencies: ["rough-framing-icf"],
+    dependencies: ["rough-framing"],
     constructionMethods: ["icf"],
     estimatedDuration: "3-5 weeks"
   },
   {
     id: "paint",
     title: "Paint",
-    order: 16,
+    order: 15,
     description: "Interior and exterior painting",
     tasks: [
       "Surface preparation and caulking",
@@ -1499,7 +1479,7 @@ export const ICF_PHASES: ConstructionPhase[] = [
   {
     id: "trim-carpentry",
     title: "Trim Carpentry",
-    order: 17,
+    order: 16,
     description: "Interior trim, doors, and hardware",
     tasks: [
       "Install interior doors and jambs",
@@ -1518,7 +1498,7 @@ export const ICF_PHASES: ConstructionPhase[] = [
   {
     id: "flooring",
     title: "Flooring",
-    order: 18,
+    order: 17,
     description: "Floor covering installation",
     tasks: [
       "Inspect subfloor flatness",
@@ -1537,7 +1517,7 @@ export const ICF_PHASES: ConstructionPhase[] = [
   {
     id: "kitchen-bath",
     title: "Kitchen & Bath",
-    order: 19,
+    order: 18,
     description: "Kitchen and bathroom finishing",
     tasks: [
       "Install kitchen cabinets",
@@ -1555,7 +1535,7 @@ export const ICF_PHASES: ConstructionPhase[] = [
   {
     id: "final-touches",
     title: "Final Touches & Punch List",
-    order: 20,
+    order: 19,
     description: "Final details and project completion",
     tasks: [
       "Complete punch list items",
@@ -1917,29 +1897,9 @@ export const SIP_PHASES: ConstructionPhase[] = [
     estimatedDuration: "1-2 weeks"
   },
   {
-    id: "rough-framing-sip",
-    title: "Rough Framing",
-    order: 15,
-    description: "Interior walls, blocking, and soundproofing",
-    tasks: [
-      "Frame interior partition walls",
-      "Install blocking for cabinets and vanities",
-      "Reinforce walls for wall-hung fixtures",
-      "Frame niches, benches, and curbs",
-      "Straighten and plane walls",
-      "Install soundproofing details",
-      "Frame pocket and hidden doors",
-      "Pre-drywall walk and documentation",
-      "Interior framing inspection"
-    ],
-    dependencies: ["insulation"],
-    constructionMethods: ["sip"],
-    estimatedDuration: "2-3 weeks"
-  },
-  {
     id: "drywall",
     title: "Drywall",
-    order: 16,
+    order: 15,
     description: "Interior wall and ceiling finishing",
     tasks: [
       "Hang drywall (MR board where needed)",
@@ -1950,14 +1910,14 @@ export const SIP_PHASES: ConstructionPhase[] = [
       "Ready-for-paint inspection",
       "Final drywall inspection"
     ],
-    dependencies: ["rough-framing-sip"],
+    dependencies: ["rough-framing"],
     constructionMethods: ["sip"],
     estimatedDuration: "3-5 weeks"
   },
   {
     id: "trim-carpentry",
     title: "Trim Carpentry",
-    order: 17,
+    order: 16,
     description: "Interior trim, doors, and hardware",
     tasks: [
       "Install interior doors and jambs",
@@ -1976,7 +1936,7 @@ export const SIP_PHASES: ConstructionPhase[] = [
   {
     id: "paint",
     title: "Paint",
-    order: 18,
+    order: 17,
     description: "Interior and exterior painting",
     tasks: [
       "Surface preparation and caulking",
@@ -1987,14 +1947,14 @@ export const SIP_PHASES: ConstructionPhase[] = [
       "Exterior painting as weather allows",
       "Touch-ups and final inspection"
     ],
-    dependencies: ["trim-carpentry"],
+    dependencies: ["paint"],
     constructionMethods: ["sip"],
     estimatedDuration: "2-4 weeks"
   },
   {
     id: "flooring",
     title: "Flooring",
-    order: 19,
+    order: 18,
     description: "Floor covering installation",
     tasks: [
       "Inspect subfloor flatness",
@@ -2006,14 +1966,14 @@ export const SIP_PHASES: ConstructionPhase[] = [
       "Install transitions and trim",
       "Protect until substantial completion"
     ],
-    dependencies: ["paint"],
+    dependencies: ["flooring"],
     constructionMethods: ["sip"],
     estimatedDuration: "3-5 weeks"
   },
   {
     id: "kitchen-bath",
     title: "Kitchen & Bath",
-    order: 20,
+    order: 19,
     description: "Kitchen and bathroom finishing",
     tasks: [
       "Install kitchen cabinets",
@@ -2024,14 +1984,14 @@ export const SIP_PHASES: ConstructionPhase[] = [
       "Install hardware and accessories",
       "Final kitchen and bath inspection"
     ],
-    dependencies: ["flooring"],
+    dependencies: ["kitchen-bath"],
     constructionMethods: ["sip"],
     estimatedDuration: "3-4 weeks"
   },
   {
     id: "final-touches",
     title: "Final Touches & Punch List",
-    order: 21,
+    order: 20,
     description: "Final details and project completion",
     tasks: [
       "Complete punch list items",
@@ -2372,29 +2332,9 @@ export const MODULAR_PHASES: ConstructionPhase[] = [
     estimatedDuration: "1-2 weeks"
   },
   {
-    id: "rough-framing-modular-2",
-    title: "Rough Framing",
-    order: 15,
-    description: "Interior walls, blocking, and soundproofing",
-    tasks: [
-      "Frame interior partition walls",
-      "Install blocking for cabinets and vanities",
-      "Reinforce walls for wall-hung fixtures",
-      "Frame niches, benches, and curbs",
-      "Straighten and plane walls",
-      "Install soundproofing details",
-      "Frame pocket and hidden doors",
-      "Pre-drywall walk and documentation",
-      "Interior framing inspection"
-    ],
-    dependencies: ["insulation"],
-    constructionMethods: ["modular"],
-    estimatedDuration: "2-3 weeks"
-  },
-  {
     id: "drywall",
     title: "Drywall",
-    order: 16,
+    order: 15,
     description: "Interior wall and ceiling finishing",
     tasks: [
       "Hang drywall (MR board where needed)",
@@ -2405,14 +2345,14 @@ export const MODULAR_PHASES: ConstructionPhase[] = [
       "Ready-for-paint inspection",
       "Final drywall inspection"
     ],
-    dependencies: ["rough-framing-modular-2"],
+    dependencies: ["rough-framing-modular"],
     constructionMethods: ["modular"],
     estimatedDuration: "3-5 weeks"
   },
   {
     id: "trim-carpentry",
     title: "Trim Carpentry",
-    order: 17,
+    order: 16,
     description: "Interior trim, doors, and hardware",
     tasks: [
       "Install interior doors and jambs",
@@ -2431,7 +2371,7 @@ export const MODULAR_PHASES: ConstructionPhase[] = [
   {
     id: "paint",
     title: "Paint",
-    order: 18,
+    order: 17,
     description: "Interior and exterior painting",
     tasks: [
       "Surface preparation and caulking",
@@ -2449,7 +2389,7 @@ export const MODULAR_PHASES: ConstructionPhase[] = [
   {
     id: "flooring",
     title: "Flooring",
-    order: 19,
+    order: 18,
     description: "Floor covering installation",
     tasks: [
       "Inspect subfloor flatness",
@@ -2468,7 +2408,7 @@ export const MODULAR_PHASES: ConstructionPhase[] = [
   {
     id: "kitchen-bath",
     title: "Kitchen & Bath",
-    order: 20,
+    order: 19,
     description: "Kitchen and bathroom finishing",
     tasks: [
       "Install kitchen cabinets",
@@ -2486,7 +2426,7 @@ export const MODULAR_PHASES: ConstructionPhase[] = [
   {
     id: "final-touches",
     title: "Final Touches & Punch List",
-    order: 21,
+    order: 20,
     description: "Final details and project completion",
     tasks: [
       "Complete punch list items",
