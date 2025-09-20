@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
-import { X, FileText, Shield, CheckCircle } from "lucide-react"
+import { X, Document, Shield, CheckCircle } from "lucide-react"
 
 interface TermsOfServiceProps {
   isOpen: boolean
@@ -20,7 +20,7 @@ export function TermsOfService({ isOpen, onClose }: TermsOfServiceProps) {
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-gray-200">
           <div className="flex items-center space-x-3">
-            <FileText className="h-6 w-6 text-cyan-800" />
+            <Document className="h-6 w-6 text-cyan-800" />
             <h2 className="text-2xl font-serif font-bold text-gray-900">
               Legal Information
             </h2>

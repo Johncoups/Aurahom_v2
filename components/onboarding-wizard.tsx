@@ -23,7 +23,7 @@ export function OnboardingWizard({ onComplete }: OnboardingWizardProps) {
 	const [cityState, setCityState] = useState("");
 	const [propertyAddress, setPropertyAddress] = useState("");
 	const [houseSize, setHouseSize] = useState("");
-	const [foundationType, setFoundationType] = useState<"" | "slab-on-grade" | "crawlspace" | "full-basement" | "partial-basement" | "pier-and-beam" | "other">("");
+	const [foundationType, setFoundationType] = useState<"" | "slab-on-grade" | "crawlspace" | "full-basement" | "partial-basement" | "pier" | "pier-and-beam" | "other">("");
 	const [numberOfStories, setNumberOfStories] = useState<"" | "1-story" | "1.5-story" | "2-story" | "2.5-story" | "3-story" | "other">("");
 	const [targetStartDate, setTargetStartDate] = useState("");
 	const [background, setBackground] = useState("");
@@ -85,6 +85,7 @@ export function OnboardingWizard({ onComplete }: OnboardingWizardProps) {
 					<option value="crawlspace">Crawlspace</option>
 					<option value="full-basement">Full Basement</option>
 					<option value="partial-basement">Partial Basement</option>
+					<option value="pier">Pier</option>
 					<option value="pier-and-beam">Pier and Beam</option>
 					<option value="other">Other</option>
 				</select>

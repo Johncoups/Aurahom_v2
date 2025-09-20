@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
-import { Loader2, Wrench, Package, CheckCircle2, Clock } from "lucide-react"
+import { Loader2, Wrench, Package, CheckCircle2, Timer } from "lucide-react"
 
 interface TaskDetail {
   id: string
@@ -132,7 +132,7 @@ export function TaskGeneratorPage() {
                 <div className="flex gap-2">
                   <Badge className={getDifficultyColor(generatedTask.difficulty)}>{generatedTask.difficulty}</Badge>
                   <Badge variant="outline" className="flex items-center gap-1">
-                    <Clock className="h-3 w-3" />
+                    <Timer className="h-3 w-3" />
                     {generatedTask.estimatedTime}
                   </Badge>
                 </div>

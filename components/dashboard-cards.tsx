@@ -1,5 +1,5 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { DollarSign, Calendar, Bell, StickyNote } from "lucide-react"
+import { DollarSign, Clock, AlertTriangle, StickyNote } from "lucide-react"
 
 export function DashboardCards() {
   return (
@@ -37,7 +37,7 @@ export function DashboardCards() {
         <Card className="hover:shadow-md transition-shadow">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-lg font-semibold">Current Phase</CardTitle>
-            <Calendar className="h-5 w-5 text-blue-600" />
+            <Clock className="h-5 w-5 text-blue-600" />
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
@@ -65,7 +65,7 @@ export function DashboardCards() {
         <Card className="hover:shadow-md transition-shadow">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-lg font-semibold">Recent Updates</CardTitle>
-            <Bell className="h-5 w-5 text-orange-600" />
+            <AlertTriangle className="h-5 w-5 text-orange-600" />
           </CardHeader>
           <CardContent>
             <div className="space-y-3">

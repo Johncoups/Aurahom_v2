@@ -1,0 +1,174 @@
+{ {
+        "phases": [{
+                "id": "just-starting",
+                "order": 0,
+                "title": "Just Starting",
+                "subtasks": ["Acquire Land", "Complete initial project assessment", "Determine project scope and goals", "Research construction methods and options", "Assess budget and financing needs", "Identify potential challenges and solutions", "Begin gathering project requirements", "Research local building codes and regulations", "Consider timeline and scheduling needs"],
+                "description": "Project initiation and initial assessment phase",
+                "dependencies": [],
+                "constructionMethods": ["traditional-frame", "post-frame", "icf", "sip", "modular", "other"]
+            }, {
+                "id": "pre-construction",
+                "order": 1,
+                "title": "Pre-Construction Planning",
+                "subtasks": ["Complete project kickoff questionnaire", "Obtain property survey and site analysis", "Hire architect/engineer for plans", "Establish budget and cost tracking", "Secure financing and construction loan", "Obtain building permits and approvals", "Secure insurance (builder's risk, liability)", "Identify and contact sub contractors", "Schedule pre-construction meeting with trades"],
+                "description": "Initial planning, financing, and legal setup before breaking ground",
+                "dependencies": [],
+                "estimatedDuration": "2-4 weeks",
+                "constructionMethods": ["traditional-frame", "post-frame", "icf", "sip", "modular", "other"]
+            }, {
+                "id": "site-prep-excavation",
+                "order": 2,
+                "title": "Site Preparation & Excavation",
+                "subtasks": ["Apply for site/driveway/grading permits", "**CALL FOR UTILITY LOCATIONS**", "Establish benchmark elevations", "Clear and grub site within permitted limits", "Install erosion controls (silt fence, inlet protection)", "Stake house corners, driveway, and utilities", "Install construction entrance and access roads", "Cut and fill operations", "Rock removal and blasting if needed", "Foundation excavation and trenching", "Set up temporary power and water", "Install portable restroom and dumpster", "Pre-construction meeting with key trades", "Final grade and drainage verification", "Site inspection(s) per jurisdiction"],
+                "description": "Site preparation, excavation, and foundation preparation",
+                "dependencies": ["pre-construction"],
+                "estimatedDuration": "2-3 weeks",
+                "constructionMethods": ["traditional-frame", "post-frame", "icf", "sip", "modular", "other"]
+            }, {
+                "id": "utilities-septic",
+                "order": 3,
+                "title": "Utilities & Septic",
+                "subtasks": ["Soil and perc tests for septic system", "Septic system design and permitting", "Town water/sewer tap fees and hookup", "Well drilling and pump installation", "Pressure tank and water treatment setup", "Install septic tank and distribution field", "Electrical service connection and meter", "Gas line installation and hookup", "Telecom and internet hookup", "Final utility inspections"],
+                "description": "Installation of water, sewer, and utility systems",
+                "dependencies": ["site-prep-excavation"],
+                "estimatedDuration": "2-3 weeks",
+                "constructionMethods": ["traditional-frame", "post-frame", "icf", "sip", "modular", "other"]
+            }, {
+                "id": "foundation",
+                "order": 4,
+                "title": "Foundation",
+                "subtasks": ["Layout verification against survey stakes", "Form and pour footings with rebar", "Pre-pour inspection and pour footings", "Form/pour foundation walls or ICF", "Install anchor bolts and hold-downs", "Install foundation footing drains", "Install curtain drains and swales", "Install foundation drain board installation", "Waterproofing and dampproofing", "Perimeter drain tile with washed stone", "Under-slab plumbing sleeves", "Vapor barrier and rigid insulation", "Foundation waterproofing and protection board", "Install sub-slab insulation for radiant heat", "Lay and staple PEX tubing for radiant heat", "Protect tubing transitions", "Pressure test radiant heat tubing", "Slab reinforcement and control joints", "Pour foundation and garage slabs", "As-built/foundation survey if required"],
+                "description": "Concrete foundation walls, footings, slabs, and in-floor radiant heat system",
+                "dependencies": ["utilities-septic"],
+                "estimatedDuration": "3-6 weeks",
+                "constructionMethods": ["traditional-frame", "post-frame", "icf", "sip", "modular", "other"]
+            }, {
+                "id": "rough-framing",
+                "order": 5,
+                "title": "Rough Framing",
+                "subtasks": ["Install sill plates and seal", "Frame floors with joists and subflooring", "Frame exterior walls", "Frame interior partition walls", "Install steel/wood carrying beams", "Frame roof trusses and decking", "Install roof sheathing and underlayment", "Install windows and exterior doors", "Frame garage and porches if applicable", "Install structural hardware and connectors", "Pre-inspection for framing", "Framing inspection and approval"],
+                "description": "Complete structural framing including floors, walls, roof, and interior partitions",
+                "dependencies": ["foundation"],
+                "estimatedDuration": "4-8 weeks",
+                "constructionMethods": ["traditional-frame", "post-frame", "icf", "sip", "modular", "other"]
+            }, {
+                "id": "roofing",
+                "order": 6,
+                "title": "Roofing",
+                "subtasks": ["Install roof underlayment and ice barrier", "Install roof flashing around penetrations", "Install roof shingles or metal roofing", "Install ridge vents and soffit vents", "Install gutters and downspouts", "Install chimney flashing if applicable", "Install skylights if applicable", "Roof inspection and approval", "Clean up roofing debris"],
+                "description": "Complete roof installation including shingles, flashing, and ventilation",
+                "dependencies": ["rough-framing"],
+                "estimatedDuration": "1-2 weeks",
+                "constructionMethods": ["traditional-frame", "post-frame", "icf", "sip", "modular", "other"]
+            }, {
+                "id": "exterior",
+                "order": 7,
+                "title": "Exterior Finishes",
+                "subtasks": ["Install house wrap and flashing", "Install exterior siding (vinyl, wood, brick, etc.)", "Install exterior trim and corner boards", "Install soffit and fascia", "Install exterior doors and hardware", "Install garage doors and openers", "Install exterior lighting fixtures", "Install address numbers and mailbox", "Exterior caulking and sealing", "Exterior inspection and approval"],
+                "description": "Exterior siding, trim, and finishing touches",
+                "dependencies": ["roofing"],
+                "estimatedDuration": "2-4 weeks",
+                "constructionMethods": ["traditional-frame", "post-frame", "icf", "sip", "modular", "other"]
+            }, {
+                "id": "plumbing-rough",
+                "order": 8,
+                "title": "Plumbing Rough-In",
+                "subtasks": ["Install main water supply line", "Install water distribution pipes", "Install drain, waste, and vent pipes", "Install water heater and connections", "Install plumbing fixtures rough-ins", "Install sump pump if required", "Pressure test water lines", "Test drain and vent systems", "Plumbing rough-in inspection", "Insulate hot water pipes"],
+                "description": "Installation of all plumbing pipes, drains, and fixtures",
+                "dependencies": ["rough-framing"],
+                "estimatedDuration": "2-3 weeks",
+                "constructionMethods": ["traditional-frame", "post-frame", "icf", "sip", "modular", "other"]
+            }, {
+                "id": "electrical-rough",
+                "order": 9,
+                "title": "Electrical Rough-In",
+                "subtasks": ["Install electrical service panel", "Install branch circuit wiring", "Install outlet and switch boxes", "Install lighting fixture boxes", "Install ceiling fan boxes", "Install smoke detector wiring", "Install doorbell and intercom wiring", "Install garage door opener circuit", "Install outdoor electrical outlets", "Electrical rough-in inspection"],
+                "description": "Installation of all electrical wiring, panels, and outlets",
+                "dependencies": ["rough-framing"],
+                "estimatedDuration": "2-3 weeks",
+                "constructionMethods": ["traditional-frame", "post-frame", "icf", "sip", "modular", "other"]
+            }, {
+                "id": "hvac-rough",
+                "order": 10,
+                "title": "HVAC Rough-In",
+                "subtasks": ["Install HVAC equipment and ductwork", "Install air return and supply ducts", "Install thermostat wiring and controls", "Install air filters and registers", "Install exhaust fans and vents", "Install gas lines for furnace if applicable", "Install refrigerant lines for AC", "Install condensate drain lines", "HVAC rough-in inspection", "Test HVAC systems"],
+                "description": "Installation of heating, ventilation, and air conditioning systems",
+                "dependencies": ["rough-framing"],
+                "estimatedDuration": "2-3 weeks",
+                "constructionMethods": ["traditional-frame", "post-frame", "icf", "sip", "modular", "other"]
+            }, {
+                "id": "concrete-slabs",
+                "order": 11,
+                "title": "Concrete Slabs & Flatwork",
+                "subtasks": ["Prepare subgrade for concrete", "Install concrete forms and reinforcement", "Install control joints and expansion joints", "Pour and finish concrete slabs", "Pour and finish garage floor", "Pour and finish driveways and walkways", "Pour and finish porches and patios", "Install concrete sealer", "Concrete curing and protection", "Concrete inspection and approval"],
+                "description": "Installation of concrete floors, driveways, and walkways",
+                "dependencies": ["rough-framing"],
+                "estimatedDuration": "2-4 weeks",
+                "constructionMethods": ["traditional-frame", "post-frame", "icf", "sip", "modular", "other"]
+            }, {
+                "id": "insulation",
+                "order": 12,
+                "title": "Insulation & Air Sealing",
+                "subtasks": ["Install wall insulation (fiberglass, cellulose, spray foam)", "Install ceiling/attic insulation", "Install floor insulation if applicable", "Install foundation insulation", "Install air sealing materials", "Install vapor barriers", "Install sound insulation if required", "Insulation inspection and approval", "Test air tightness if required"],
+                "description": "Installation of insulation and air sealing materials",
+                "dependencies": ["rough-framing", "plumbing-rough", "electrical-rough", "hvac-rough"],
+                "estimatedDuration": "1-2 weeks",
+                "constructionMethods": ["traditional-frame", "post-frame", "icf", "sip", "modular", "other"]
+            }, {
+                "id": "drywall",
+                "order": 13,
+                "title": "Drywall",
+                "subtasks": ["Install drywall sheets", "Tape and mud drywall joints", "Install corner beads and trim", "Sand drywall surfaces", "Apply primer coat", "Install drywall screws and patches", "Drywall inspection and approval", "Clean up drywall dust and debris"],
+                "description": "Installation and finishing of drywall throughout the house",
+                "dependencies": ["insulation"],
+                "estimatedDuration": "2-3 weeks",
+                "constructionMethods": ["traditional-frame", "post-frame", "icf", "sip", "modular", "other"]
+            }, {
+                "id": "paint",
+                "order": 14,
+                "title": "Paint",
+                "subtasks": ["Prepare surfaces for painting", "Apply primer coats", "Apply finish paint coats", "Paint interior walls and ceilings", "Paint interior trim and doors", "Paint exterior surfaces if applicable", "Paint garage and outbuildings", "Clean up paint supplies and equipment", "Paint inspection and approval"],
+                "description": "Interior and exterior painting and finishing",
+                "dependencies": ["drywall"],
+                "estimatedDuration": "2-3 weeks",
+                "constructionMethods": ["traditional-frame", "post-frame", "icf", "sip", "modular", "other"]
+            }, {
+                "id": "trim-carpentry",
+                "order": 15,
+                "title": "Trim Carpentry",
+                "subtasks": ["Install interior door trim", "Install window trim and sills", "Install baseboards and quarter round", "Install crown molding and chair rails", "Install stair railings and balusters", "Install closet shelving and rods", "Install interior doors and hardware", "Install cabinet hardware", "Trim carpentry inspection and approval"],
+                "description": "Installation of interior trim, cabinets, and finishing touches",
+                "dependencies": ["paint"],
+                "estimatedDuration": "2-3 weeks",
+                "constructionMethods": ["traditional-frame", "post-frame", "icf", "sip", "modular", "other"]
+            }, {
+                "id": "flooring",
+                "order": 16,
+                "title": "Flooring",
+                "subtasks": ["Install hardwood floors", "Install laminate or engineered flooring", "Install tile floors", "Install carpet and padding", "Install vinyl or linoleum flooring", "Install floor transitions and trim", "Install floor registers and vents", "Flooring inspection and approval", "Clean up flooring debris and materials"],
+                "description": "Installation of all floor coverings and finishes",
+                "dependencies": ["trim-carpentry"],
+                "estimatedDuration": "2-4 weeks",
+                "constructionMethods": ["traditional-frame", "post-frame", "icf", "sip", "modular", "other"]
+            }, {
+                "id": "kitchen-bath",
+                "order": 17,
+                "title": "Kitchen & Bath",
+                "subtasks": ["Install kitchen cabinets and countertops", "Install kitchen appliances", "Install bathroom vanities and fixtures", "Install toilets and shower/tub", "Install kitchen and bath hardware", "Install mirrors and accessories", "Install garbage disposal and dishwasher", "Kitchen and bath inspection and approval", "Test all fixtures and appliances"],
+                "description": "Installation of kitchen and bathroom fixtures and appliances",
+                "dependencies": ["flooring"],
+                "estimatedDuration": "3-5 weeks",
+                "constructionMethods": ["traditional-frame", "post-frame", "icf", "sip", "modular", "other"]
+            }, {
+                "id": "final-touches",
+                "order": 18,
+                "title": "Final Touches & Punch List",
+                "subtasks": ["Final building inspection", "Final electrical inspection", "Final plumbing inspection", "Final HVAC inspection", "Address punch list items", "Clean up construction debris", "Install final hardware and accessories", "Landscaping and final grading", "Final walkthrough with owner", "Obtain certificate of occupancy"],
+                "description": "Final inspections, cleanup, and move-in preparation",
+                "dependencies": ["kitchen-bath"],
+                "estimatedDuration": "1-2 weeks",
+                "constructionMethods": ["traditional-frame", "post-frame", "icf", "sip", "modular", "other"]
+            }
+        ]
+    }
