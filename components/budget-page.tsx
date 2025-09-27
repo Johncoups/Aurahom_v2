@@ -1,6 +1,6 @@
 "use client"
 
-import { useMemo, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 import { Card, CardContent } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { ChevronDown, ChevronRight, Trash2 } from "lucide-react"
@@ -38,6 +38,10 @@ type BudgetPhaseAlignmentFile = {
 }
 
 const DEFAULT_CONSTRUCTION_METHOD = "traditional-frame"
+
+type BudgetPageProps = {
+  constructionMethod?: string
+}
 
 const buildInitialBudgetData = (
   alignment: BudgetPhaseAlignmentFile,
@@ -77,21 +81,38 @@ const buildInitialBudgetData = (
   }))
 }
 
-export function BudgetPage() {
+export function BudgetPage({ constructionMethod }: BudgetPageProps) {
   const [livingAreaSqFt, setLivingAreaSqFt] = useState(2500)
   const [structureSqFt, setStructureSqFt] = useState(2800)
   const [expandedCategories, setExpandedCategories] = useState<Record<string, boolean>>({})
   const budgetAlignment = budgetPhaseAlignment as BudgetPhaseAlignmentFile
+  const availableMethods = useMemo(
+    () => Object.keys(budgetAlignment.constructionMethods ?? {}),
+    [budgetAlignment],
+  )
+  const selectedMethod = useMemo(() => {
+    if (constructionMethod && availableMethods.includes(constructionMethod)) {
+      return constructionMethod
+    }
+    if (availableMethods.includes(DEFAULT_CONSTRUCTION_METHOD)) {
+      return DEFAULT_CONSTRUCTION_METHOD
+    }
+    return availableMethods[0] ?? DEFAULT_CONSTRUCTION_METHOD
+  }, [availableMethods, constructionMethod])
   const categoriesFromJson = useMemo(() => {
-    const phases = budgetAlignment.constructionMethods?.[DEFAULT_CONSTRUCTION_METHOD]?.phases ?? []
+    const phases = budgetAlignment.constructionMethods?.[selectedMethod]?.phases ?? []
     const titles = phases.map((phase) => phase.title)
     const missing = budgetAlignment.notes?.missingCategories ?? []
     return Array.from(new Set([...titles, ...missing]))
-  }, [budgetAlignment])
+  }, [budgetAlignment, selectedMethod])
 
   const [budgetData, setBudgetData] = useState<BudgetItem[]>(() =>
-    buildInitialBudgetData(budgetAlignment, DEFAULT_CONSTRUCTION_METHOD),
+    buildInitialBudgetData(budgetAlignment, selectedMethod),
   )
+
+  useEffect(() => {
+    setBudgetData(buildInitialBudgetData(budgetAlignment, selectedMethod))
+  }, [budgetAlignment, selectedMethod])
 
   const updateBudgetItem = (id: string, field: keyof BudgetItem, value: string | number) => {
     setBudgetData((prev) =>

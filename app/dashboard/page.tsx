@@ -76,7 +76,7 @@ function DashboardInner() {
 			case "bids":
 				return <BidsPage />
 			case "budget":
-				return <BudgetPage />
+				return <BudgetPage constructionMethod={profile?.constructionMethod} />
 			default:
 				return <DashboardContent />
 		}
