@@ -18,7 +18,7 @@ import { OnboardingWizard } from "@/components/onboarding-wizard"
 
 function DashboardInner() {
 	const [currentView, setCurrentView] = useState<string>("dashboard")
-	const { profile, roadmap, isLoading, regeneratePhase, hasExistingProject, isCheckingProject } = useRoadmap()
+	const { profile, roadmap, isLoading, regeneratePhase, hasExistingProject, isCheckingProject, activeProjectId } = useRoadmap()
 	const router = useRouter()
 
 	// Auto-switch to roadmap view when roadmap data becomes available
@@ -75,8 +75,8 @@ function DashboardInner() {
 				return <TaskGeneratorPage />
 			case "bids":
 				return <BidsPage />
-			case "budget":
-				return <BudgetPage constructionMethod={profile?.constructionMethod} />
+		case "budget":
+			return <BudgetPage projectId={profile?.projectId ?? activeProjectId ?? undefined} constructionMethod={profile?.constructionMethod} />
 			default:
 				return <DashboardContent />
 		}

@@ -17,6 +17,7 @@ export interface OnboardingProfile {
   experience: ExperienceLevel;
   subcontractorHelp: SubcontractorHelp;
   constructionMethod: ConstructionMethod;
+  projectId?: string;
   currentPhaseId: string;
   diyPhaseIds: string[];
   weeklyHourlyCommitment: WeeklyHourlyCommitment;

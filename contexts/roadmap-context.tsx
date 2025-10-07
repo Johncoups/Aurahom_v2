@@ -14,6 +14,7 @@ interface RoadmapContextType {
 	isLoading: boolean;
 	hasExistingProject: boolean;
 	isCheckingProject: boolean;
+	activeProjectId: string | null;
 	setProfileAndGenerate: (p: OnboardingProfile) => Promise<void>;
 	regeneratePhase: (phaseId: string, detailLevel: "low" | "standard" | "high") => Promise<void>;
 	loadStoredRoadmap: () => Promise<void>;
@@ -22,6 +23,14 @@ interface RoadmapContextType {
 }
 
 const RoadmapContext = createContext<RoadmapContextType | undefined>(undefined);
+
+export function useRoadmap(): RoadmapContextType {
+	const context = useContext(RoadmapContext);
+	if (!context) {
+		throw new Error('useRoadmap must be used within a RoadmapProvider');
+	}
+	return context;
+}
 
 /**
  * Converts hybrid response format to legacy RoadmapData format for UI compatibility
@@ -506,6 +515,7 @@ export function RoadmapProvider({ children }: { children: ReactNode }) {
 	const [isLoading, setIsLoading] = useState(false);
 	const [hasExistingProject, setHasExistingProject] = useState(false);
 	const [isCheckingProject, setIsCheckingProject] = useState(true);
+	const [activeProjectId, setActiveProjectId] = useState<string | null>(null);
 
 	// Check if user has an existing project
 	async function checkExistingProject() {
@@ -582,7 +592,7 @@ export function RoadmapProvider({ children }: { children: ReactNode }) {
 
 	async function setProfileAndGenerate(p: OnboardingProfile) {
 		setIsLoading(true);
-		setProfile(p);
+    setProfile(p);
 		try {
 			// Try hybrid approach first, fall back to baseline if it fails
 			try {
@@ -639,7 +649,7 @@ export function RoadmapProvider({ children }: { children: ReactNode }) {
 					console.log('✅ Projects table is accessible');
 				}
 				
-				const { data: project, error: projectError } = await supabase
+        const { data: project, error: projectError } = await supabase
 					.from('projects')
 					.insert(projectData)
 					.select()
@@ -659,7 +669,8 @@ export function RoadmapProvider({ children }: { children: ReactNode }) {
 				}
 				
 				console.log('✅ Project created successfully:', project.id);
-				
+				setActiveProjectId(project.id);
+
 				// Generate hybrid roadmap using server action
 				const { generateHybridRoadmapAction } = await import('@/app/actions/generateRoadmap');
 				const hybridResponse = await generateHybridRoadmapAction(p, project.id);
@@ -747,7 +758,7 @@ export function RoadmapProvider({ children }: { children: ReactNode }) {
 					console.log('🔍 Profile data in fallback (will be stored separately):', profileData);
 					console.log('🔍 User ID in fallback:', user.id);
 					
-					const { data: project, error: projectError } = await supabase
+            const { data: project, error: projectError } = await supabase
 						.from('projects')
 						.insert(projectData)
 						.select()
@@ -765,6 +776,7 @@ export function RoadmapProvider({ children }: { children: ReactNode }) {
 						});
 					} else {
 						console.log('✅ Project saved successfully in fallback case:', project.id);
+						setActiveProjectId(project.id);
 					}
 				} catch (fallbackError) {
 					console.error('❌ Error saving project in fallback case:', fallbackError);
@@ -1080,6 +1092,7 @@ export function RoadmapProvider({ children }: { children: ReactNode }) {
 							currentPhaseId: storedProfile.current_phase_id || 'just-starting',
 							diyPhaseIds: Array.isArray(storedProfile.diy_phase_ids) ? storedProfile.diy_phase_ids : [],
 							weeklyHourlyCommitment: storedProfile.weekly_hourly_commitment || '25',
+							projectId: storedRoadmap.project_id || undefined,
 							// Get basic project info from projects table
 							cityState: '', // Will be filled from projects table
 							propertyAddress: '',
@@ -1135,6 +1148,10 @@ export function RoadmapProvider({ children }: { children: ReactNode }) {
 					// Set profile first
 					if (profileData) {
 						setProfile(profileData);
+						if (storedRoadmap.project_id) {
+							setActiveProjectId(storedRoadmap.project_id);
+							console.log('✅ Active project restored from DB:', storedRoadmap.project_id)
+						}
 					}
 					
 					// Then restore the roadmap (this will trigger re-render with profile data)
@@ -1250,26 +1267,24 @@ export function RoadmapProvider({ children }: { children: ReactNode }) {
 		}
 	}
 
-	const value = useMemo(() => ({ 
-		profile, 
-		roadmap, 
-		isLoading, 
+const value = useMemo(
+	() => ({
+		profile,
+		roadmap,
+		isLoading,
 		hasExistingProject,
 		isCheckingProject,
+		activeProjectId,
 		setProfileAndGenerate,
 		regeneratePhase,
 		loadStoredRoadmap,
 		checkExistingProject,
-		clearAllData
-	}), [profile, roadmap, isLoading, hasExistingProject, isCheckingProject])
+		clearAllData,
+	}),
+	[profile, roadmap, isLoading, hasExistingProject, isCheckingProject, activeProjectId],
+)
 
-	return <RoadmapContext.Provider value={value}>{children}</RoadmapContext.Provider>;
-}
-
-export function useRoadmap() {
-	const ctx = useContext(RoadmapContext);
-	if (!ctx) throw new Error("useRoadmap must be used within RoadmapProvider");
-	return ctx;
+return <RoadmapContext.Provider value={value}>{children}</RoadmapContext.Provider>
 }
 
 

@@ -1,14 +1,17 @@
 "use client"
 
-import { useEffect, useMemo, useState } from "react"
+import { useCallback, useEffect, useMemo, useState } from "react"
 import { Card, CardContent } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { ChevronDown, ChevronRight, Trash2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import budgetPhaseAlignment from "@/budget-phase-alignment.json"
+import { supabase } from "@/lib/supabase"
 
 interface BudgetItem {
   id: string
+  projectId?: string
+  phaseId: string
   category: string
   description: string
   materials: number
@@ -19,6 +22,8 @@ interface BudgetItem {
   currentPaid: number
   due: number
   variance: number
+  sortOrder: number
+  isCustom: boolean
 }
 
 type BudgetPhaseDefinition = {
@@ -40,36 +45,51 @@ type BudgetPhaseAlignmentFile = {
 const DEFAULT_CONSTRUCTION_METHOD = "traditional-frame"
 
 type BudgetPageProps = {
+  projectId?: string
   constructionMethod?: string
 }
 
 const buildInitialBudgetData = (
   alignment: BudgetPhaseAlignmentFile,
   constructionMethod: string,
-): BudgetItem[] => {
+): { seed: BudgetItem[]; phaseIdByTitle: Map<string, string>; phaseTitleById: Map<string, string> } => {
   const phases = alignment.constructionMethods?.[constructionMethod]?.phases ?? []
   const sortedPhases = [...phases].sort((a, b) => a.order - b.order)
   const budgetItems = alignment.budgetItems ?? []
-  const categoryByIndex = new Map<number, string>()
+  const phaseTitleByIndex = new Map<number, string>()
+  const phaseIdByIndex = new Map<number, string>()
+  const phaseIdByTitle = new Map<string, string>()
+  const phaseTitleById = new Map<string, string>()
 
   sortedPhases.forEach((phase) => {
+    phaseIdByTitle.set(phase.title, phase.phaseId)
+    phaseTitleById.set(phase.phaseId, phase.title)
     phase.budgetItems.forEach((budgetIndex) => {
       if (budgetIndex < 0 || budgetIndex >= budgetItems.length) {
         return
       }
 
-      if (!categoryByIndex.has(budgetIndex)) {
-        categoryByIndex.set(budgetIndex, phase.title)
+      if (!phaseTitleByIndex.has(budgetIndex)) {
+        phaseTitleByIndex.set(budgetIndex, phase.title)
+        phaseIdByIndex.set(budgetIndex, phase.phaseId)
       }
     })
   })
 
-  const fallbackCategory = sortedPhases[0]?.title ?? "Uncategorized"
+  const fallbackPhase = sortedPhases[0]
+  const fallbackCategory = fallbackPhase?.title ?? "Uncategorized"
+  const fallbackPhaseId = fallbackPhase?.phaseId ?? "uncategorized"
 
-  return budgetItems.map((description, index) => ({
-    id: `${index + 1}`,
-    category: categoryByIndex.get(index) ?? fallbackCategory,
-    description,
+  const seed = budgetItems.map((description, index) => {
+    const category = phaseTitleByIndex.get(index) ?? fallbackCategory
+    const phaseId = phaseIdByIndex.get(index) ?? fallbackPhaseId
+
+    return {
+      id: `${index + 1}`,
+      projectId: undefined,
+      phaseId,
+      category,
+      description,
       materials: 0,
       labor: 0,
       vendor: "",
@@ -78,10 +98,65 @@ const buildInitialBudgetData = (
       currentPaid: 0,
       due: 0,
       variance: 0,
-  }))
+      sortOrder: index,
+      isCustom: false,
+    }
+  })
+  return { seed, phaseIdByTitle, phaseTitleById }
 }
 
-export function BudgetPage({ constructionMethod }: BudgetPageProps) {
+const mergeBudgetItems = (
+  seeded: BudgetItem[],
+  stored: BudgetItem[],
+  phasesByTitle: Map<string, string>,
+  phasesById: Map<string, string>,
+): BudgetItem[] => {
+  if (stored.length === 0) {
+    return seeded
+  }
+
+  const storedMap = new Map<string, BudgetItem>()
+  stored.forEach((item) => {
+    storedMap.set(`${item.phaseId}::${item.description.toLowerCase()}`, item)
+  })
+
+  const mergedSeeded = seeded.map((item) => {
+    const key = `${item.phaseId}::${item.description.toLowerCase()}`
+    const storedItem = storedMap.get(key)
+
+    if (!storedItem) {
+      return item
+    }
+
+    return {
+      ...item,
+      ...storedItem,
+      category: item.category,
+      sortOrder: storedItem.sortOrder ?? item.sortOrder,
+    }
+  })
+
+  const seededKeys = new Set(mergedSeeded.map((item) => `${item.phaseId}::${item.description.toLowerCase()}`))
+  const customItems = stored.filter((item) => {
+    if (item.isCustom) {
+      return true
+    }
+
+    const key = `${item.phaseId}::${item.description.toLowerCase()}`
+    if (seededKeys.has(key)) {
+      return false
+    }
+
+    const backupPhaseId = phasesByTitle.get(item.category)
+    return !backupPhaseId || backupPhaseId === item.phaseId
+  })
+
+  return [...mergedSeeded, ...customItems].sort((a, b) => a.sortOrder - b.sortOrder)
+}
+
+const isUuid = (value: string): boolean => /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(value)
+
+export function BudgetPage({ projectId, constructionMethod }: BudgetPageProps) {
   const [livingAreaSqFt, setLivingAreaSqFt] = useState(2500)
   const [structureSqFt, setStructureSqFt] = useState(2800)
   const [expandedCategories, setExpandedCategories] = useState<Record<string, boolean>>({})
@@ -106,27 +181,199 @@ export function BudgetPage({ constructionMethod }: BudgetPageProps) {
     return Array.from(new Set([...titles, ...missing]))
   }, [budgetAlignment, selectedMethod])
 
-  const [budgetData, setBudgetData] = useState<BudgetItem[]>(() =>
-    buildInitialBudgetData(budgetAlignment, selectedMethod),
+  const phaseMaps = useMemo(() => buildInitialBudgetData(budgetAlignment, selectedMethod), [budgetAlignment, selectedMethod])
+  const [budgetData, setBudgetData] = useState<BudgetItem[]>(() => phaseMaps.seed.map((item) => ({ ...item, projectId })))
+  const [isLoadingBudget, setIsLoadingBudget] = useState(false)
+  const [budgetError, setBudgetError] = useState<string | null>(null)
+  const [pendingSaves, setPendingSaves] = useState<Set<string>>(new Set())
+ 
+   useEffect(() => {
+     async function loadBudgetData() {
+       setIsLoadingBudget(true)
+       setBudgetError(null)
+
+      try {
+        const seeded = phaseMaps.seed.map((item, index) => ({
+          ...item,
+          projectId,
+          sortOrder: index,
+        }))
+
+        if (!projectId) {
+          console.warn("Budget not saved: missing projectId")
+          return
+        }
+
+        const { data, error } = await supabase
+          .from("budget_items")
+          .select("*")
+          .eq("project_id", projectId)
+          .order("sort_order", { ascending: true })
+
+        if (error) {
+          console.error("Failed to load budget items", error)
+          setBudgetError("Unable to load saved budget items")
+          console.warn("Unable to load budget data from Supabase")
+          return
+        }
+
+        const storedItems: BudgetItem[] = (data ?? []).map((row) => {
+          const matchingPhase = budgetAlignment.constructionMethods?.[selectedMethod]?.phases.find(
+            (phase) => phase.phaseId === row.phase_id,
+          )
+          const parsedSortOrder = Number(row.sort_order ?? 0)
+          const sortOrderValue = Number.isFinite(parsedSortOrder) ? parsedSortOrder : 0
+
+          return {
+            id: row.id,
+            projectId: row.project_id,
+            phaseId: row.phase_id,
+            category: matchingPhase?.title ?? row.phase_id,
+            description: row.description ?? "",
+            materials: Number(row.materials ?? 0),
+            labor: Number(row.labor ?? 0),
+            vendor: row.vendor ?? "",
+            estimatedCost: Number(row.estimated_cost ?? 0),
+            actualCost: Number(row.actual_cost ?? 0),
+            currentPaid: Number(row.current_paid ?? 0),
+            due: Number(row.due ?? 0),
+            variance: Number(row.estimated_cost ?? 0) - Number(row.current_paid ?? 0),
+            sortOrder: sortOrderValue,
+            isCustom: row.is_custom ?? false,
+          }
+        })
+
+        // Merge stored data with seeded defaults
+        const merged = mergeBudgetItems(seeded, storedItems, phaseMaps.phaseIdByTitle, phaseMaps.phaseTitleById)
+        setBudgetData(merged)
+      } finally {
+        setIsLoadingBudget(false)
+      }
+    }
+
+    loadBudgetData()
+  }, [budgetAlignment, projectId, phaseMaps, selectedMethod])
+
+  const saveBudgetItem = useCallback(
+    async (item: BudgetItem) => {
+      if (!projectId) {
+        console.warn("Budget not saved: missing projectId")
+        return item
+      }
+
+      setPendingSaves((prev) => new Set(prev).add(item.id))
+
+      try {
+        const payload = {
+          id: isUuid(item.id) ? item.id : undefined,
+          project_id: projectId,
+          phase_id: item.phaseId,
+          description: item.description,
+          materials: item.materials,
+          labor: item.labor,
+          vendor: item.vendor,
+          estimated_cost: item.estimatedCost,
+          actual_cost: item.actualCost,
+          current_paid: item.currentPaid,
+          due: item.due,
+          sort_order: item.sortOrder,
+          is_custom: item.isCustom,
+        }
+
+        const { data, error } = await supabase
+          .from("budget_items")
+          .upsert(payload, { onConflict: "project_id,phase_id,description" })
+          .select()
+          .single()
+
+        if (error) {
+          console.error("Failed to save budget item", error)
+          console.warn("Failed to save budget item to Supabase")
+          throw error
+        }
+
+        const savedItem: BudgetItem = {
+          ...item,
+          id: data.id,
+          projectId: data.project_id,
+          phaseId: data.phase_id,
+          materials: Number(data.materials ?? 0),
+          labor: Number(data.labor ?? 0),
+          vendor: data.vendor ?? "",
+          estimatedCost: Number(data.estimated_cost ?? 0),
+          actualCost: Number(data.actual_cost ?? 0),
+          currentPaid: Number(data.current_paid ?? 0),
+          due: Number(data.due ?? 0),
+          variance: Number(data.estimated_cost ?? 0) - Number(data.current_paid ?? 0),
+          sortOrder: Number.isFinite(data.sort_order) ? Number(data.sort_order) : item.sortOrder,
+          isCustom: data.is_custom ?? item.isCustom,
+        }
+
+        setBudgetData((prev) =>
+          prev.map((existing) => (existing.id === item.id || existing.id === savedItem.id ? savedItem : existing)),
+        )
+
+        return savedItem
+      } finally {
+        setPendingSaves((prev) => {
+          const next = new Set(prev)
+          next.delete(item.id)
+          return next
+        })
+      }
+    },
+    [projectId, supabase],
   )
 
-  useEffect(() => {
-    setBudgetData(buildInitialBudgetData(budgetAlignment, selectedMethod))
-  }, [budgetAlignment, selectedMethod])
+  const deleteBudgetItemFromSupabase = useCallback(
+    async (id: string) => {
+      if (!projectId || !isUuid(id)) {
+        return
+      }
 
-  const updateBudgetItem = (id: string, field: keyof BudgetItem, value: string | number) => {
-    setBudgetData((prev) =>
-      prev.map((item) => {
-        if (item.id === id) {
-          const updatedItem = { ...item, [field]: value }
-          // Calculate variance as estimatedCost - currentPaid
+      const { error } = await supabase.from("budget_items").delete().eq("id", id)
+
+      if (error) {
+        console.error("Failed to delete budget item", error)
+        console.warn("Failed to delete budget item from Supabase")
+        throw error
+      }
+    },
+    [projectId, supabase],
+  )
+
+  const updateBudgetItem = useCallback(
+    (id: string, field: keyof BudgetItem, value: string | number) => {
+      setBudgetData((prev) => {
+        return prev.map((item) => {
+          if (item.id !== id) {
+            return item
+          }
+
+          const nextValue =
+            typeof value === "number"
+              ? value
+              : field === "materials" || field === "labor" || field === "estimatedCost" || field === "actualCost" || field === "currentPaid" || field === "due"
+              ? Number.parseFloat(value) || 0
+              : value
+
+          const updatedItem = {
+            ...item,
+            [field]: nextValue,
+          } as BudgetItem
+
           updatedItem.variance = (updatedItem.estimatedCost || 0) - (updatedItem.currentPaid || 0)
+
+          if (projectId) {
+            void saveBudgetItem({ ...updatedItem, projectId })
+          }
+
           return updatedItem
-        }
-        return item
-      }),
-    )
-  }
+        })
+      })
+    },
+    [projectId, saveBudgetItem],
+  )
 
   const calculateTotals = () => {
     const totalEstimated = budgetData.reduce((sum, item) => sum + item.estimatedCost, 0)
@@ -137,9 +384,22 @@ export function BudgetPage({ constructionMethod }: BudgetPageProps) {
     return { totalEstimated, totalActual, estimatedPPSF, actualPPSF }
   }
 
-  const deleteBudgetItem = (id: string) => {
+  const deleteBudgetItem = useCallback(
+    async (id: string) => {
     setBudgetData((prev) => prev.filter((item) => item.id !== id))
-  }
+
+      try {
+        await deleteBudgetItemFromSupabase(id)
+      } catch (error) {
+        console.error("Error deleting budget item", error)
+        // Optionally reload data if deletion fails
+        if (projectId) {
+          setBudgetError("Unable to delete budget item. Please refresh and try again.")
+        }
+      }
+    },
+    [deleteBudgetItemFromSupabase, projectId],
+  )
 
   const { totalEstimated, totalActual, estimatedPPSF, actualPPSF } = calculateTotals()
   const categories = categoriesFromJson.length > 0 ? categoriesFromJson : ["Uncategorized"]
@@ -364,3 +624,5 @@ export function BudgetPage({ constructionMethod }: BudgetPageProps) {
     </div>
   )
 }
+
+
