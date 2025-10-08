@@ -5,6 +5,17 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { ChevronDown, ChevronRight, Trash2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog"
 import budgetPhaseAlignment from "@/budget-phase-alignment.json"
 import { supabase } from "@/lib/supabase"
 
@@ -523,14 +534,41 @@ export function BudgetPage({ projectId, constructionMethod }: BudgetPageProps) {
                 </div>
                 <div className="col-span-1 relative">
                   <div className="text-center text-xs font-medium">${item.variance.toLocaleString()}</div>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => deleteBudgetItem(item.id)}
-                    className="absolute top-0 right-0 opacity-0 group-hover:opacity-100 transition-opacity p-1 h-6 w-6 text-red-500 hover:text-red-700"
-                  >
-                    <Trash2 className="h-3 w-3" />
-                  </Button>
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="absolute top-0 right-0 opacity-0 group-hover:opacity-100 transition-opacity p-1 h-6 w-6 text-red-500 hover:text-red-700"
+              >
+                <Trash2 className="h-3 w-3" />
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Delete budget item?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  This will permanently remove “{item.description}” from the {item.category} phase. You can’t undo
+                  this action.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogAction
+                  onClick={async () => {
+                    try {
+                      await deleteBudgetItem(item.id)
+                    } catch (error) {
+                      console.error("Deletion failed", error)
+                    }
+                  }}
+                  className="bg-red-600 hover:bg-red-700"
+                >
+                  Delete
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
                 </div>
               </div>
             ))}

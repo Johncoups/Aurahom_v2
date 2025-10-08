@@ -1,20 +1,20 @@
-- [ ] Use the project's construction method instead of the hard-coded `traditional-frame`
-  - [ ] Load the selected construction method from Supabase `roadmap_data`/profile when the dashboard initializes
-  - [ ] Pass the construction method through context or props into `BudgetPage`
-  - [ ] Update `BudgetPage` to rebuild categories and seed data whenever the construction method changes
-  - [ ] Add fallback handling if a method is missing or unsupported in the alignment JSON
+- [X] Use the project's construction method instead of the hard-coded `traditional-frame`
+  - [X] Load the selected construction method from Supabase `roadmap_data`/profile when the dashboard initializes
+  - [X] Pass the construction method through context or props into `BudgetPage`
+  - [X] Update `BudgetPage` to rebuild categories and seed data whenever the construction method changes
+  - [X] Add fallback handling if a method is missing or unsupported in the alignment JSON
 
-- [ ] Support construction method switching in the UI
-  - [ ] Design a selector (dropdown/tabs) listing available construction methods from the alignment file
-  - [ ] Persist the selected method to Supabase so it follows the project
-  - [ ] Trigger a budget refresh (categories + data) when the user switches methods
-  - [ ] Provide user feedback when switching methods overwrites unsaved edits
+- [X] Support construction method switching in the UI
+  - [X] Design a selector (dropdown/tabs) listing available construction methods from the alignment file
+  - [X] Persist the selected method to Supabase so it follows the project
+  - [X] Trigger a budget refresh (categories + data) when the user switches methods
+  - [X] Provide user feedback when switching methods overwrites unsaved edits
 
-- [ ] Persist budget edits to Supabase (or API)
-  - [ ] Define a Supabase table schema for budget items (project id, phase, description, cost fields)
-  - [ ] Load existing budget rows for the project on mount and merge with seeded defaults
-  - [ ] Save item edits, additions, and deletions via Supabase mutations with optimistic UI updates
-  - [ ] Handle conflict resolution or versioning so simultaneous edits don’t overwrite each other
+- [X] Persist budget edits to Supabase (or API)
+  - [X] Define a Supabase table schema for budget items (project id, phase, description, cost fields)
+  - [X] Load existing budget rows for the project on mount and merge with seeded defaults
+  - [X] Save item edits, additions, and deletions via Supabase mutations with optimistic UI updates
+  - [X] Handle conflict resolution or versioning so simultaneous edits don’t overwrite each other
 
 - [ ] Add per-phase "Other / Custom Item" support
   - [ ] Provide an "Add custom item" action within each phase accordion
