@@ -1,9 +1,9 @@
 "use client"
 
-import { useCallback, useEffect, useMemo, useState } from "react"
+import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { Card, CardContent } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
-import { ChevronDown, ChevronRight, Trash2 } from "lucide-react"
+import { ChevronDown, ChevronRight, Loader2, Trash2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import {
   AlertDialog,
@@ -197,73 +197,15 @@ export function BudgetPage({ projectId, constructionMethod }: BudgetPageProps) {
   const [isLoadingBudget, setIsLoadingBudget] = useState(false)
   const [budgetError, setBudgetError] = useState<string | null>(null)
   const [pendingSaves, setPendingSaves] = useState<Set<string>>(new Set())
- 
-   useEffect(() => {
-     async function loadBudgetData() {
-       setIsLoadingBudget(true)
-       setBudgetError(null)
+  const saveQueueRef = useRef<Set<string>>(new Set())
+  const debounceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const isMountedRef = useRef(true)
+  const budgetDataRef = useRef<BudgetItem[]>([])
 
-      try {
-        const seeded = phaseMaps.seed.map((item, index) => ({
-          ...item,
-          projectId,
-          sortOrder: index,
-        }))
-
-        if (!projectId) {
-          console.warn("Budget not saved: missing projectId")
-          return
-        }
-
-        const { data, error } = await supabase
-          .from("budget_items")
-          .select("*")
-          .eq("project_id", projectId)
-          .order("sort_order", { ascending: true })
-
-        if (error) {
-          console.error("Failed to load budget items", error)
-          setBudgetError("Unable to load saved budget items")
-          console.warn("Unable to load budget data from Supabase")
-          return
-        }
-
-        const storedItems: BudgetItem[] = (data ?? []).map((row) => {
-          const matchingPhase = budgetAlignment.constructionMethods?.[selectedMethod]?.phases.find(
-            (phase) => phase.phaseId === row.phase_id,
-          )
-          const parsedSortOrder = Number(row.sort_order ?? 0)
-          const sortOrderValue = Number.isFinite(parsedSortOrder) ? parsedSortOrder : 0
-
-          return {
-            id: row.id,
-            projectId: row.project_id,
-            phaseId: row.phase_id,
-            category: matchingPhase?.title ?? row.phase_id,
-            description: row.description ?? "",
-            materials: Number(row.materials ?? 0),
-            labor: Number(row.labor ?? 0),
-            vendor: row.vendor ?? "",
-            estimatedCost: Number(row.estimated_cost ?? 0),
-            actualCost: Number(row.actual_cost ?? 0),
-            currentPaid: Number(row.current_paid ?? 0),
-            due: Number(row.due ?? 0),
-            variance: Number(row.estimated_cost ?? 0) - Number(row.current_paid ?? 0),
-            sortOrder: sortOrderValue,
-            isCustom: row.is_custom ?? false,
-          }
-        })
-
-        // Merge stored data with seeded defaults
-        const merged = mergeBudgetItems(seeded, storedItems, phaseMaps.phaseIdByTitle, phaseMaps.phaseTitleById)
-        setBudgetData(merged)
-      } finally {
-        setIsLoadingBudget(false)
-      }
-    }
-
-    loadBudgetData()
-  }, [budgetAlignment, projectId, phaseMaps, selectedMethod])
+  // Keep budgetDataRef in sync with budgetData
+  useEffect(() => {
+    budgetDataRef.current = budgetData
+  }, [budgetData])
 
   const saveBudgetItem = useCallback(
     async (item: BudgetItem) => {
@@ -275,8 +217,10 @@ export function BudgetPage({ projectId, constructionMethod }: BudgetPageProps) {
       setPendingSaves((prev) => new Set(prev).add(item.id))
 
       try {
+        const isPersisted = isUuid(item.id)
+
         const payload = {
-          id: isUuid(item.id) ? item.id : undefined,
+          id: isPersisted ? item.id : undefined,
           project_id: projectId,
           phase_id: item.phaseId,
           description: item.description,
@@ -291,9 +235,11 @@ export function BudgetPage({ projectId, constructionMethod }: BudgetPageProps) {
           is_custom: item.isCustom,
         }
 
+        const conflictTarget = isPersisted ? "id" : "project_id,phase_id,description"
+
         const { data, error } = await supabase
           .from("budget_items")
-          .upsert(payload, { onConflict: "project_id,phase_id,description" })
+          .upsert(payload, { onConflict: conflictTarget })
           .select()
           .single()
 
@@ -320,17 +266,46 @@ export function BudgetPage({ projectId, constructionMethod }: BudgetPageProps) {
           isCustom: data.is_custom ?? item.isCustom,
         }
 
-        setBudgetData((prev) =>
-          prev.map((existing) => (existing.id === item.id || existing.id === savedItem.id ? savedItem : existing)),
-        )
+        if (isMountedRef.current) {
+          // Only update the ID if it changed (temp -> UUID), but preserve local state
+          setBudgetData((prev) =>
+            prev.map((existing) => {
+              if (existing.id === item.id || existing.id === savedItem.id) {
+                // If the ID changed (temp to UUID), update it but keep local values
+                if (existing.id !== savedItem.id) {
+                  return { ...existing, id: savedItem.id }
+                }
+                // ID didn't change, keep existing local state
+                return existing
+              }
+              return existing
+            }),
+          )
+          setBudgetError(null)
+          setPendingSaves((prev) => {
+            const next = new Set(prev)
+            next.delete(item.id)
+            next.delete(savedItem.id)
+            return next
+          })
+        }
+
+        saveQueueRef.current.delete(item.id)
+        saveQueueRef.current.delete(savedItem.id)
 
         return savedItem
-      } finally {
-        setPendingSaves((prev) => {
-          const next = new Set(prev)
-          next.delete(item.id)
-          return next
-        })
+      } catch (error) {
+        console.error("Save failed for item:", item.id, error)
+        if (isMountedRef.current) {
+          setBudgetError("Unable to save budget item. Please retry.")
+          setPendingSaves((prev) => {
+            const next = new Set(prev)
+            next.delete(item.id)
+            return next
+          })
+        }
+        saveQueueRef.current.delete(item.id)
+        throw error
       }
     },
     [projectId, supabase],
@@ -352,6 +327,32 @@ export function BudgetPage({ projectId, constructionMethod }: BudgetPageProps) {
     },
     [projectId, supabase],
   )
+
+  const flushPendingSaves = useCallback(() => {
+    if (debounceTimerRef.current) {
+      clearTimeout(debounceTimerRef.current)
+      debounceTimerRef.current = null
+    }
+
+    const itemIdsToSave = Array.from(saveQueueRef.current)
+    if (itemIdsToSave.length === 0) {
+      return
+    }
+
+    saveQueueRef.current.clear()
+
+    // Get the CURRENT state of items to save (not the stale queued version)
+    const itemsToSave = itemIdsToSave
+      .map((id) => budgetDataRef.current.find((item) => item.id === id))
+      .filter((item): item is BudgetItem => item !== undefined)
+
+    void Promise.all(itemsToSave.map((item) => saveBudgetItem(item))).catch((error) => {
+      console.error("Failed to save debounced budget items", error)
+      if (isMountedRef.current) {
+        setBudgetError("Some changes could not be saved. Please retry.")
+      }
+    })
+  }, [saveBudgetItem])
 
   const updateBudgetItem = useCallback(
     (id: string, field: keyof BudgetItem, value: string | number) => {
@@ -375,16 +376,32 @@ export function BudgetPage({ projectId, constructionMethod }: BudgetPageProps) {
 
           updatedItem.variance = (updatedItem.estimatedCost || 0) - (updatedItem.currentPaid || 0)
 
-          if (projectId) {
-            void saveBudgetItem({ ...updatedItem, projectId })
-          }
-
           return updatedItem
         })
       })
+
+      if (!projectId) {
+        return
+      }
+
+      // Queue just the ID, not the full item (we'll get current state when flushing)
+      saveQueueRef.current.add(id)
+      setPendingSaves((prev) => new Set(prev).add(id))
+
+      if (debounceTimerRef.current) {
+        clearTimeout(debounceTimerRef.current)
+      }
+
+      debounceTimerRef.current = setTimeout(() => {
+        flushPendingSaves()
+      }, 1500)
     },
-    [projectId, saveBudgetItem],
+    [flushPendingSaves, projectId],
   )
+
+  const handleInputBlur = useCallback(() => {
+    flushPendingSaves()
+  }, [flushPendingSaves])
 
   const calculateTotals = () => {
     const totalEstimated = budgetData.reduce((sum, item) => sum + item.estimatedCost, 0)
@@ -412,6 +429,103 @@ export function BudgetPage({ projectId, constructionMethod }: BudgetPageProps) {
     [deleteBudgetItemFromSupabase, projectId],
   )
 
+  const handleAddCustomItem = useCallback(
+    (categoryName: string) => {
+      const phaseItems = budgetData.filter((item) => item.category === categoryName)
+      const inferredPhaseId = phaseItems[0]?.phaseId ?? phaseMaps.phaseIdByTitle.get(categoryName)
+      const phaseId = inferredPhaseId ?? phaseMaps.seed[0]?.phaseId
+
+      if (!phaseId) {
+        console.warn("Unable to determine phase for custom item", { categoryName })
+        return
+      }
+
+      const highestSortOrder = phaseItems.reduce((max, item) => Math.max(max, item.sortOrder ?? 0), -1)
+      const defaultDescription = "Custom Item"
+      const existingDescriptions = new Set(
+        phaseItems.map((item) => item.description.trim().toLowerCase()).filter((value) => value.length > 0),
+      )
+
+      let description = defaultDescription
+      let counter = 1
+      while (existingDescriptions.has(description.trim().toLowerCase())) {
+        counter += 1
+        description = `${defaultDescription} ${counter}`
+      }
+
+      const tempId =
+        typeof crypto !== "undefined" && typeof crypto.randomUUID === "function"
+          ? `temp-${crypto.randomUUID()}`
+          : `temp-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`
+
+      const newItem: BudgetItem = {
+        id: tempId,
+        projectId,
+        phaseId,
+        category: categoryName,
+        description,
+        materials: 0,
+        labor: 0,
+        vendor: "",
+        estimatedCost: 0,
+        actualCost: 0,
+        currentPaid: 0,
+        due: 0,
+        variance: 0,
+        sortOrder: highestSortOrder + 1,
+        isCustom: true,
+      }
+
+      setBudgetData((prev) => [...prev, newItem])
+
+      if (projectId) {
+        saveQueueRef.current.add(newItem.id)
+        setPendingSaves((prev) => new Set(prev).add(newItem.id))
+
+        if (debounceTimerRef.current) {
+          clearTimeout(debounceTimerRef.current)
+        }
+
+        debounceTimerRef.current = setTimeout(() => {
+          flushPendingSaves()
+        }, 1500)
+      }
+    },
+    [budgetData, flushPendingSaves, phaseMaps, projectId],
+  )
+
+  // Manage mounted state - runs only once on mount/unmount
+  useEffect(() => {
+    isMountedRef.current = true
+    return () => {
+      isMountedRef.current = false
+    }
+  }, [])
+
+  // Cleanup pending saves on unmount
+  useEffect(() => {
+    return () => {
+      if (debounceTimerRef.current) {
+        clearTimeout(debounceTimerRef.current)
+        debounceTimerRef.current = null
+      }
+
+      if (saveQueueRef.current.size > 0) {
+        const itemIdsToSave = Array.from(saveQueueRef.current)
+        saveQueueRef.current.clear()
+        
+        // Get current state of items to save
+        const itemsToSave = itemIdsToSave
+          .map((id) => budgetDataRef.current.find((item) => item.id === id))
+          .filter((item): item is BudgetItem => item !== undefined)
+          
+        void Promise.all(itemsToSave.map((item) => saveBudgetItem(item))).catch((error) => {
+          console.error("Failed to save debounced budget items", error)
+        })
+      }
+    }
+  }, [saveBudgetItem])
+
   const { totalEstimated, totalActual, estimatedPPSF, actualPPSF } = calculateTotals()
   const categories = categoriesFromJson.length > 0 ? categoriesFromJson : ["Uncategorized"]
 
@@ -438,7 +552,22 @@ export function BudgetPage({ projectId, constructionMethod }: BudgetPageProps) {
               {isExpanded ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
               <h3 className="font-semibold text-cyan-800">{categoryName}</h3>
             </div>
-            <span className="font-semibold text-cyan-800">${categoryTotal.toLocaleString()}</span>
+            <div className="flex items-center gap-3">
+              <span className="font-semibold text-cyan-800">${categoryTotal.toLocaleString()}</span>
+              {isExpanded && (
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={(event) => {
+                    event.stopPropagation()
+                    handleAddCustomItem(categoryName)
+                  }}
+                >
+                  Add Custom Item
+                </Button>
+              )}
+            </div>
           </div>
         </div>
 
@@ -466,6 +595,7 @@ export function BudgetPage({ projectId, constructionMethod }: BudgetPageProps) {
                   <Input
                     value={item.description}
                     onChange={(e) => updateBudgetItem(item.id, "description", e.target.value)}
+                    onBlur={handleInputBlur}
                     className="border border-gray-300 p-1 h-auto bg-transparent focus:bg-white focus:border-cyan-500"
                   />
                 </div>
@@ -473,6 +603,7 @@ export function BudgetPage({ projectId, constructionMethod }: BudgetPageProps) {
                   <Input
                     value={item.vendor}
                     onChange={(e) => updateBudgetItem(item.id, "vendor", e.target.value)}
+                    onBlur={handleInputBlur}
                     className="border border-gray-300 p-1 h-auto bg-transparent focus:bg-white focus:border-cyan-500 text-center text-xs"
                   />
                 </div>
@@ -481,6 +612,7 @@ export function BudgetPage({ projectId, constructionMethod }: BudgetPageProps) {
                     type="number"
                     value={item.materials || ""}
                     onChange={(e) => updateBudgetItem(item.id, "materials", Number.parseFloat(e.target.value) || 0)}
+                    onBlur={handleInputBlur}
                     className="border border-gray-300 p-1 h-auto bg-transparent focus:bg-white focus:border-cyan-500 text-center text-xs"
                     step="any"
                     inputMode="numeric"
@@ -491,6 +623,7 @@ export function BudgetPage({ projectId, constructionMethod }: BudgetPageProps) {
                     type="number"
                     value={item.labor || ""}
                     onChange={(e) => updateBudgetItem(item.id, "labor", Number.parseFloat(e.target.value) || 0)}
+                    onBlur={handleInputBlur}
                     className="border border-gray-300 p-1 h-auto bg-transparent focus:bg-white focus:border-cyan-500 text-center text-xs"
                     step="any"
                     inputMode="numeric"
@@ -504,6 +637,7 @@ export function BudgetPage({ projectId, constructionMethod }: BudgetPageProps) {
                     type="number"
                     value={item.estimatedCost || ""}
                     onChange={(e) => updateBudgetItem(item.id, "estimatedCost", Number.parseFloat(e.target.value) || 0)}
+                    onBlur={handleInputBlur}
                     className="border border-gray-300 p-1 h-auto bg-transparent focus:bg-white focus:border-cyan-500 text-center text-xs"
                     step="any"
                     inputMode="numeric"
@@ -514,6 +648,7 @@ export function BudgetPage({ projectId, constructionMethod }: BudgetPageProps) {
                     type="number"
                     value={item.actualCost || ""}
                     onChange={(e) => updateBudgetItem(item.id, "actualCost", Number.parseFloat(e.target.value) || 0)}
+                    onBlur={handleInputBlur}
                     className="border border-gray-300 p-1 h-auto bg-transparent focus:bg-white focus:border-cyan-500 text-center text-xs"
                     step="any"
                     inputMode="numeric"
@@ -524,6 +659,7 @@ export function BudgetPage({ projectId, constructionMethod }: BudgetPageProps) {
                     type="number"
                     value={item.currentPaid || ""}
                     onChange={(e) => updateBudgetItem(item.id, "currentPaid", Number.parseFloat(e.target.value) || 0)}
+                    onBlur={handleInputBlur}
                     className="border border-gray-300 p-1 h-auto bg-transparent focus:bg-white focus:border-cyan-500 text-center text-xs"
                     step="any"
                     inputMode="numeric"
@@ -533,7 +669,12 @@ export function BudgetPage({ projectId, constructionMethod }: BudgetPageProps) {
                   ${((item.actualCost || 0) - (item.currentPaid || 0)).toLocaleString()}
                 </div>
                 <div className="col-span-1 relative">
-                  <div className="text-center text-xs font-medium">${item.variance.toLocaleString()}</div>
+                  <div className="flex items-center justify-center gap-2 text-xs font-medium">
+                    <span>${item.variance.toLocaleString()}</span>
+                    {pendingSaves.has(item.id) && (
+                      <Loader2 className="h-3 w-3 animate-spin text-cyan-600" aria-label="Saving" />
+                    )}
+                  </div>
           <AlertDialog>
             <AlertDialogTrigger asChild>
               <Button
@@ -572,6 +713,7 @@ export function BudgetPage({ projectId, constructionMethod }: BudgetPageProps) {
                 </div>
               </div>
             ))}
+
           </div>
         )}
       </div>
@@ -657,6 +799,11 @@ export function BudgetPage({ projectId, constructionMethod }: BudgetPageProps) {
       </div>
 
       <div className="border border-gray-300 border-t-0 rounded-b-lg bg-white p-4">
+        {budgetError && (
+          <div className="mb-3 rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-700">
+            {budgetError}
+          </div>
+        )}
         {categories.map((category) => renderCategorySection(category))}
       </div>
     </div>

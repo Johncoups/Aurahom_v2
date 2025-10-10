@@ -16,11 +16,13 @@
   - [X] Save item edits, additions, and deletions via Supabase mutations with optimistic UI updates
   - [X] Handle conflict resolution or versioning so simultaneous edits don’t overwrite each other
 
-- [ ] Add per-phase "Other / Custom Item" support
-  - [ ] Provide an "Add custom item" action within each phase accordion
-  - [ ] Initialize new custom rows with editable description and zeroed cost fields
-  - [ ] Persist custom rows alongside standard items in Supabase with a custom flag
-  - [ ] Allow users to delete custom items without affecting seeded entries
+- [X] Add per-phase "Other / Custom Item" support
+  - [X] Provide an "Add custom item" action within each phase accordion
+  - [X] Initialize new custom rows with editable description and zeroed cost fields
+  - [X] Persist custom rows alongside standard items in Supabase with a custom flag
+  - [X] Allow users to delete custom items without affecting seeded entries
+  - [X] Implement debounced saves (1.5s) with immediate flush on blur for smooth data entry
+  - [X] Add pending save indicator (spinner) to show when saves are in progress
 
 - [ ] Implement phase-level rollups and summaries
   - [ ] Calculate estimated vs. actual vs. variance totals per phase
