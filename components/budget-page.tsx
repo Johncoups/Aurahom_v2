@@ -328,6 +328,75 @@ export function BudgetPage({ projectId, constructionMethod }: BudgetPageProps) {
     [projectId, supabase],
   )
 
+  const loadBudgetData = useCallback(async () => {
+    if (!projectId) {
+      console.warn("Cannot load budget: missing projectId")
+      return
+    }
+
+    setIsLoadingBudget(true)
+    setBudgetError(null)
+
+    try {
+      const { data, error } = await supabase
+        .from("budget_items")
+        .select("*")
+        .eq("project_id", projectId)
+
+      if (error) {
+        console.error("Failed to load budget items", error)
+        throw error
+      }
+
+      const storedItems: BudgetItem[] = (data || []).map((row) => ({
+        id: row.id,
+        projectId: row.project_id,
+        phaseId: row.phase_id,
+        category: phaseMaps.phaseTitleById.get(row.phase_id) ?? "Uncategorized",
+        description: row.description,
+        materials: Number(row.materials ?? 0),
+        labor: Number(row.labor ?? 0),
+        vendor: row.vendor ?? "",
+        estimatedCost: Number(row.estimated_cost ?? 0),
+        actualCost: Number(row.actual_cost ?? 0),
+        currentPaid: Number(row.current_paid ?? 0),
+        due: Number(row.due ?? 0),
+        variance: Number(row.estimated_cost ?? 0) - Number(row.current_paid ?? 0),
+        sortOrder: Number.isFinite(row.sort_order) ? Number(row.sort_order) : 0,
+        isCustom: row.is_custom ?? false,
+      }))
+
+      const merged = mergeBudgetItems(
+        phaseMaps.seed.map((item) => ({ ...item, projectId })),
+        storedItems,
+        phaseMaps.phaseIdByTitle,
+        phaseMaps.phaseTitleById,
+      )
+
+      setBudgetData(merged)
+    } catch (error) {
+      console.error("Error loading budget data", error)
+      setBudgetError("Failed to load budget data. Please refresh the page.")
+    } finally {
+      setIsLoadingBudget(false)
+    }
+  }, [projectId, supabase, phaseMaps])
+
+  // Load budget data on mount and when projectId or construction method changes
+  useEffect(() => {
+    async function fetchBudgetData() {
+      if (!projectId) {
+        // No projectId, just use seeded data
+        setBudgetData(phaseMaps.seed.map((item) => ({ ...item, projectId })))
+        return
+      }
+
+      await loadBudgetData()
+    }
+
+    void fetchBudgetData()
+  }, [projectId, selectedMethod, loadBudgetData, phaseMaps])
+
   const flushPendingSaves = useCallback(() => {
     if (debounceTimerRef.current) {
       clearTimeout(debounceTimerRef.current)
@@ -538,8 +607,26 @@ export function BudgetPage({ projectId, constructionMethod }: BudgetPageProps) {
 
   const renderCategorySection = (categoryName: string) => {
     const categoryItems = budgetData.filter((item) => item.category === categoryName)
-    const categoryTotal = categoryItems.reduce((sum, item) => sum + item.actualCost, 0)
+    const categoryEstimated = categoryItems.reduce((sum, item) => sum + item.estimatedCost, 0)
+    const categoryActual = categoryItems.reduce((sum, item) => sum + item.actualCost, 0)
+    const categoryVariance = categoryEstimated - categoryActual
+    const variancePercent = categoryEstimated > 0 ? ((categoryActual - categoryEstimated) / categoryEstimated) * 100 : 0
     const isExpanded = expandedCategories[categoryName]
+
+    // Determine variance color and status
+    let varianceColor = "text-green-700"
+    let varianceBgColor = "bg-green-100"
+    let varianceLabel = "under"
+    
+    if (variancePercent > 5) {
+      varianceColor = "text-red-700"
+      varianceBgColor = "bg-red-100"
+      varianceLabel = "over"
+    } else if (variancePercent > -5 && variancePercent <= 5) {
+      varianceColor = "text-yellow-700"
+      varianceBgColor = "bg-yellow-100"
+      varianceLabel = "on track"
+    }
 
     return (
       <div key={categoryName} className="mb-2 border border-gray-200 rounded-lg">
@@ -547,13 +634,27 @@ export function BudgetPage({ projectId, constructionMethod }: BudgetPageProps) {
           className="bg-cyan-50 border-b border-cyan-200 p-3 rounded-t-lg cursor-pointer hover:bg-cyan-100 transition-colors"
           onClick={() => toggleCategory(categoryName)}
         >
-          <div className="flex justify-between items-center">
-            <div className="flex items-center gap-2">
-              {isExpanded ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
-              <h3 className="font-semibold text-cyan-800">{categoryName}</h3>
-            </div>
+          <div className="flex items-center justify-between w-full">
             <div className="flex items-center gap-3">
-              <span className="font-semibold text-cyan-800">${categoryTotal.toLocaleString()}</span>
+              {isExpanded ? <ChevronDown className="h-5 w-5" /> : <ChevronRight className="h-5 w-5" />}
+              <h3 className="font-semibold text-cyan-800 text-base">{categoryName}</h3>
+            </div>
+            <div className="flex items-center gap-8 text-base flex-1 justify-center">
+              <span className="text-gray-700">
+                <span className="font-semibold">Est:</span> ${categoryEstimated.toLocaleString()}
+              </span>
+              <span className="text-gray-700">
+                <span className="font-semibold">Actual:</span> ${categoryActual.toLocaleString()}
+              </span>
+              <span className={`${varianceColor} font-semibold`}>
+                <span>Variance:</span> {categoryVariance >= 0 ? "-" : "+"}$
+                {Math.abs(categoryVariance).toLocaleString()}
+              </span>
+              <span className={`px-3 py-1 rounded-full text-sm font-semibold ${varianceBgColor} ${varianceColor}`}>
+                {Math.abs(variancePercent).toFixed(1)}% {varianceLabel}
+              </span>
+            </div>
+            <div className="flex items-center gap-2">
               {isExpanded && (
                 <Button
                   type="button"
