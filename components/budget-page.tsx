@@ -3,8 +3,15 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { Card, CardContent } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
-import { ChevronDown, ChevronRight, Loader2, Trash2 } from "lucide-react"
+import { ChevronDown, ChevronRight, Loader2, Trash2, Search, X } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 import {
   AlertDialog,
   AlertDialogAction,
@@ -18,6 +25,7 @@ import {
 } from "@/components/ui/alert-dialog"
 import budgetPhaseAlignment from "@/budget-phase-alignment.json"
 import { supabase } from "@/lib/supabase"
+import { Download, Upload } from "lucide-react"
 
 interface BudgetItem {
   id: string
@@ -35,6 +43,11 @@ interface BudgetItem {
   variance: number
   sortOrder: number
   isCustom: boolean
+}
+
+interface ValidationError {
+  field: string
+  message: string
 }
 
 type BudgetPhaseDefinition = {
@@ -170,7 +183,27 @@ const isUuid = (value: string): boolean => /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}
 export function BudgetPage({ projectId, constructionMethod }: BudgetPageProps) {
   const [livingAreaSqFt, setLivingAreaSqFt] = useState(2500)
   const [structureSqFt, setStructureSqFt] = useState(2800)
-  const [expandedCategories, setExpandedCategories] = useState<Record<string, boolean>>({})
+  const [expandedCategories, setExpandedCategories] = useState<Record<string, boolean>>(() => {
+    // Load expanded state from localStorage
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem("budget-expanded-categories")
+      if (saved) {
+        try {
+          return JSON.parse(saved)
+        } catch {
+          return {}
+        }
+      }
+    }
+    return {}
+  })
+  const [searchQuery, setSearchQuery] = useState("")
+  const [activeFilter, setActiveFilter] = useState<"all" | "over" | "under" | "ontrack">("all")
+  const [validationErrors, setValidationErrors] = useState<Map<string, ValidationError[]>>(new Map())
+  const [showImportDialog, setShowImportDialog] = useState(false)
+  const [importPreviewData, setImportPreviewData] = useState<BudgetItem[]>([])
+  const [importDuplicates, setImportDuplicates] = useState<string[]>([])
+  const [importStrategy, setImportStrategy] = useState<"skip" | "replace" | "merge">("skip")
   const budgetAlignment = budgetPhaseAlignment as BudgetPhaseAlignmentFile
   const availableMethods = useMemo(
     () => Object.keys(budgetAlignment.constructionMethods ?? {}),
@@ -207,10 +240,86 @@ export function BudgetPage({ projectId, constructionMethod }: BudgetPageProps) {
     budgetDataRef.current = budgetData
   }, [budgetData])
 
+  // Save expanded state to localStorage when it changes
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      localStorage.setItem("budget-expanded-categories", JSON.stringify(expandedCategories))
+    }
+  }, [expandedCategories])
+
+  // Validation functions
+  const validateBudgetItem = useCallback((item: BudgetItem): ValidationError[] => {
+    const errors: ValidationError[] = []
+
+    // Validate numeric fields are not negative
+    if (item.materials < 0) {
+      errors.push({ field: "materials", message: "Materials cost cannot be negative" })
+    }
+    if (item.labor < 0) {
+      errors.push({ field: "labor", message: "Labor cost cannot be negative" })
+    }
+    if (item.estimatedCost < 0) {
+      errors.push({ field: "estimatedCost", message: "Estimated cost cannot be negative" })
+    }
+    if (item.actualCost < 0) {
+      errors.push({ field: "actualCost", message: "Actual cost cannot be negative" })
+    }
+    if (item.currentPaid < 0) {
+      errors.push({ field: "currentPaid", message: "Current paid cannot be negative" })
+    }
+
+    // Validate currentPaid doesn't exceed actualCost
+    if (item.currentPaid > item.actualCost && item.actualCost > 0) {
+      errors.push({ field: "currentPaid", message: "Paid amount cannot exceed actual cost" })
+    }
+
+    // Validate description is not empty
+    if (!item.description.trim()) {
+      errors.push({ field: "description", message: "Description is required" })
+    }
+
+    return errors
+  }, [])
+
+  const updateValidationErrors = useCallback((itemId: string, errors: ValidationError[]) => {
+    setValidationErrors((prev) => {
+      const newMap = new Map(prev)
+      if (errors.length > 0) {
+        newMap.set(itemId, errors)
+      } else {
+        newMap.delete(itemId)
+      }
+      return newMap
+    })
+  }, [])
+
+  const hasValidationError = useCallback((itemId: string, field: string): boolean => {
+    const errors = validationErrors.get(itemId)
+    return errors ? errors.some((e) => e.field === field) : false
+  }, [validationErrors])
+
+  const getValidationErrorMessage = useCallback((itemId: string, field: string): string | undefined => {
+    const errors = validationErrors.get(itemId)
+    return errors?.find((e) => e.field === field)?.message
+  }, [validationErrors])
+
   const saveBudgetItem = useCallback(
     async (item: BudgetItem) => {
       if (!projectId) {
         console.warn("Budget not saved: missing projectId")
+        return item
+      }
+
+      // Check for validation errors before saving
+      const errors = validateBudgetItem(item)
+      if (errors.length > 0) {
+        console.warn("Budget not saved: validation errors present", errors)
+        updateValidationErrors(item.id, errors)
+        setPendingSaves((prev) => {
+          const next = new Set(prev)
+          next.delete(item.id)
+          return next
+        })
         return item
       }
 
@@ -308,7 +417,7 @@ export function BudgetPage({ projectId, constructionMethod }: BudgetPageProps) {
         throw error
       }
     },
-    [projectId, supabase],
+    [projectId, supabase, validateBudgetItem, updateValidationErrors],
   )
 
   const deleteBudgetItemFromSupabase = useCallback(
@@ -425,6 +534,8 @@ export function BudgetPage({ projectId, constructionMethod }: BudgetPageProps) {
 
   const updateBudgetItem = useCallback(
     (id: string, field: keyof BudgetItem, value: string | number) => {
+      let updatedItem: BudgetItem | null = null
+
       setBudgetData((prev) => {
         return prev.map((item) => {
           if (item.id !== id) {
@@ -438,7 +549,7 @@ export function BudgetPage({ projectId, constructionMethod }: BudgetPageProps) {
               ? Number.parseFloat(value) || 0
               : value
 
-          const updatedItem = {
+          updatedItem = {
             ...item,
             [field]: nextValue,
           } as BudgetItem
@@ -448,6 +559,12 @@ export function BudgetPage({ projectId, constructionMethod }: BudgetPageProps) {
           return updatedItem
         })
       })
+
+      // Validate the updated item
+      if (updatedItem) {
+        const errors = validateBudgetItem(updatedItem)
+        updateValidationErrors(id, errors)
+      }
 
       if (!projectId) {
         return
@@ -465,7 +582,7 @@ export function BudgetPage({ projectId, constructionMethod }: BudgetPageProps) {
         flushPendingSaves()
       }, 1500)
     },
-    [flushPendingSaves, projectId],
+    [flushPendingSaves, projectId, validateBudgetItem, updateValidationErrors],
   )
 
   const handleInputBlur = useCallback(() => {
@@ -605,13 +722,426 @@ export function BudgetPage({ projectId, constructionMethod }: BudgetPageProps) {
     }))
   }
 
-  const renderCategorySection = (categoryName: string) => {
+  const expandAll = () => {
+    const allExpanded: Record<string, boolean> = {}
+    categories.forEach((category) => {
+      allExpanded[category] = true
+    })
+    setExpandedCategories(allExpanded)
+  }
+
+  const collapseAll = () => {
+    setExpandedCategories({})
+  }
+
+  // Filter budget items based on search query
+  const filterBySearch = (item: BudgetItem): boolean => {
+    if (!searchQuery.trim()) return true
+    const query = searchQuery.toLowerCase()
+    return (
+      item.description.toLowerCase().includes(query) ||
+      item.vendor.toLowerCase().includes(query)
+    )
+  }
+
+  // Filter categories based on active filter
+  const filterCategory = (categoryName: string): boolean => {
+    if (activeFilter === "all") return true
+
     const categoryItems = budgetData.filter((item) => item.category === categoryName)
+    const categoryEstimated = categoryItems.reduce((sum, item) => sum + item.estimatedCost, 0)
+    const categoryActual = categoryItems.reduce((sum, item) => sum + item.actualCost, 0)
+    const variancePercent = categoryEstimated > 0 ? ((categoryActual - categoryEstimated) / categoryEstimated) * 100 : 0
+
+    if (activeFilter === "over") return variancePercent > 5
+    if (activeFilter === "under") return variancePercent < -5
+    if (activeFilter === "ontrack") return variancePercent >= -5 && variancePercent <= 5
+
+    return true
+  }
+
+  // Export functionality
+  const exportToCSV = useCallback(() => {
+    const filteredItems = budgetData.filter((item) => {
+      const categoryMatch = filterCategory(item.category)
+      const searchMatch = filterBySearch(item)
+      return categoryMatch && searchMatch
+    })
+
+    // CSV Headers
+    const headers = [
+      "Phase",
+      "Description",
+      "Vendor",
+      "Materials",
+      "Labor",
+      "Estimated Cost",
+      "Actual Cost",
+      "Current Paid",
+      "Due",
+      "Variance",
+      "Custom Item"
+    ]
+
+    // CSV Rows
+    const rows = filteredItems.map((item) => [
+      item.category,
+      item.description,
+      item.vendor,
+      item.materials,
+      item.labor,
+      item.estimatedCost,
+      item.actualCost,
+      item.currentPaid,
+      (item.actualCost || 0) - (item.currentPaid || 0), // Due (calculated)
+      item.variance,
+      item.isCustom ? "Yes" : "No"
+    ])
+
+    // Create CSV content
+    const csvContent = [
+      headers.join(","),
+      ...rows.map((row) => 
+        row.map((cell) => 
+          typeof cell === "string" && cell.includes(",") 
+            ? `"${cell}"` 
+            : cell
+        ).join(",")
+      )
+    ].join("\n")
+
+    // Download
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" })
+    const link = document.createElement("a")
+    const url = URL.createObjectURL(blob)
+    link.setAttribute("href", url)
+    link.setAttribute("download", `budget_export_${new Date().toISOString().split("T")[0]}.csv`)
+    link.style.visibility = "hidden"
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+  }, [budgetData, filterBySearch, filterCategory])
+
+  const exportToJSON = useCallback(() => {
+    const filteredItems = budgetData.filter((item) => {
+      const categoryMatch = filterCategory(item.category)
+      const searchMatch = filterBySearch(item)
+      return categoryMatch && searchMatch
+    })
+
+    const exportData = {
+      exportDate: new Date().toISOString(),
+      projectId: projectId,
+      constructionMethod: selectedMethod,
+      itemCount: filteredItems.length,
+      items: filteredItems.map((item) => ({
+        phase: item.category,
+        description: item.description,
+        vendor: item.vendor,
+        materials: item.materials,
+        labor: item.labor,
+        estimatedCost: item.estimatedCost,
+        actualCost: item.actualCost,
+        currentPaid: item.currentPaid,
+        due: (item.actualCost || 0) - (item.currentPaid || 0),
+        variance: item.variance,
+        isCustom: item.isCustom
+      }))
+    }
+
+    const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: "application/json" })
+    const link = document.createElement("a")
+    const url = URL.createObjectURL(blob)
+    link.setAttribute("href", url)
+    link.setAttribute("download", `budget_export_${new Date().toISOString().split("T")[0]}.json`)
+    link.style.visibility = "hidden"
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+  }, [budgetData, filterBySearch, filterCategory, projectId, selectedMethod])
+
+  // Import functionality
+  const parseCSV = (csvText: string): BudgetItem[] => {
+    const lines = csvText.trim().split("\n")
+    if (lines.length < 2) return []
+
+    const headers = lines[0].split(",").map(h => h.trim().replace(/^"|"$/g, ""))
+    const items: BudgetItem[] = []
+
+    // Helper function to parse CSV line respecting quoted fields
+    const parseCSVLine = (line: string): string[] => {
+      const result: string[] = []
+      let current = ""
+      let inQuotes = false
+      
+      for (let i = 0; i < line.length; i++) {
+        const char = line[i]
+        
+        if (char === '"') {
+          inQuotes = !inQuotes
+        } else if (char === ',' && !inQuotes) {
+          result.push(current.trim())
+          current = ""
+        } else {
+          current += char
+        }
+      }
+      result.push(current.trim())
+      return result
+    }
+
+    // Helper to parse currency/number strings (handles commas, dollar signs)
+    const parseNumber = (value: string): number => {
+      if (!value || value === "") return 0
+      // Remove dollar signs, commas, and whitespace
+      const cleaned = value.replace(/[$,\s]/g, "")
+      const parsed = Number.parseFloat(cleaned)
+      return isNaN(parsed) ? 0 : parsed
+    }
+
+    for (let i = 1; i < lines.length; i++) {
+      const values = parseCSVLine(lines[i])
+      
+      const item: BudgetItem = {
+        id: `temp-${Date.now()}-${i}`,
+        projectId: projectId,
+        phaseId: "", // Will be set from category mapping
+        category: values[0] || "",
+        description: values[1] || "",
+        vendor: values[2] || "",
+        materials: parseNumber(values[3]),
+        labor: parseNumber(values[4]),
+        estimatedCost: parseNumber(values[5]),
+        actualCost: parseNumber(values[6]),
+        currentPaid: parseNumber(values[7]),
+        due: parseNumber(values[8]),
+        variance: parseNumber(values[9]),
+        sortOrder: i,
+        isCustom: values[10]?.toLowerCase() === "yes"
+      }
+
+      // Map category to phaseId
+      const phaseMapping = categories.find(c => c === item.category)
+      if (phaseMapping) {
+        const phase = budgetAlignment.constructionMethods[selectedMethod]?.phases.find(
+          p => p.title === item.category
+        )
+        item.phaseId = phase?.phaseId || "unknown"
+      }
+
+      items.push(item)
+    }
+
+    return items
+  }
+
+  const parseJSON = (jsonText: string): BudgetItem[] => {
+    try {
+      const data = JSON.parse(jsonText)
+      const items = data.items || []
+
+      return items.map((item: any, index: number) => {
+        const budgetItem: BudgetItem = {
+          id: `temp-${Date.now()}-${index}`,
+          projectId: projectId,
+          phaseId: "",
+          category: item.phase || "",
+          description: item.description || "",
+          vendor: item.vendor || "",
+          materials: Number.parseFloat(item.materials) || 0,
+          labor: Number.parseFloat(item.labor) || 0,
+          estimatedCost: Number.parseFloat(item.estimatedCost) || 0,
+          actualCost: Number.parseFloat(item.actualCost) || 0,
+          currentPaid: Number.parseFloat(item.currentPaid) || 0,
+          due: Number.parseFloat(item.due) || 0,
+          variance: Number.parseFloat(item.variance) || 0,
+          sortOrder: index,
+          isCustom: item.isCustom === true
+        }
+
+        // Map category to phaseId
+        const phase = budgetAlignment.constructionMethods[selectedMethod]?.phases.find(
+          p => p.title === budgetItem.category
+        )
+        budgetItem.phaseId = phase?.phaseId || "unknown"
+
+        return budgetItem
+      })
+    } catch (error) {
+      console.error("Failed to parse JSON:", error)
+      return []
+    }
+  }
+
+  const detectDuplicates = (importedItems: BudgetItem[]): string[] => {
+    const duplicateIds: string[] = []
+    
+    importedItems.forEach((importItem) => {
+      const exists = budgetData.some((existingItem) => 
+        existingItem.projectId === importItem.projectId &&
+        existingItem.phaseId === importItem.phaseId &&
+        existingItem.description.toLowerCase() === importItem.description.toLowerCase()
+      )
+      
+      if (exists) {
+        duplicateIds.push(importItem.id)
+      }
+    })
+
+    return duplicateIds
+  }
+
+  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0]
+    if (!file) return
+
+    const reader = new FileReader()
+    reader.onload = (e) => {
+      const text = e.target?.result as string
+      let items: BudgetItem[] = []
+
+      if (file.name.endsWith(".csv")) {
+        items = parseCSV(text)
+      } else if (file.name.endsWith(".json")) {
+        items = parseJSON(text)
+      }
+
+      if (items.length > 0) {
+        console.log("📥 Parsed import items:", items.length)
+        console.log("📄 Sample item:", items[0])
+        const duplicates = detectDuplicates(items)
+        console.log("🔍 Detected duplicates:", duplicates.length)
+        setImportPreviewData(items)
+        setImportDuplicates(duplicates)
+        setShowImportDialog(true)
+      } else {
+        console.warn("⚠️ No items parsed from file")
+      }
+    }
+
+    reader.readAsText(file)
+    event.target.value = "" // Reset input
+  }
+
+  const commitImport = async () => {
+    console.log("🚀 Starting import with strategy:", importStrategy)
+    console.log("📦 Items to process:", importPreviewData.length)
+    console.log("⚠️ Duplicates detected:", importDuplicates.length)
+
+    const itemsToImport = importPreviewData.filter((item) => {
+      if (importStrategy === "skip") {
+        return !importDuplicates.includes(item.id)
+      }
+      return true // replace or merge strategy
+    })
+
+    console.log("✅ Items after filter:", itemsToImport.length)
+    let updatedCount = 0
+    let newCount = 0
+
+    for (const item of itemsToImport) {
+      const isDuplicate = importDuplicates.includes(item.id)
+      
+      if (isDuplicate) {
+        // Find the existing item
+        const existing = budgetData.find((e) => 
+          e.phaseId === item.phaseId && 
+          e.description.toLowerCase() === item.description.toLowerCase()
+        )
+
+        if (existing) {
+          console.log(`🔄 ${importStrategy} duplicate:`, item.description, "| Vendor:", item.vendor)
+          if (importStrategy === "replace") {
+            // Replace: Update existing item with all imported data, keeping the real UUID
+            const replacedItem: BudgetItem = {
+              ...item,
+              id: existing.id, // Keep the real UUID
+              projectId: existing.projectId,
+              phaseId: existing.phaseId,
+              sortOrder: existing.sortOrder,
+              isCustom: existing.isCustom,
+            }
+            
+            // Validate before saving
+            const errors = validateBudgetItem(replacedItem)
+            if (errors.length === 0) {
+              await saveBudgetItem(replacedItem)
+              updatedCount++
+            } else {
+              console.warn("❌ Validation errors for", item.description, errors)
+            }
+          } else if (importStrategy === "merge") {
+            // Merge: Update existing item with imported data, keeping the real UUID
+            const mergedItem: BudgetItem = {
+              ...existing, // Keep existing data including real UUID
+              vendor: item.vendor.trim() !== "" ? item.vendor : existing.vendor,
+              materials: item.materials,
+              labor: item.labor,
+              estimatedCost: item.estimatedCost,
+              actualCost: item.actualCost,
+              currentPaid: item.currentPaid,
+              due: (item.actualCost || 0) - (item.currentPaid || 0), // Recalculate
+              variance: (item.estimatedCost || 0) - (item.currentPaid || 0), // Recalculate
+              // Keep existing id, projectId, phaseId, category, description, sortOrder, isCustom
+            }
+
+            console.log("  📝 Merged values:", {
+              vendor: mergedItem.vendor,
+              materials: mergedItem.materials,
+              estimatedCost: mergedItem.estimatedCost,
+              actualCost: mergedItem.actualCost
+            })
+
+            // Validate before saving
+            const errors = validateBudgetItem(mergedItem)
+            if (errors.length === 0) {
+              await saveBudgetItem(mergedItem)
+              updatedCount++
+            } else {
+              console.warn("❌ Validation errors for", item.description, errors)
+            }
+          }
+        } else {
+          console.warn("⚠️ Could not find existing item for:", item.description)
+        }
+      } else {
+        // New item - just import it
+        console.log("✨ Adding new item:", item.description)
+        const errors = validateBudgetItem(item)
+        if (errors.length === 0) {
+          await saveBudgetItem(item)
+          newCount++
+        } else {
+          console.warn("❌ Validation errors for", item.description, errors)
+        }
+      }
+    }
+
+    console.log(`✅ Import complete! Updated: ${updatedCount}, New: ${newCount}`)
+
+    // Reload data
+    await loadBudgetData()
+    
+    // Close dialog and reset
+    setShowImportDialog(false)
+    setImportPreviewData([])
+    setImportDuplicates([])
+  }
+
+  // Get filtered categories
+  const filteredCategories = categories.filter(filterCategory)
+
+  const renderCategorySection = (categoryName: string) => {
+    const categoryItems = budgetData.filter((item) => item.category === categoryName && filterBySearch(item))
     const categoryEstimated = categoryItems.reduce((sum, item) => sum + item.estimatedCost, 0)
     const categoryActual = categoryItems.reduce((sum, item) => sum + item.actualCost, 0)
     const categoryVariance = categoryEstimated - categoryActual
     const variancePercent = categoryEstimated > 0 ? ((categoryActual - categoryEstimated) / categoryEstimated) * 100 : 0
-    const isExpanded = expandedCategories[categoryName]
+    
+    // Auto-expand phases with search matches, otherwise use saved state
+    const isExpanded = searchQuery.trim() 
+      ? categoryItems.length > 0 
+      : expandedCategories[categoryName]
 
     // Determine variance color and status
     let varianceColor = "text-green-700"
@@ -634,27 +1164,38 @@ export function BudgetPage({ projectId, constructionMethod }: BudgetPageProps) {
           className="bg-cyan-50 border-b border-cyan-200 p-3 rounded-t-lg cursor-pointer hover:bg-cyan-100 transition-colors"
           onClick={() => toggleCategory(categoryName)}
         >
-          <div className="flex items-center justify-between w-full">
-            <div className="flex items-center gap-3">
+          <div className="grid grid-cols-12 items-center gap-4 w-full">
+            {/* Phase name - col 1-3 */}
+            <div className="col-span-3 flex items-center gap-3">
               {isExpanded ? <ChevronDown className="h-5 w-5" /> : <ChevronRight className="h-5 w-5" />}
               <h3 className="font-semibold text-cyan-800 text-base">{categoryName}</h3>
             </div>
-            <div className="flex items-center gap-8 text-base flex-1 justify-center">
-              <span className="text-gray-700">
-                <span className="font-semibold">Est:</span> ${categoryEstimated.toLocaleString()}
-              </span>
-              <span className="text-gray-700">
-                <span className="font-semibold">Actual:</span> ${categoryActual.toLocaleString()}
-              </span>
-              <span className={`${varianceColor} font-semibold`}>
-                <span>Variance:</span> {categoryVariance >= 0 ? "-" : "+"}$
-                {Math.abs(categoryVariance).toLocaleString()}
-              </span>
-              <span className={`px-3 py-1 rounded-full text-sm font-semibold ${varianceBgColor} ${varianceColor}`}>
+            
+            {/* Estimated - col 4-5 */}
+            <div className="col-span-2 text-gray-700 text-base text-right">
+              <span className="font-semibold">Est:</span> ${categoryEstimated.toLocaleString()}
+            </div>
+            
+            {/* Actual - col 6-7 */}
+            <div className="col-span-2 text-gray-700 text-base text-right">
+              <span className="font-semibold">Actual:</span> ${categoryActual.toLocaleString()}
+            </div>
+            
+            {/* Variance - col 8-9 */}
+            <div className={`col-span-2 ${varianceColor} font-semibold text-base text-right`}>
+              <span>Variance:</span> {categoryVariance >= 0 ? "-" : "+"}$
+              {Math.abs(categoryVariance).toLocaleString()}
+            </div>
+            
+            {/* Badge - col 10 */}
+            <div className="col-span-2 flex justify-center">
+              <span className={`px-3 py-1 rounded-full text-sm font-semibold ${varianceBgColor} ${varianceColor} whitespace-nowrap`}>
                 {Math.abs(variancePercent).toFixed(1)}% {varianceLabel}
               </span>
             </div>
-            <div className="flex items-center gap-2">
+            
+            {/* Button - col 11-12 */}
+            <div className="col-span-1 flex items-center justify-end">
               {isExpanded && (
                 <Button
                   type="button"
@@ -697,8 +1238,18 @@ export function BudgetPage({ projectId, constructionMethod }: BudgetPageProps) {
                     value={item.description}
                     onChange={(e) => updateBudgetItem(item.id, "description", e.target.value)}
                     onBlur={handleInputBlur}
-                    className="border border-gray-300 p-1 h-auto bg-transparent focus:bg-white focus:border-cyan-500"
+                    className={`border p-1 h-auto bg-transparent focus:bg-white ${
+                      hasValidationError(item.id, "description")
+                        ? "border-red-500 focus:border-red-500"
+                        : "border-gray-300 focus:border-cyan-500"
+                    }`}
+                    title={getValidationErrorMessage(item.id, "description")}
                   />
+                  {hasValidationError(item.id, "description") && (
+                    <div className="text-xs text-red-600 mt-1">
+                      {getValidationErrorMessage(item.id, "description")}
+                    </div>
+                  )}
                 </div>
                 <div className="col-span-1">
                   <Input
@@ -714,7 +1265,12 @@ export function BudgetPage({ projectId, constructionMethod }: BudgetPageProps) {
                     value={item.materials || ""}
                     onChange={(e) => updateBudgetItem(item.id, "materials", Number.parseFloat(e.target.value) || 0)}
                     onBlur={handleInputBlur}
-                    className="border border-gray-300 p-1 h-auto bg-transparent focus:bg-white focus:border-cyan-500 text-center text-xs"
+                    className={`border p-1 h-auto bg-transparent focus:bg-white text-center text-xs ${
+                      hasValidationError(item.id, "materials")
+                        ? "border-red-500 focus:border-red-500"
+                        : "border-gray-300 focus:border-cyan-500"
+                    }`}
+                    title={getValidationErrorMessage(item.id, "materials")}
                     step="any"
                     inputMode="numeric"
                   />
@@ -725,7 +1281,12 @@ export function BudgetPage({ projectId, constructionMethod }: BudgetPageProps) {
                     value={item.labor || ""}
                     onChange={(e) => updateBudgetItem(item.id, "labor", Number.parseFloat(e.target.value) || 0)}
                     onBlur={handleInputBlur}
-                    className="border border-gray-300 p-1 h-auto bg-transparent focus:bg-white focus:border-cyan-500 text-center text-xs"
+                    className={`border p-1 h-auto bg-transparent focus:bg-white text-center text-xs ${
+                      hasValidationError(item.id, "labor")
+                        ? "border-red-500 focus:border-red-500"
+                        : "border-gray-300 focus:border-cyan-500"
+                    }`}
+                    title={getValidationErrorMessage(item.id, "labor")}
                     step="any"
                     inputMode="numeric"
                   />
@@ -739,7 +1300,12 @@ export function BudgetPage({ projectId, constructionMethod }: BudgetPageProps) {
                     value={item.estimatedCost || ""}
                     onChange={(e) => updateBudgetItem(item.id, "estimatedCost", Number.parseFloat(e.target.value) || 0)}
                     onBlur={handleInputBlur}
-                    className="border border-gray-300 p-1 h-auto bg-transparent focus:bg-white focus:border-cyan-500 text-center text-xs"
+                    className={`border p-1 h-auto bg-transparent focus:bg-white text-center text-xs ${
+                      hasValidationError(item.id, "estimatedCost")
+                        ? "border-red-500 focus:border-red-500"
+                        : "border-gray-300 focus:border-cyan-500"
+                    }`}
+                    title={getValidationErrorMessage(item.id, "estimatedCost")}
                     step="any"
                     inputMode="numeric"
                   />
@@ -750,7 +1316,12 @@ export function BudgetPage({ projectId, constructionMethod }: BudgetPageProps) {
                     value={item.actualCost || ""}
                     onChange={(e) => updateBudgetItem(item.id, "actualCost", Number.parseFloat(e.target.value) || 0)}
                     onBlur={handleInputBlur}
-                    className="border border-gray-300 p-1 h-auto bg-transparent focus:bg-white focus:border-cyan-500 text-center text-xs"
+                    className={`border p-1 h-auto bg-transparent focus:bg-white text-center text-xs ${
+                      hasValidationError(item.id, "actualCost")
+                        ? "border-red-500 focus:border-red-500"
+                        : "border-gray-300 focus:border-cyan-500"
+                    }`}
+                    title={getValidationErrorMessage(item.id, "actualCost")}
                     step="any"
                     inputMode="numeric"
                   />
@@ -761,7 +1332,12 @@ export function BudgetPage({ projectId, constructionMethod }: BudgetPageProps) {
                     value={item.currentPaid || ""}
                     onChange={(e) => updateBudgetItem(item.id, "currentPaid", Number.parseFloat(e.target.value) || 0)}
                     onBlur={handleInputBlur}
-                    className="border border-gray-300 p-1 h-auto bg-transparent focus:bg-white focus:border-cyan-500 text-center text-xs"
+                    className={`border p-1 h-auto bg-transparent focus:bg-white text-center text-xs ${
+                      hasValidationError(item.id, "currentPaid")
+                        ? "border-red-500 focus:border-red-500"
+                        : "border-gray-300 focus:border-cyan-500"
+                    }`}
+                    title={getValidationErrorMessage(item.id, "currentPaid")}
                     step="any"
                     inputMode="numeric"
                   />
@@ -770,7 +1346,11 @@ export function BudgetPage({ projectId, constructionMethod }: BudgetPageProps) {
                   ${((item.actualCost || 0) - (item.currentPaid || 0)).toLocaleString()}
                 </div>
                 <div className="col-span-1 relative">
-                  <div className="flex items-center justify-center gap-2 text-xs font-medium">
+                  <div className={`flex items-center justify-center gap-2 text-xs font-medium ${
+                    item.actualCost > item.estimatedCost && item.estimatedCost > 0
+                      ? "text-red-600 font-bold bg-red-50 rounded px-2 py-1"
+                      : ""
+                  }`}>
                     <span>${item.variance.toLocaleString()}</span>
                     {pendingSaves.has(item.id) && (
                       <Loader2 className="h-3 w-3 animate-spin text-cyan-600" aria-label="Saving" />
@@ -885,6 +1465,81 @@ export function BudgetPage({ projectId, constructionMethod }: BudgetPageProps) {
         </div>
       </div>
 
+      {/* Search and Filter Toolbar */}
+      <div className="mb-4 p-4 bg-white border border-gray-200 rounded-lg shadow-sm">
+        <div className="flex items-center gap-4">
+          {/* Search Input */}
+          <div className="flex-1 relative">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+            <Input
+              type="text"
+              placeholder="Search by description or vendor..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-10 pr-10"
+            />
+            {searchQuery && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setSearchQuery("")}
+                className="absolute right-1 top-1/2 transform -translate-y-1/2 h-7 w-7 p-0"
+              >
+                <X className="h-4 w-4" />
+              </Button>
+            )}
+          </div>
+
+          {/* Filter Dropdown */}
+          <Select value={activeFilter} onValueChange={(value) => setActiveFilter(value as typeof activeFilter)}>
+            <SelectTrigger className="w-[180px]">
+              <SelectValue placeholder="Filter phases" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Phases</SelectItem>
+              <SelectItem value="over">Over Budget</SelectItem>
+              <SelectItem value="under">Under Budget</SelectItem>
+              <SelectItem value="ontrack">On Track</SelectItem>
+            </SelectContent>
+          </Select>
+
+          {/* Expand/Collapse Buttons */}
+          <div className="flex items-center gap-2">
+            <Button variant="outline" size="sm" onClick={expandAll}>
+              <ChevronDown className="h-4 w-4 mr-1" />
+              Expand All
+            </Button>
+            <Button variant="outline" size="sm" onClick={collapseAll}>
+              <ChevronRight className="h-4 w-4 mr-1" />
+              Collapse All
+            </Button>
+          </div>
+
+          {/* Import/Export Buttons */}
+          <div className="flex items-center gap-2 border-l pl-4 border-gray-300">
+            <Button variant="outline" size="sm" onClick={exportToCSV}>
+              <Download className="h-4 w-4 mr-1" />
+              Export CSV
+            </Button>
+            <Button variant="outline" size="sm" onClick={exportToJSON}>
+              <Download className="h-4 w-4 mr-1" />
+              Export JSON
+            </Button>
+            <Button variant="outline" size="sm" onClick={() => document.getElementById("budget-import-file")?.click()}>
+              <Upload className="h-4 w-4 mr-1" />
+              Import
+            </Button>
+            <input
+              id="budget-import-file"
+              type="file"
+              accept=".csv,.json"
+              onChange={handleFileUpload}
+              className="hidden"
+            />
+          </div>
+        </div>
+      </div>
+
       <div className="bg-gray-100 border border-gray-300 rounded-t-lg">
         <div className="grid grid-cols-12 gap-1 p-3 text-sm font-semibold text-gray-700">
           <div className="col-span-2">DESCRIPTION</div>
@@ -905,8 +1560,140 @@ export function BudgetPage({ projectId, constructionMethod }: BudgetPageProps) {
             {budgetError}
           </div>
         )}
-        {categories.map((category) => renderCategorySection(category))}
+        {filteredCategories.length > 0 ? (
+          filteredCategories.map((category) => renderCategorySection(category))
+        ) : (
+          <div className="text-center py-8 text-gray-500">
+            No phases match your current filters. Try adjusting your search or filter settings.
+          </div>
+        )}
       </div>
+
+      {/* Import Preview Dialog */}
+      {showImportDialog && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg shadow-xl max-w-4xl w-full mx-4 max-h-[90vh] overflow-hidden flex flex-col">
+            <div className="p-6 border-b">
+              <h2 className="text-2xl font-bold text-gray-900">Import Budget Data</h2>
+              <p className="text-sm text-gray-600 mt-2">
+                Review and configure import settings before adding items to your budget.
+              </p>
+            </div>
+
+            <div className="p-6 overflow-y-auto flex-1">
+              {/* Summary */}
+              <div className="mb-6 p-4 bg-cyan-50 border border-cyan-200 rounded-lg">
+                <div className="grid grid-cols-3 gap-4 text-center">
+                  <div>
+                    <div className="text-2xl font-bold text-cyan-800">{importPreviewData.length}</div>
+                    <div className="text-sm text-gray-600">Total Items</div>
+                  </div>
+                  <div>
+                    <div className="text-2xl font-bold text-green-700">
+                      {importPreviewData.length - importDuplicates.length}
+                    </div>
+                    <div className="text-sm text-gray-600">New Items</div>
+                  </div>
+                  <div>
+                    <div className="text-2xl font-bold text-orange-700">{importDuplicates.length}</div>
+                    <div className="text-sm text-gray-600">Duplicates</div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Duplicate Strategy */}
+              {importDuplicates.length > 0 && (
+                <div className="mb-6">
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    Duplicate Handling Strategy:
+                  </label>
+                  <Select value={importStrategy} onValueChange={(value: any) => setImportStrategy(value)}>
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder="Choose strategy" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="skip">Skip Duplicates - Keep existing items</SelectItem>
+                      <SelectItem value="replace">Replace Duplicates - Overwrite with imported data</SelectItem>
+                      <SelectItem value="merge">Merge - Update only non-empty fields</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
+
+              {/* Preview Table */}
+              <div className="border rounded-lg overflow-hidden">
+                <div className="bg-gray-50 px-4 py-2 border-b">
+                  <h3 className="font-semibold text-gray-900">Preview Items</h3>
+                </div>
+                <div className="max-h-96 overflow-y-auto">
+                  <table className="w-full text-sm">
+                    <thead className="bg-gray-100 sticky top-0">
+                      <tr>
+                        <th className="px-3 py-2 text-left font-semibold text-gray-700">Phase</th>
+                        <th className="px-3 py-2 text-left font-semibold text-gray-700">Description</th>
+                        <th className="px-3 py-2 text-right font-semibold text-gray-700">Estimated</th>
+                        <th className="px-3 py-2 text-right font-semibold text-gray-700">Actual</th>
+                        <th className="px-3 py-2 text-center font-semibold text-gray-700">Status</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {importPreviewData.map((item) => {
+                        const isDuplicate = importDuplicates.includes(item.id)
+                        const willImport = importStrategy !== "skip" || !isDuplicate
+
+                        return (
+                          <tr
+                            key={item.id}
+                            className={`border-b ${
+                              isDuplicate ? "bg-orange-50" : "bg-white"
+                            } ${!willImport ? "opacity-50" : ""}`}
+                          >
+                            <td className="px-3 py-2 text-gray-700">{item.category}</td>
+                            <td className="px-3 py-2 text-gray-700">{item.description}</td>
+                            <td className="px-3 py-2 text-right text-gray-700">
+                              ${item.estimatedCost.toLocaleString()}
+                            </td>
+                            <td className="px-3 py-2 text-right text-gray-700">
+                              ${item.actualCost.toLocaleString()}
+                            </td>
+                            <td className="px-3 py-2 text-center">
+                              {isDuplicate ? (
+                                <span className="px-2 py-1 bg-orange-100 text-orange-700 text-xs rounded-full font-semibold">
+                                  Duplicate
+                                </span>
+                              ) : (
+                                <span className="px-2 py-1 bg-green-100 text-green-700 text-xs rounded-full font-semibold">
+                                  New
+                                </span>
+                              )}
+                            </td>
+                          </tr>
+                        )
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+
+            <div className="p-6 border-t bg-gray-50 flex justify-end gap-3">
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setShowImportDialog(false)
+                  setImportPreviewData([])
+                  setImportDuplicates([])
+                }}
+              >
+                Cancel
+              </Button>
+              <Button onClick={commitImport} className="bg-cyan-600 hover:bg-cyan-700 text-white">
+                Import {importStrategy === "skip" ? importPreviewData.length - importDuplicates.length : importPreviewData.length} Items
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

@@ -31,20 +31,20 @@
   - [X] Add optional visual indicators (progress bars or badges) for variance thresholds
   - [X] Include project-wide totals that sum across phases
 
-- [ ] Provide filtering, search, and collapse/expand controls
-  - [ ] Add a search input to filter rows by description or vendor
-  - [ ] Implement phase-level and global collapse/expand toggles
-  - [ ] Remember user-expanded state between sessions (local storage or Supabase user prefs)
-  - [ ] Offer quick filters (e.g., show phases with over-budget variance)
+- [X] Provide filtering, search, and collapse/expand controls
+  - [X] Add a search input to filter rows by description or vendor
+  - [X] Implement phase-level and global collapse/expand toggles
+  - [X] Remember user-expanded state between sessions (local storage or Supabase user prefs)
+  - [X] Offer quick filters (e.g., show phases with over-budget variance)
 
-- [ ] Add validation cues for data entry
-  - [ ] Enforce numeric formatting on currency inputs with masking or validation rules
-  - [ ] Flag negative or non-numeric values with inline error states
-  - [ ] Highlight variance overruns (actual > estimated) with color cues
-  - [ ] Prevent saving invalid rows until errors are resolved
+- [X] Add validation cues for data entry
+  - [X] Enforce numeric formatting on currency inputs with masking or validation rules
+  - [X] Flag negative or non-numeric values with inline error states
+  - [X] Highlight variance overruns (actual > estimated) with color cues
+  - [X] Prevent saving invalid rows until errors are resolved
 
-- [ ] Implement import/export functionality
-  - [ ] Define a CSV/JSON schema matching the budget data model
-  - [ ] Build an export action to download the current budget (respecting filters)
-  - [ ] Add an import workflow with preview + validation before committing data
-  - [ ] Handle duplicate detection and merge strategies during import
+- [X] Implement import/export functionality
+  - [X] Define a CSV/JSON schema matching the budget data model
+  - [X] Build an export action to download the current budget (respecting filters)
+  - [X] Add an import workflow with preview + validation before committing data
+  - [X] Handle duplicate detection and merge strategies during import
