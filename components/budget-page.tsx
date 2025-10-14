@@ -73,46 +73,59 @@ type BudgetPageProps = {
   constructionMethod?: string
 }
 
+// Foundation item mappings by type
+const foundationItemsByType: Record<string, number[]> = {
+  'slab-on-grade': [0, 52, 59, 66, 55, 141, 138], // All Inclusive, Footings, Sub-Slab Vapor Barrier, Slab insulation, Slabs, Concrete pump, Erosion control
+  'crawlspace': [0, 52, 53, 56, 57, 58, 60, 61, 62, 26, 65, 64, 67, 68, 138], // Full foundation with crawlspace items
+  'full-basement': [0, 52, 53, 56, 57, 58, 63, 60, 26, 65, 64, 67, 68, 138], // Full foundation with basement windows, sump pump
+  'partial-basement': [0, 52, 53, 56, 57, 58, 63, 60, 61, 62, 26, 65, 64, 67, 68, 138], // Mix of basement and crawlspace
+  'pier': [0, 52, 54, 57, 138], // All Inclusive, Footings, Piers, Anchor bolts, Erosion control
+  'pier-and-beam': [0, 52, 54, 57, 61, 62, 138], // Piers + crawlspace vents/vapor barrier
+}
+
 const buildInitialBudgetData = (
   alignment: BudgetPhaseAlignmentFile,
   constructionMethod: string,
+  foundationType?: string,
 ): { seed: BudgetItem[]; phaseIdByTitle: Map<string, string>; phaseTitleById: Map<string, string> } => {
   const phases = alignment.constructionMethods?.[constructionMethod]?.phases ?? []
   const sortedPhases = [...phases].sort((a, b) => a.order - b.order)
   const budgetItems = alignment.budgetItems ?? []
-  const phaseTitleByIndex = new Map<number, string>()
-  const phaseIdByIndex = new Map<number, string>()
   const phaseIdByTitle = new Map<string, string>()
   const phaseTitleById = new Map<string, string>()
 
+  // Create mapping of phase titles to phase IDs
   sortedPhases.forEach((phase) => {
     phaseIdByTitle.set(phase.title, phase.phaseId)
     phaseTitleById.set(phase.phaseId, phase.title)
-    phase.budgetItems.forEach((budgetIndex) => {
-      if (budgetIndex < 0 || budgetIndex >= budgetItems.length) {
-        return
-      }
-
-      if (!phaseTitleByIndex.has(budgetIndex)) {
-        phaseTitleByIndex.set(budgetIndex, phase.title)
-        phaseIdByIndex.set(budgetIndex, phase.phaseId)
-      }
-    })
   })
 
   const fallbackPhase = sortedPhases[0]
   const fallbackCategory = fallbackPhase?.title ?? "Uncategorized"
   const fallbackPhaseId = fallbackPhase?.phaseId ?? "uncategorized"
 
-  const seed = budgetItems.map((description, index) => {
-    const category = phaseTitleByIndex.get(index) ?? fallbackCategory
-    const phaseId = phaseIdByIndex.get(index) ?? fallbackPhaseId
+  // Create budget items for each phase that references them
+  const seed: BudgetItem[] = []
+  
+  sortedPhases.forEach((phase) => {
+    // Filter foundation items based on foundation type
+    let itemsToInclude = phase.budgetItems
+    if (phase.phaseId === 'foundation' && foundationType && foundationItemsByType[foundationType]) {
+      const allowedItems = foundationItemsByType[foundationType]
+      itemsToInclude = phase.budgetItems.filter(idx => allowedItems.includes(idx))
+    }
+    
+    itemsToInclude.forEach((budgetIndex) => {
+      if (budgetIndex < 0 || budgetIndex >= budgetItems.length) {
+        return
+      }
 
-    return {
-      id: `${index + 1}`,
+      const description = budgetItems[budgetIndex]
+      seed.push({
+        id: `${phase.phaseId}-${budgetIndex}`,
       projectId: undefined,
-      phaseId,
-      category,
+        phaseId: phase.phaseId,
+        category: phase.title,
       description,
       materials: 0,
       labor: 0,
@@ -122,10 +135,12 @@ const buildInitialBudgetData = (
       currentPaid: 0,
       due: 0,
       variance: 0,
-      sortOrder: index,
+        sortOrder: budgetIndex,
       isCustom: false,
-    }
   })
+    })
+  })
+
   return { seed, phaseIdByTitle, phaseTitleById }
 }
 
@@ -141,7 +156,9 @@ const mergeBudgetItems = (
 
   const storedMap = new Map<string, BudgetItem>()
   stored.forEach((item) => {
-    storedMap.set(`${item.phaseId}::${item.description.toLowerCase()}`, item)
+    // Handle both old format (numeric ID) and new format (phaseId-budgetIndex)
+    const key = `${item.phaseId}::${item.description.toLowerCase()}`
+    storedMap.set(key, item)
   })
 
   const mergedSeeded = seeded.map((item) => {
@@ -155,6 +172,8 @@ const mergeBudgetItems = (
     return {
       ...item,
       ...storedItem,
+      // Keep the new ID format but preserve stored data
+      id: storedItem.id,
       category: item.category,
       sortOrder: storedItem.sortOrder ?? item.sortOrder,
     }
@@ -204,6 +223,7 @@ export function BudgetPage({ projectId, constructionMethod }: BudgetPageProps) {
   const [importPreviewData, setImportPreviewData] = useState<BudgetItem[]>([])
   const [importDuplicates, setImportDuplicates] = useState<string[]>([])
   const [importStrategy, setImportStrategy] = useState<"skip" | "replace" | "merge">("skip")
+  const [foundationType, setFoundationType] = useState<string | undefined>(undefined)
   const budgetAlignment = budgetPhaseAlignment as BudgetPhaseAlignmentFile
   const availableMethods = useMemo(
     () => Object.keys(budgetAlignment.constructionMethods ?? {}),
@@ -225,7 +245,7 @@ export function BudgetPage({ projectId, constructionMethod }: BudgetPageProps) {
     return Array.from(new Set([...titles, ...missing]))
   }, [budgetAlignment, selectedMethod])
 
-  const phaseMaps = useMemo(() => buildInitialBudgetData(budgetAlignment, selectedMethod), [budgetAlignment, selectedMethod])
+  const phaseMaps = useMemo(() => buildInitialBudgetData(budgetAlignment, selectedMethod, foundationType), [budgetAlignment, selectedMethod, foundationType])
   const [budgetData, setBudgetData] = useState<BudgetItem[]>(() => phaseMaps.seed.map((item) => ({ ...item, projectId })))
   const [isLoadingBudget, setIsLoadingBudget] = useState(false)
   const [budgetError, setBudgetError] = useState<string | null>(null)
@@ -234,9 +254,9 @@ export function BudgetPage({ projectId, constructionMethod }: BudgetPageProps) {
   const debounceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const isMountedRef = useRef(true)
   const budgetDataRef = useRef<BudgetItem[]>([])
-
+ 
   // Keep budgetDataRef in sync with budgetData
-  useEffect(() => {
+   useEffect(() => {
     budgetDataRef.current = budgetData
   }, [budgetData])
 
@@ -377,7 +397,7 @@ export function BudgetPage({ projectId, constructionMethod }: BudgetPageProps) {
 
         if (isMountedRef.current) {
           // Only update the ID if it changed (temp -> UUID), but preserve local state
-          setBudgetData((prev) =>
+        setBudgetData((prev) =>
             prev.map((existing) => {
               if (existing.id === item.id || existing.id === savedItem.id) {
                 // If the ID changed (temp to UUID), update it but keep local values
@@ -407,11 +427,11 @@ export function BudgetPage({ projectId, constructionMethod }: BudgetPageProps) {
         console.error("Save failed for item:", item.id, error)
         if (isMountedRef.current) {
           setBudgetError("Unable to save budget item. Please retry.")
-          setPendingSaves((prev) => {
-            const next = new Set(prev)
-            next.delete(item.id)
-            return next
-          })
+        setPendingSaves((prev) => {
+          const next = new Set(prev)
+          next.delete(item.id)
+          return next
+        })
         }
         saveQueueRef.current.delete(item.id)
         throw error
@@ -490,6 +510,35 @@ export function BudgetPage({ projectId, constructionMethod }: BudgetPageProps) {
       setIsLoadingBudget(false)
     }
   }, [projectId, supabase, phaseMaps])
+
+  // Fetch foundation type from project
+  useEffect(() => {
+    async function fetchFoundationType() {
+      if (!projectId) {
+        setFoundationType(undefined)
+        return
+      }
+
+      try {
+        const { data, error } = await supabase
+          .from('projects')
+          .select('foundation_type')
+          .eq('id', projectId)
+          .single()
+
+        if (error) {
+          console.error('Error fetching foundation type:', error)
+          return
+        }
+
+        setFoundationType(data?.foundation_type || undefined)
+      } catch (error) {
+        console.error('Error fetching foundation type:', error)
+      }
+    }
+
+    void fetchFoundationType()
+  }, [projectId, supabase])
 
   // Load budget data on mount and when projectId or construction method changes
   useEffect(() => {
@@ -1174,7 +1223,7 @@ export function BudgetPage({ projectId, constructionMethod }: BudgetPageProps) {
             {/* Estimated - col 4-5 */}
             <div className="col-span-2 text-gray-700 text-base text-right">
               <span className="font-semibold">Est:</span> ${categoryEstimated.toLocaleString()}
-            </div>
+          </div>
             
             {/* Actual - col 6-7 */}
             <div className="col-span-2 text-gray-700 text-base text-right">
@@ -1558,7 +1607,7 @@ export function BudgetPage({ projectId, constructionMethod }: BudgetPageProps) {
         {budgetError && (
           <div className="mb-3 rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-700">
             {budgetError}
-          </div>
+      </div>
         )}
         {filteredCategories.length > 0 ? (
           filteredCategories.map((category) => renderCategorySection(category))
