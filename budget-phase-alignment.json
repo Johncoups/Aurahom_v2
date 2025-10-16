@@ -162,7 +162,8 @@
     "Formwork & Screeds",
     "Gravel Base / Compaction for Slabs",
     "Steel Reinforcing / Wire Mesh for Slabs",
-    "Concrete Finishing & Sealing"
+    "Concrete Finishing & Sealing",
+    "In-floor heating"
   ],
   "constructionMethods": {
     "traditional-frame": {
@@ -200,7 +201,7 @@
           "phaseId": "under-slab-services",
           "title": "Under‑Slab Services",
           "duration": "1-2 weeks",
-          "budgetItems": [0, 139, 59, 140, 66, 60]
+          "budgetItems": [0, 139, 59, 140, 66, 87, 163, 60]
         },
         {
           "order": 5,
@@ -221,28 +222,28 @@
           "phaseId": "roofing",
           "title": "Roofing",
           "duration": "2-4 weeks",
-          "budgetItems": [0, 79, 80, 81, 82, 83, 84, 85, 86]
+          "budgetItems": [0, 79, 80, 82, 81, 83, 86, 84, 85]
         },
         {
           "order": 8,
           "phaseId": "exterior",
           "title": "Exterior Finishes",
           "duration": "3-5 weeks",
-          "budgetItems": [0, 111, 112, 113, 114, 115, 116, 117, 118, 119, 120, 122, 123, 126, 142]
+          "budgetItems": [0, 111, 112, 113, 114, 115, 116, 117, 118, 119, 126, 122, 123, 142, 120]
         },
         {
           "order": 9,
           "phaseId": "plumbing-rough",
           "title": "Plumbing Rough-In",
           "duration": "2-4 weeks",
-          "budgetItems": [0, 87, 88, 89, 90, 91, 142]
+          "budgetItems": [0, 88, 89, 90, 91]
         },
         {
           "order": 10,
           "phaseId": "electrical-rough",
           "title": "Electrical Rough-In",
           "duration": "2-4 weeks",
-          "budgetItems": [0, 95, 96, 97, 98, 99, 100, 144, 145]
+          "budgetItems": [0, 95, 96, 97, 144, 99, 98, 100, 145]
         },
         {
           "order": 11,
@@ -344,14 +345,14 @@
           "phaseId": "under-slab-services",
           "title": "Under‑Slab Services",
           "duration": "1-2 weeks",
-          "budgetItems": [0, 139, 59, 140, 66, 60]
+          "budgetItems": [0, 139, 59, 140, 66, 87, 163, 60]
         },
         {
           "order": 5,
           "phaseId": "rough-framing",
           "title": "Post-Frame Shell & Framing",
           "duration": "4-8 weeks",
-          "budgetItems": [0, 151, 76, 77, 71, 73, 72, 74, 75]
+          "budgetItems": [0, 151, 70, 71, 72, 73, 111, 112, 74, 75, 76, 77]
         },
         {
           "order": 6,
@@ -365,28 +366,28 @@
           "phaseId": "roofing",
           "title": "Roofing",
           "duration": "2-4 weeks",
-          "budgetItems": [0, 79, 80, 81, 82, 83, 84, 85, 86]
+          "budgetItems": [0, 79, 80, 82, 81, 83, 86, 84, 85]
         },
         {
           "order": 8,
           "phaseId": "exterior",
           "title": "Exterior Finishes",
           "duration": "3-5 weeks",
-          "budgetItems": [0, 111, 112, 113, 114, 115, 116, 117, 118, 119, 120, 122, 123, 126, 142]
+          "budgetItems": [0, 113, 114, 115, 116, 117, 118, 119, 126, 122, 123, 142, 120]
         },
         {
           "order": 9,
           "phaseId": "plumbing-rough",
           "title": "Plumbing Rough-In",
           "duration": "2-4 weeks",
-          "budgetItems": [0, 87, 88, 89, 90, 91, 142]
+          "budgetItems": [0, 88, 89, 90, 91]
         },
         {
           "order": 10,
           "phaseId": "electrical-rough",
           "title": "Electrical Rough-In",
           "duration": "2-4 weeks",
-          "budgetItems": [0, 95, 96, 97, 98, 99, 100, 144, 145]
+          "budgetItems": [0, 95, 96, 97, 144, 99, 98, 100, 145]
         },
         {
           "order": 11,
@@ -481,14 +482,14 @@
           "phaseId": "foundation",
           "title": "ICF Foundation",
           "duration": "3-6 weeks",
-          "budgetItems": [0, 52, 152, 56, 57, 153, 141, 59, 60, 61, 62, 66, 55, 26, 65, 64, 67, 68, 138]
+          "budgetItems": [0, 52, 152, 56, 141, 153, 57, 59, 66, 55, 26, 65, 64, 67, 68, 60, 61, 62, 138]
         },
         {
           "order": 4,
           "phaseId": "under-slab-services",
           "title": "Under‑Slab Services",
           "duration": "1-2 weeks",
-          "budgetItems": [0, 139, 59, 140, 66, 60]
+          "budgetItems": [0, 139, 59, 140, 66, 87, 163, 60]
         },
         {
           "order": 5,
@@ -509,28 +510,28 @@
           "phaseId": "roofing",
           "title": "Roofing",
           "duration": "2-4 weeks",
-          "budgetItems": [0, 79, 80, 81, 82, 83, 84, 85, 86]
+          "budgetItems": [0, 79, 80, 82, 81, 83, 86, 84, 85]
         },
         {
           "order": 8,
           "phaseId": "exterior",
           "title": "Exterior Finishes",
           "duration": "3-5 weeks",
-          "budgetItems": [0, 111, 112, 113, 114, 115, 116, 117, 118, 119, 120, 122, 123, 126, 142]
+          "budgetItems": [0, 111, 112, 113, 114, 115, 116, 117, 118, 119, 126, 122, 123, 142, 120]
         },
         {
           "order": 9,
           "phaseId": "plumbing-rough",
           "title": "Plumbing Rough-In",
           "duration": "2-4 weeks",
-          "budgetItems": [0, 87, 88, 89, 90, 91, 142]
+          "budgetItems": [0, 88, 89, 90, 91]
         },
         {
           "order": 10,
           "phaseId": "electrical-rough",
           "title": "Electrical Rough-In",
           "duration": "2-4 weeks",
-          "budgetItems": [0, 95, 96, 97, 98, 99, 100, 144, 145]
+          "budgetItems": [0, 95, 96, 97, 144, 99, 98, 100, 145]
         },
         {
           "order": 11,
@@ -632,14 +633,14 @@
           "phaseId": "under-slab-services",
           "title": "Under‑Slab Services",
           "duration": "1-2 weeks",
-          "budgetItems": [0, 139, 59, 140, 66, 60]
+          "budgetItems": [0, 139, 59, 140, 66, 87, 163, 60]
         },
         {
           "order": 5,
           "phaseId": "rough-framing",
           "title": "SIP Shell & Framing",
           "duration": "4-8 weeks",
-          "budgetItems": [0, 69, 70, 71, 72, 73, 74, 75, 76, 77, 155, 156]
+          "budgetItems": [0, 154, 155, 69, 70, 71, 74, 76, 77]
         },
         {
           "order": 6,
@@ -653,28 +654,28 @@
           "phaseId": "roofing",
           "title": "Roofing",
           "duration": "2-4 weeks",
-          "budgetItems": [0, 79, 80, 81, 82, 83, 84, 85, 86]
+          "budgetItems": [0, 79, 80, 82, 81, 83, 86, 84, 85]
         },
         {
           "order": 8,
           "phaseId": "exterior",
           "title": "Exterior Finishes",
           "duration": "3-5 weeks",
-          "budgetItems": [0, 111, 112, 113, 114, 115, 116, 117, 118, 119, 120, 122, 123, 126, 142]
+          "budgetItems": [0, 111, 112, 113, 114, 115, 116, 117, 118, 119, 126, 122, 123, 142, 120]
         },
         {
           "order": 9,
           "phaseId": "plumbing-rough",
           "title": "Plumbing Rough-In",
           "duration": "2-4 weeks",
-          "budgetItems": [0, 87, 88, 89, 90, 91, 142]
+          "budgetItems": [0, 88, 89, 90, 91]
         },
         {
           "order": 10,
           "phaseId": "electrical-rough",
           "title": "Electrical Rough-In",
           "duration": "2-4 weeks",
-          "budgetItems": [0, 95, 96, 97, 98, 99, 100, 144, 145]
+          "budgetItems": [0, 95, 96, 97, 144, 99, 98, 100, 145]
         },
         {
           "order": 11,
@@ -776,7 +777,7 @@
           "phaseId": "under-slab-services",
           "title": "Under‑Slab Services",
           "duration": "1-2 weeks",
-          "budgetItems": [0, 139, 59, 140, 66, 60]
+          "budgetItems": [0, 139, 59, 140, 66, 87, 163, 60]
         },
         {
           "order": 5,
@@ -797,28 +798,28 @@
           "phaseId": "roofing",
           "title": "Roofing",
           "duration": "2-4 weeks",
-          "budgetItems": [0, 79, 80, 81, 82, 83, 84, 85, 86]
+          "budgetItems": [0, 79, 80, 82, 81, 83, 86, 84, 85]
         },
         {
           "order": 8,
           "phaseId": "exterior",
           "title": "Exterior Finishes",
           "duration": "3-5 weeks",
-          "budgetItems": [0, 111, 112, 113, 114, 115, 116, 117, 118, 119, 120, 122, 123, 126, 142]
+          "budgetItems": [0, 111, 112, 113, 114, 115, 116, 117, 118, 119, 126, 122, 123, 142, 120]
         },
         {
           "order": 9,
           "phaseId": "plumbing-rough",
           "title": "Plumbing Rough-In",
           "duration": "2-4 weeks",
-          "budgetItems": [0, 87, 88, 89, 90, 91, 142]
+          "budgetItems": [0, 88, 89, 90, 91]
         },
         {
           "order": 10,
           "phaseId": "electrical-rough",
           "title": "Electrical Rough-In",
           "duration": "2-4 weeks",
-          "budgetItems": [0, 95, 96, 97, 98, 99, 100, 144, 145]
+          "budgetItems": [0, 95, 96, 97, 144, 99, 98, 100, 145]
         },
         {
           "order": 11,
