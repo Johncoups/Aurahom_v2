@@ -1,0 +1,980 @@
+[
+    {
+      "constraint_name": "2200_111050_1_not_null",
+      "constraint_type": "CHECK",
+      "column_name": null,
+      "check_clause": "id IS NOT NULL"
+    },
+    {
+      "constraint_name": "2200_111050_2_not_null",
+      "constraint_type": "CHECK",
+      "column_name": null,
+      "check_clause": "name IS NOT NULL"
+    },
+    {
+      "constraint_name": "2200_111050_3_not_null",
+      "constraint_type": "CHECK",
+      "column_name": null,
+      "check_clause": "display_order IS NOT NULL"
+    },
+    {
+      "constraint_name": "2200_111064_1_not_null",
+      "constraint_type": "CHECK",
+      "column_name": null,
+      "check_clause": "id IS NOT NULL"
+    },
+    {
+      "constraint_name": "2200_111064_2_not_null",
+      "constraint_type": "CHECK",
+      "column_name": null,
+      "check_clause": "user_id IS NOT NULL"
+    },
+    {
+      "constraint_name": "2200_111064_4_not_null",
+      "constraint_type": "CHECK",
+      "column_name": null,
+      "check_clause": "name IS NOT NULL"
+    },
+    {
+      "constraint_name": "2200_111097_10_not_null",
+      "constraint_type": "CHECK",
+      "column_name": null,
+      "check_clause": "request_method IS NOT NULL"
+    },
+    {
+      "constraint_name": "2200_111097_1_not_null",
+      "constraint_type": "CHECK",
+      "column_name": null,
+      "check_clause": "id IS NOT NULL"
+    },
+    {
+      "constraint_name": "2200_111097_2_not_null",
+      "constraint_type": "CHECK",
+      "column_name": null,
+      "check_clause": "project_id IS NOT NULL"
+    },
+    {
+      "constraint_name": "2200_111097_3_not_null",
+      "constraint_type": "CHECK",
+      "column_name": null,
+      "check_clause": "user_id IS NOT NULL"
+    },
+    {
+      "constraint_name": "2200_111097_4_not_null",
+      "constraint_type": "CHECK",
+      "column_name": null,
+      "check_clause": "vendor_id IS NOT NULL"
+    },
+    {
+      "constraint_name": "2200_111097_6_not_null",
+      "constraint_type": "CHECK",
+      "column_name": null,
+      "check_clause": "phase_ids IS NOT NULL"
+    },
+    {
+      "constraint_name": "2200_111097_9_not_null",
+      "constraint_type": "CHECK",
+      "column_name": null,
+      "check_clause": "status IS NOT NULL"
+    },
+    {
+      "constraint_name": "2200_111134_19_not_null",
+      "constraint_type": "CHECK",
+      "column_name": null,
+      "check_clause": "status IS NOT NULL"
+    },
+    {
+      "constraint_name": "2200_111134_1_not_null",
+      "constraint_type": "CHECK",
+      "column_name": null,
+      "check_clause": "id IS NOT NULL"
+    },
+    {
+      "constraint_name": "2200_111134_2_not_null",
+      "constraint_type": "CHECK",
+      "column_name": null,
+      "check_clause": "bid_request_id IS NOT NULL"
+    },
+    {
+      "constraint_name": "2200_111134_3_not_null",
+      "constraint_type": "CHECK",
+      "column_name": null,
+      "check_clause": "vendor_id IS NOT NULL"
+    },
+    {
+      "constraint_name": "2200_111134_4_not_null",
+      "constraint_type": "CHECK",
+      "column_name": null,
+      "check_clause": "project_id IS NOT NULL"
+    },
+    {
+      "constraint_name": "2200_111134_5_not_null",
+      "constraint_type": "CHECK",
+      "column_name": null,
+      "check_clause": "total_amount IS NOT NULL"
+    },
+    {
+      "constraint_name": "2200_111176_11_not_null",
+      "constraint_type": "CHECK",
+      "column_name": null,
+      "check_clause": "subject IS NOT NULL"
+    },
+    {
+      "constraint_name": "2200_111176_14_not_null",
+      "constraint_type": "CHECK",
+      "column_name": null,
+      "check_clause": "send_method IS NOT NULL"
+    },
+    {
+      "constraint_name": "2200_111176_19_not_null",
+      "constraint_type": "CHECK",
+      "column_name": null,
+      "check_clause": "status IS NOT NULL"
+    },
+    {
+      "constraint_name": "2200_111176_1_not_null",
+      "constraint_type": "CHECK",
+      "column_name": null,
+      "check_clause": "id IS NOT NULL"
+    },
+    {
+      "constraint_name": "2200_111176_2_not_null",
+      "constraint_type": "CHECK",
+      "column_name": null,
+      "check_clause": "bid_request_id IS NOT NULL"
+    },
+    {
+      "constraint_name": "2200_111176_3_not_null",
+      "constraint_type": "CHECK",
+      "column_name": null,
+      "check_clause": "project_id IS NOT NULL"
+    },
+    {
+      "constraint_name": "2200_111176_4_not_null",
+      "constraint_type": "CHECK",
+      "column_name": null,
+      "check_clause": "user_id IS NOT NULL"
+    },
+    {
+      "constraint_name": "2200_111176_6_not_null",
+      "constraint_type": "CHECK",
+      "column_name": null,
+      "check_clause": "email_type IS NOT NULL"
+    },
+    {
+      "constraint_name": "2200_111176_7_not_null",
+      "constraint_type": "CHECK",
+      "column_name": null,
+      "check_clause": "from_email IS NOT NULL"
+    },
+    {
+      "constraint_name": "2200_111176_8_not_null",
+      "constraint_type": "CHECK",
+      "column_name": null,
+      "check_clause": "to_email IS NOT NULL"
+    },
+    {
+      "constraint_name": "2200_111217_1_not_null",
+      "constraint_type": "CHECK",
+      "column_name": null,
+      "check_clause": "id IS NOT NULL"
+    },
+    {
+      "constraint_name": "2200_111217_2_not_null",
+      "constraint_type": "CHECK",
+      "column_name": null,
+      "check_clause": "user_id IS NOT NULL"
+    },
+    {
+      "constraint_name": "2200_111217_3_not_null",
+      "constraint_type": "CHECK",
+      "column_name": null,
+      "check_clause": "provider IS NOT NULL"
+    },
+    {
+      "constraint_name": "2200_111217_4_not_null",
+      "constraint_type": "CHECK",
+      "column_name": null,
+      "check_clause": "email_address IS NOT NULL"
+    },
+    {
+      "constraint_name": "2200_111239_1_not_null",
+      "constraint_type": "CHECK",
+      "column_name": null,
+      "check_clause": "id IS NOT NULL"
+    },
+    {
+      "constraint_name": "2200_111239_2_not_null",
+      "constraint_type": "CHECK",
+      "column_name": null,
+      "check_clause": "vendor_id IS NOT NULL"
+    },
+    {
+      "constraint_name": "2200_111239_4_not_null",
+      "constraint_type": "CHECK",
+      "column_name": null,
+      "check_clause": "user_id IS NOT NULL"
+    },
+    {
+      "constraint_name": "2200_111279_1_not_null",
+      "constraint_type": "CHECK",
+      "column_name": null,
+      "check_clause": "id IS NOT NULL"
+    },
+    {
+      "constraint_name": "2200_111279_2_not_null",
+      "constraint_type": "CHECK",
+      "column_name": null,
+      "check_clause": "bid_id IS NOT NULL"
+    },
+    {
+      "constraint_name": "2200_111279_4_not_null",
+      "constraint_type": "CHECK",
+      "column_name": null,
+      "check_clause": "description IS NOT NULL"
+    },
+    {
+      "constraint_name": "2200_111279_5_not_null",
+      "constraint_type": "CHECK",
+      "column_name": null,
+      "check_clause": "phase_id IS NOT NULL"
+    },
+    {
+      "constraint_name": "2200_111279_8_not_null",
+      "constraint_type": "CHECK",
+      "column_name": null,
+      "check_clause": "total_cost IS NOT NULL"
+    },
+    {
+      "constraint_name": "2200_111302_1_not_null",
+      "constraint_type": "CHECK",
+      "column_name": null,
+      "check_clause": "id IS NOT NULL"
+    },
+    {
+      "constraint_name": "2200_111302_4_not_null",
+      "constraint_type": "CHECK",
+      "column_name": null,
+      "check_clause": "name IS NOT NULL"
+    },
+    {
+      "constraint_name": "2200_111302_5_not_null",
+      "constraint_type": "CHECK",
+      "column_name": null,
+      "check_clause": "subject IS NOT NULL"
+    },
+    {
+      "constraint_name": "2200_111302_6_not_null",
+      "constraint_type": "CHECK",
+      "column_name": null,
+      "check_clause": "body_text IS NOT NULL"
+    },
+    {
+      "constraint_name": "2200_22110_1_not_null",
+      "constraint_type": "CHECK",
+      "column_name": null,
+      "check_clause": "id IS NOT NULL"
+    },
+    {
+      "constraint_name": "2200_22110_2_not_null",
+      "constraint_type": "CHECK",
+      "column_name": null,
+      "check_clause": "email IS NOT NULL"
+    },
+    {
+      "constraint_name": "2200_28904_1_not_null",
+      "constraint_type": "CHECK",
+      "column_name": null,
+      "check_clause": "id IS NOT NULL"
+    },
+    {
+      "constraint_name": "2200_28904_3_not_null",
+      "constraint_type": "CHECK",
+      "column_name": null,
+      "check_clause": "name IS NOT NULL"
+    },
+    {
+      "constraint_name": "2200_28904_4_not_null",
+      "constraint_type": "CHECK",
+      "column_name": null,
+      "check_clause": "city_state IS NOT NULL"
+    },
+    {
+      "constraint_name": "2200_28904_6_not_null",
+      "constraint_type": "CHECK",
+      "column_name": null,
+      "check_clause": "house_size IS NOT NULL"
+    },
+    {
+      "constraint_name": "2200_28904_7_not_null",
+      "constraint_type": "CHECK",
+      "column_name": null,
+      "check_clause": "foundation_type IS NOT NULL"
+    },
+    {
+      "constraint_name": "2200_28904_8_not_null",
+      "constraint_type": "CHECK",
+      "column_name": null,
+      "check_clause": "number_of_stories IS NOT NULL"
+    },
+    {
+      "constraint_name": "2200_28942_10_not_null",
+      "constraint_type": "CHECK",
+      "column_name": null,
+      "check_clause": "diy_phase_ids IS NOT NULL"
+    },
+    {
+      "constraint_name": "2200_28942_1_not_null",
+      "constraint_type": "CHECK",
+      "column_name": null,
+      "check_clause": "id IS NOT NULL"
+    },
+    {
+      "constraint_name": "2200_28942_4_not_null",
+      "constraint_type": "CHECK",
+      "column_name": null,
+      "check_clause": "role IS NOT NULL"
+    },
+    {
+      "constraint_name": "2200_28942_5_not_null",
+      "constraint_type": "CHECK",
+      "column_name": null,
+      "check_clause": "experience IS NOT NULL"
+    },
+    {
+      "constraint_name": "2200_28942_6_not_null",
+      "constraint_type": "CHECK",
+      "column_name": null,
+      "check_clause": "subcontractor_help IS NOT NULL"
+    },
+    {
+      "constraint_name": "2200_28942_7_not_null",
+      "constraint_type": "CHECK",
+      "column_name": null,
+      "check_clause": "construction_method IS NOT NULL"
+    },
+    {
+      "constraint_name": "2200_28942_8_not_null",
+      "constraint_type": "CHECK",
+      "column_name": null,
+      "check_clause": "weekly_hourly_commitment IS NOT NULL"
+    },
+    {
+      "constraint_name": "2200_29032_1_not_null",
+      "constraint_type": "CHECK",
+      "column_name": null,
+      "check_clause": "id IS NOT NULL"
+    },
+    {
+      "constraint_name": "2200_29032_3_not_null",
+      "constraint_type": "CHECK",
+      "column_name": null,
+      "check_clause": "phase_id IS NOT NULL"
+    },
+    {
+      "constraint_name": "2200_29032_4_not_null",
+      "constraint_type": "CHECK",
+      "column_name": null,
+      "check_clause": "title IS NOT NULL"
+    },
+    {
+      "constraint_name": "2200_29032_5_not_null",
+      "constraint_type": "CHECK",
+      "column_name": null,
+      "check_clause": "detail_level IS NOT NULL"
+    },
+    {
+      "constraint_name": "2200_29068_1_not_null",
+      "constraint_type": "CHECK",
+      "column_name": null,
+      "check_clause": "id IS NOT NULL"
+    },
+    {
+      "constraint_name": "2200_29068_4_not_null",
+      "constraint_type": "CHECK",
+      "column_name": null,
+      "check_clause": "status IS NOT NULL"
+    },
+    {
+      "constraint_name": "2200_29091_1_not_null",
+      "constraint_type": "CHECK",
+      "column_name": null,
+      "check_clause": "id IS NOT NULL"
+    },
+    {
+      "constraint_name": "2200_29091_3_not_null",
+      "constraint_type": "CHECK",
+      "column_name": null,
+      "check_clause": "generation_type IS NOT NULL"
+    },
+    {
+      "constraint_name": "2200_29091_4_not_null",
+      "constraint_type": "CHECK",
+      "column_name": null,
+      "check_clause": "raw_api_response IS NOT NULL"
+    },
+    {
+      "constraint_name": "2200_29128_1_not_null",
+      "constraint_type": "CHECK",
+      "column_name": null,
+      "check_clause": "id IS NOT NULL"
+    },
+    {
+      "constraint_name": "2200_29128_4_not_null",
+      "constraint_type": "CHECK",
+      "column_name": null,
+      "check_clause": "raw_api_response IS NOT NULL"
+    },
+    {
+      "constraint_name": "2200_29128_9_not_null",
+      "constraint_type": "CHECK",
+      "column_name": null,
+      "check_clause": "friendly_name IS NOT NULL"
+    },
+    {
+      "constraint_name": "2200_30276_1_not_null",
+      "constraint_type": "CHECK",
+      "column_name": null,
+      "check_clause": "id IS NOT NULL"
+    },
+    {
+      "constraint_name": "2200_30276_2_not_null",
+      "constraint_type": "CHECK",
+      "column_name": null,
+      "check_clause": "version IS NOT NULL"
+    },
+    {
+      "constraint_name": "2200_30276_3_not_null",
+      "constraint_type": "CHECK",
+      "column_name": null,
+      "check_clause": "phases IS NOT NULL"
+    },
+    {
+      "constraint_name": "2200_81828_10_not_null",
+      "constraint_type": "CHECK",
+      "column_name": null,
+      "check_clause": "current_paid IS NOT NULL"
+    },
+    {
+      "constraint_name": "2200_81828_11_not_null",
+      "constraint_type": "CHECK",
+      "column_name": null,
+      "check_clause": "due IS NOT NULL"
+    },
+    {
+      "constraint_name": "2200_81828_12_not_null",
+      "constraint_type": "CHECK",
+      "column_name": null,
+      "check_clause": "sort_order IS NOT NULL"
+    },
+    {
+      "constraint_name": "2200_81828_13_not_null",
+      "constraint_type": "CHECK",
+      "column_name": null,
+      "check_clause": "is_custom IS NOT NULL"
+    },
+    {
+      "constraint_name": "2200_81828_14_not_null",
+      "constraint_type": "CHECK",
+      "column_name": null,
+      "check_clause": "created_at IS NOT NULL"
+    },
+    {
+      "constraint_name": "2200_81828_15_not_null",
+      "constraint_type": "CHECK",
+      "column_name": null,
+      "check_clause": "updated_at IS NOT NULL"
+    },
+    {
+      "constraint_name": "2200_81828_1_not_null",
+      "constraint_type": "CHECK",
+      "column_name": null,
+      "check_clause": "id IS NOT NULL"
+    },
+    {
+      "constraint_name": "2200_81828_2_not_null",
+      "constraint_type": "CHECK",
+      "column_name": null,
+      "check_clause": "project_id IS NOT NULL"
+    },
+    {
+      "constraint_name": "2200_81828_3_not_null",
+      "constraint_type": "CHECK",
+      "column_name": null,
+      "check_clause": "phase_id IS NOT NULL"
+    },
+    {
+      "constraint_name": "2200_81828_4_not_null",
+      "constraint_type": "CHECK",
+      "column_name": null,
+      "check_clause": "description IS NOT NULL"
+    },
+    {
+      "constraint_name": "2200_81828_5_not_null",
+      "constraint_type": "CHECK",
+      "column_name": null,
+      "check_clause": "materials IS NOT NULL"
+    },
+    {
+      "constraint_name": "2200_81828_6_not_null",
+      "constraint_type": "CHECK",
+      "column_name": null,
+      "check_clause": "labor IS NOT NULL"
+    },
+    {
+      "constraint_name": "2200_81828_7_not_null",
+      "constraint_type": "CHECK",
+      "column_name": null,
+      "check_clause": "vendor IS NOT NULL"
+    },
+    {
+      "constraint_name": "2200_81828_8_not_null",
+      "constraint_type": "CHECK",
+      "column_name": null,
+      "check_clause": "estimated_cost IS NOT NULL"
+    },
+    {
+      "constraint_name": "2200_81828_9_not_null",
+      "constraint_type": "CHECK",
+      "column_name": null,
+      "check_clause": "actual_cost IS NOT NULL"
+    },
+    {
+      "constraint_name": "project_profiles_construction_method_check",
+      "constraint_type": "CHECK",
+      "column_name": null,
+      "check_clause": "(construction_method = ANY (ARRAY['traditional-frame'::text, 'post-frame'::text, 'icf'::text, 'sip'::text, 'modular'::text, 'other'::text]))"
+    },
+    {
+      "constraint_name": "project_profiles_experience_check",
+      "constraint_type": "CHECK",
+      "column_name": null,
+      "check_clause": "(experience = ANY (ARRAY['gc_experienced'::text, 'house_builder'::text, 'trades_familiar'::text, 'diy_permitting'::text, 'diy_maintenance'::text, 'complete_novice'::text]))"
+    },
+    {
+      "constraint_name": "project_profiles_role_check",
+      "constraint_type": "CHECK",
+      "column_name": null,
+      "check_clause": "(role = ANY (ARRAY['gc_only'::text, 'gc_plus_diy'::text, 'owner_plus_diy'::text]))"
+    },
+    {
+      "constraint_name": "project_profiles_subcontractor_help_check",
+      "constraint_type": "CHECK",
+      "column_name": null,
+      "check_clause": "(subcontractor_help = ANY (ARRAY['yes'::text, 'no'::text, 'maybe'::text]))"
+    },
+    {
+      "constraint_name": "roadmap_generations_generation_type_check",
+      "constraint_type": "CHECK",
+      "column_name": null,
+      "check_clause": "(generation_type = ANY (ARRAY['initial'::text, 'timeline_update'::text, 'phase_refinement'::text]))"
+    },
+    {
+      "constraint_name": "roadmap_phases_detail_level_check",
+      "constraint_type": "CHECK",
+      "column_name": null,
+      "check_clause": "(detail_level = ANY (ARRAY['low'::text, 'standard'::text, 'high'::text]))"
+    },
+    {
+      "constraint_name": "roadmaps_status_check",
+      "constraint_type": "CHECK",
+      "column_name": null,
+      "check_clause": "(status = ANY (ARRAY['active'::text, 'archived'::text, 'completed'::text]))"
+    },
+    {
+      "constraint_name": "vendor_reviews_communication_rating_check",
+      "constraint_type": "CHECK",
+      "column_name": null,
+      "check_clause": "((communication_rating >= 1) AND (communication_rating <= 5))"
+    },
+    {
+      "constraint_name": "vendor_reviews_overall_rating_check",
+      "constraint_type": "CHECK",
+      "column_name": null,
+      "check_clause": "((overall_rating >= 1) AND (overall_rating <= 5))"
+    },
+    {
+      "constraint_name": "vendor_reviews_price_rating_check",
+      "constraint_type": "CHECK",
+      "column_name": null,
+      "check_clause": "((price_rating >= 1) AND (price_rating <= 5))"
+    },
+    {
+      "constraint_name": "vendor_reviews_professionalism_rating_check",
+      "constraint_type": "CHECK",
+      "column_name": null,
+      "check_clause": "((professionalism_rating >= 1) AND (professionalism_rating <= 5))"
+    },
+    {
+      "constraint_name": "vendor_reviews_quality_rating_check",
+      "constraint_type": "CHECK",
+      "column_name": null,
+      "check_clause": "((quality_rating >= 1) AND (quality_rating <= 5))"
+    },
+    {
+      "constraint_name": "vendor_reviews_timeline_rating_check",
+      "constraint_type": "CHECK",
+      "column_name": null,
+      "check_clause": "((timeline_rating >= 1) AND (timeline_rating <= 5))"
+    },
+    {
+      "constraint_name": "vendors_rating_score_check",
+      "constraint_type": "CHECK",
+      "column_name": null,
+      "check_clause": "((rating_score >= (0)::numeric) AND (rating_score <= (5)::numeric))"
+    },
+    {
+      "constraint_name": "bid_items_bid_id_fkey",
+      "constraint_type": "FOREIGN KEY",
+      "column_name": "bid_id",
+      "check_clause": null
+    },
+    {
+      "constraint_name": "bid_items_budget_item_id_fkey",
+      "constraint_type": "FOREIGN KEY",
+      "column_name": "budget_item_id",
+      "check_clause": null
+    },
+    {
+      "constraint_name": "bid_requests_project_id_fkey",
+      "constraint_type": "FOREIGN KEY",
+      "column_name": "project_id",
+      "check_clause": null
+    },
+    {
+      "constraint_name": "bid_requests_trade_category_id_fkey",
+      "constraint_type": "FOREIGN KEY",
+      "column_name": "trade_category_id",
+      "check_clause": null
+    },
+    {
+      "constraint_name": "bid_requests_user_id_fkey",
+      "constraint_type": "FOREIGN KEY",
+      "column_name": "user_id",
+      "check_clause": null
+    },
+    {
+      "constraint_name": "bid_requests_vendor_id_fkey",
+      "constraint_type": "FOREIGN KEY",
+      "column_name": "vendor_id",
+      "check_clause": null
+    },
+    {
+      "constraint_name": "bids_bid_request_id_fkey",
+      "constraint_type": "FOREIGN KEY",
+      "column_name": "bid_request_id",
+      "check_clause": null
+    },
+    {
+      "constraint_name": "bids_project_id_fkey",
+      "constraint_type": "FOREIGN KEY",
+      "column_name": "project_id",
+      "check_clause": null
+    },
+    {
+      "constraint_name": "bids_reviewed_by_fkey",
+      "constraint_type": "FOREIGN KEY",
+      "column_name": "reviewed_by",
+      "check_clause": null
+    },
+    {
+      "constraint_name": "bids_vendor_id_fkey",
+      "constraint_type": "FOREIGN KEY",
+      "column_name": "vendor_id",
+      "check_clause": null
+    },
+    {
+      "constraint_name": "budget_items_project_id_fkey",
+      "constraint_type": "FOREIGN KEY",
+      "column_name": "project_id",
+      "check_clause": null
+    },
+    {
+      "constraint_name": "email_communications_bid_request_id_fkey",
+      "constraint_type": "FOREIGN KEY",
+      "column_name": "bid_request_id",
+      "check_clause": null
+    },
+    {
+      "constraint_name": "email_communications_project_id_fkey",
+      "constraint_type": "FOREIGN KEY",
+      "column_name": "project_id",
+      "check_clause": null
+    },
+    {
+      "constraint_name": "email_communications_user_id_fkey",
+      "constraint_type": "FOREIGN KEY",
+      "column_name": "user_id",
+      "check_clause": null
+    },
+    {
+      "constraint_name": "email_communications_vendor_id_fkey",
+      "constraint_type": "FOREIGN KEY",
+      "column_name": "vendor_id",
+      "check_clause": null
+    },
+    {
+      "constraint_name": "email_templates_trade_category_id_fkey",
+      "constraint_type": "FOREIGN KEY",
+      "column_name": "trade_category_id",
+      "check_clause": null
+    },
+    {
+      "constraint_name": "email_templates_user_id_fkey",
+      "constraint_type": "FOREIGN KEY",
+      "column_name": "user_id",
+      "check_clause": null
+    },
+    {
+      "constraint_name": "project_profiles_project_id_fkey",
+      "constraint_type": "FOREIGN KEY",
+      "column_name": "project_id",
+      "check_clause": null
+    },
+    {
+      "constraint_name": "project_profiles_user_id_fkey",
+      "constraint_type": "FOREIGN KEY",
+      "column_name": "user_id",
+      "check_clause": null
+    },
+    {
+      "constraint_name": "projects_user_id_fkey",
+      "constraint_type": "FOREIGN KEY",
+      "column_name": "user_id",
+      "check_clause": null
+    },
+    {
+      "constraint_name": "roadmap_data_project_id_fkey",
+      "constraint_type": "FOREIGN KEY",
+      "column_name": "project_id",
+      "check_clause": null
+    },
+    {
+      "constraint_name": "roadmap_data_user_id_fkey",
+      "constraint_type": "FOREIGN KEY",
+      "column_name": "user_id",
+      "check_clause": null
+    },
+    {
+      "constraint_name": "roadmap_generations_roadmap_id_fkey",
+      "constraint_type": "FOREIGN KEY",
+      "column_name": "roadmap_id",
+      "check_clause": null
+    },
+    {
+      "constraint_name": "roadmaps_project_id_fkey",
+      "constraint_type": "FOREIGN KEY",
+      "column_name": "project_id",
+      "check_clause": null
+    },
+    {
+      "constraint_name": "roadmaps_user_id_fkey",
+      "constraint_type": "FOREIGN KEY",
+      "column_name": "user_id",
+      "check_clause": null
+    },
+    {
+      "constraint_name": "user_email_accounts_user_id_fkey",
+      "constraint_type": "FOREIGN KEY",
+      "column_name": "user_id",
+      "check_clause": null
+    },
+    {
+      "constraint_name": "users_id_fkey",
+      "constraint_type": "FOREIGN KEY",
+      "column_name": "id",
+      "check_clause": null
+    },
+    {
+      "constraint_name": "vendor_reviews_bid_id_fkey",
+      "constraint_type": "FOREIGN KEY",
+      "column_name": "bid_id",
+      "check_clause": null
+    },
+    {
+      "constraint_name": "vendor_reviews_project_id_fkey",
+      "constraint_type": "FOREIGN KEY",
+      "column_name": "project_id",
+      "check_clause": null
+    },
+    {
+      "constraint_name": "vendor_reviews_user_id_fkey",
+      "constraint_type": "FOREIGN KEY",
+      "column_name": "user_id",
+      "check_clause": null
+    },
+    {
+      "constraint_name": "vendor_reviews_vendor_id_fkey",
+      "constraint_type": "FOREIGN KEY",
+      "column_name": "vendor_id",
+      "check_clause": null
+    },
+    {
+      "constraint_name": "vendors_trade_category_id_fkey",
+      "constraint_type": "FOREIGN KEY",
+      "column_name": "trade_category_id",
+      "check_clause": null
+    },
+    {
+      "constraint_name": "vendors_user_id_fkey",
+      "constraint_type": "FOREIGN KEY",
+      "column_name": "user_id",
+      "check_clause": null
+    },
+    {
+      "constraint_name": "baseline_construction_phases_pkey",
+      "constraint_type": "PRIMARY KEY",
+      "column_name": "id",
+      "check_clause": null
+    },
+    {
+      "constraint_name": "bid_items_pkey",
+      "constraint_type": "PRIMARY KEY",
+      "column_name": "id",
+      "check_clause": null
+    },
+    {
+      "constraint_name": "bid_requests_pkey",
+      "constraint_type": "PRIMARY KEY",
+      "column_name": "id",
+      "check_clause": null
+    },
+    {
+      "constraint_name": "bids_pkey",
+      "constraint_type": "PRIMARY KEY",
+      "column_name": "id",
+      "check_clause": null
+    },
+    {
+      "constraint_name": "budget_items_pkey",
+      "constraint_type": "PRIMARY KEY",
+      "column_name": "id",
+      "check_clause": null
+    },
+    {
+      "constraint_name": "email_communications_pkey",
+      "constraint_type": "PRIMARY KEY",
+      "column_name": "id",
+      "check_clause": null
+    },
+    {
+      "constraint_name": "email_templates_pkey",
+      "constraint_type": "PRIMARY KEY",
+      "column_name": "id",
+      "check_clause": null
+    },
+    {
+      "constraint_name": "project_profiles_pkey",
+      "constraint_type": "PRIMARY KEY",
+      "column_name": "id",
+      "check_clause": null
+    },
+    {
+      "constraint_name": "projects_pkey",
+      "constraint_type": "PRIMARY KEY",
+      "column_name": "id",
+      "check_clause": null
+    },
+    {
+      "constraint_name": "roadmap_data_pkey",
+      "constraint_type": "PRIMARY KEY",
+      "column_name": "id",
+      "check_clause": null
+    },
+    {
+      "constraint_name": "roadmap_generations_pkey",
+      "constraint_type": "PRIMARY KEY",
+      "column_name": "id",
+      "check_clause": null
+    },
+    {
+      "constraint_name": "roadmap_phases_pkey",
+      "constraint_type": "PRIMARY KEY",
+      "column_name": "id",
+      "check_clause": null
+    },
+    {
+      "constraint_name": "roadmaps_pkey",
+      "constraint_type": "PRIMARY KEY",
+      "column_name": "id",
+      "check_clause": null
+    },
+    {
+      "constraint_name": "trade_categories_pkey",
+      "constraint_type": "PRIMARY KEY",
+      "column_name": "id",
+      "check_clause": null
+    },
+    {
+      "constraint_name": "user_email_accounts_pkey",
+      "constraint_type": "PRIMARY KEY",
+      "column_name": "id",
+      "check_clause": null
+    },
+    {
+      "constraint_name": "users_pkey",
+      "constraint_type": "PRIMARY KEY",
+      "column_name": "id",
+      "check_clause": null
+    },
+    {
+      "constraint_name": "users_pkey",
+      "constraint_type": "PRIMARY KEY",
+      "column_name": "id",
+      "check_clause": null
+    },
+    {
+      "constraint_name": "vendor_reviews_pkey",
+      "constraint_type": "PRIMARY KEY",
+      "column_name": "id",
+      "check_clause": null
+    },
+    {
+      "constraint_name": "vendors_pkey",
+      "constraint_type": "PRIMARY KEY",
+      "column_name": "id",
+      "check_clause": null
+    },
+    {
+      "constraint_name": "budget_items_project_phase_description_key",
+      "constraint_type": "UNIQUE",
+      "column_name": "project_id",
+      "check_clause": null
+    },
+    {
+      "constraint_name": "budget_items_project_phase_description_key",
+      "constraint_type": "UNIQUE",
+      "column_name": "description",
+      "check_clause": null
+    },
+    {
+      "constraint_name": "budget_items_project_phase_description_key",
+      "constraint_type": "UNIQUE",
+      "column_name": "phase_id",
+      "check_clause": null
+    },
+    {
+      "constraint_name": "trade_categories_name_key",
+      "constraint_type": "UNIQUE",
+      "column_name": "name",
+      "check_clause": null
+    },
+    {
+      "constraint_name": "user_email_accounts_user_id_email_address_key",
+      "constraint_type": "UNIQUE",
+      "column_name": "user_id",
+      "check_clause": null
+    },
+    {
+      "constraint_name": "user_email_accounts_user_id_email_address_key",
+      "constraint_type": "UNIQUE",
+      "column_name": "email_address",
+      "check_clause": null
+    },
+    {
+      "constraint_name": "users_email_key",
+      "constraint_type": "UNIQUE",
+      "column_name": "email",
+      "check_clause": null
+    }
+  ]

@@ -86,9 +86,17 @@ CREATE POLICY "Users can delete budget items for their projects"
 -- (RLS already enabled)
 
 -- Select: Users can view their own roadmap data
+-- Updated to allow access via user_id OR via project ownership
+-- This handles cases where roadmap_data.user_id might be NULL but project_id exists
 CREATE POLICY "Users can view their own roadmap data"
   ON roadmap_data FOR SELECT
-  USING (auth.uid() = user_id);
+  USING (
+    auth.uid() = user_id 
+    OR 
+    project_id IN (
+      SELECT id FROM projects WHERE user_id = auth.uid()
+    )
+  );
 
 -- Insert: Users can create their own roadmap data
 CREATE POLICY "Users can create their own roadmap data"

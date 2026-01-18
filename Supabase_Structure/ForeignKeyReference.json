@@ -1,0 +1,434 @@
+[
+    {
+      "constraint_name": "objects_bucketId_fkey",
+      "definition": "FOREIGN KEY (bucket_id) REFERENCES storage.buckets(id)",
+      "referenced_table": "buckets",
+      "referenced_columns": "{id}",
+      "table_name": "objects",
+      "table_columns": "{bucket_id}"
+    },
+    {
+      "constraint_name": "identities_user_id_fkey",
+      "definition": "FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE CASCADE",
+      "referenced_table": "users",
+      "referenced_columns": "{id}",
+      "table_name": "identities",
+      "table_columns": "{user_id}"
+    },
+    {
+      "constraint_name": "sessions_user_id_fkey",
+      "definition": "FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE CASCADE",
+      "referenced_table": "users",
+      "referenced_columns": "{id}",
+      "table_name": "sessions",
+      "table_columns": "{user_id}"
+    },
+    {
+      "constraint_name": "refresh_tokens_session_id_fkey",
+      "definition": "FOREIGN KEY (session_id) REFERENCES auth.sessions(id) ON DELETE CASCADE",
+      "referenced_table": "sessions",
+      "referenced_columns": "{id}",
+      "table_name": "refresh_tokens",
+      "table_columns": "{session_id}"
+    },
+    {
+      "constraint_name": "mfa_factors_user_id_fkey",
+      "definition": "FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE CASCADE",
+      "referenced_table": "users",
+      "referenced_columns": "{id}",
+      "table_name": "mfa_factors",
+      "table_columns": "{user_id}"
+    },
+    {
+      "constraint_name": "mfa_challenges_auth_factor_id_fkey",
+      "definition": "FOREIGN KEY (factor_id) REFERENCES auth.mfa_factors(id) ON DELETE CASCADE",
+      "referenced_table": "mfa_factors",
+      "referenced_columns": "{id}",
+      "table_name": "mfa_challenges",
+      "table_columns": "{factor_id}"
+    },
+    {
+      "constraint_name": "mfa_amr_claims_session_id_fkey",
+      "definition": "FOREIGN KEY (session_id) REFERENCES auth.sessions(id) ON DELETE CASCADE",
+      "referenced_table": "sessions",
+      "referenced_columns": "{id}",
+      "table_name": "mfa_amr_claims",
+      "table_columns": "{session_id}"
+    },
+    {
+      "constraint_name": "sso_domains_sso_provider_id_fkey",
+      "definition": "FOREIGN KEY (sso_provider_id) REFERENCES auth.sso_providers(id) ON DELETE CASCADE",
+      "referenced_table": "sso_providers",
+      "referenced_columns": "{id}",
+      "table_name": "sso_domains",
+      "table_columns": "{sso_provider_id}"
+    },
+    {
+      "constraint_name": "saml_providers_sso_provider_id_fkey",
+      "definition": "FOREIGN KEY (sso_provider_id) REFERENCES auth.sso_providers(id) ON DELETE CASCADE",
+      "referenced_table": "sso_providers",
+      "referenced_columns": "{id}",
+      "table_name": "saml_providers",
+      "table_columns": "{sso_provider_id}"
+    },
+    {
+      "constraint_name": "saml_relay_states_sso_provider_id_fkey",
+      "definition": "FOREIGN KEY (sso_provider_id) REFERENCES auth.sso_providers(id) ON DELETE CASCADE",
+      "referenced_table": "sso_providers",
+      "referenced_columns": "{id}",
+      "table_name": "saml_relay_states",
+      "table_columns": "{sso_provider_id}"
+    },
+    {
+      "constraint_name": "saml_relay_states_flow_state_id_fkey",
+      "definition": "FOREIGN KEY (flow_state_id) REFERENCES auth.flow_state(id) ON DELETE CASCADE",
+      "referenced_table": "flow_state",
+      "referenced_columns": "{id}",
+      "table_name": "saml_relay_states",
+      "table_columns": "{flow_state_id}"
+    },
+    {
+      "constraint_name": "one_time_tokens_user_id_fkey",
+      "definition": "FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE CASCADE",
+      "referenced_table": "users",
+      "referenced_columns": "{id}",
+      "table_name": "one_time_tokens",
+      "table_columns": "{user_id}"
+    },
+    {
+      "constraint_name": "s3_multipart_uploads_bucket_id_fkey",
+      "definition": "FOREIGN KEY (bucket_id) REFERENCES storage.buckets(id)",
+      "referenced_table": "buckets",
+      "referenced_columns": "{id}",
+      "table_name": "s3_multipart_uploads",
+      "table_columns": "{bucket_id}"
+    },
+    {
+      "constraint_name": "s3_multipart_uploads_parts_upload_id_fkey",
+      "definition": "FOREIGN KEY (upload_id) REFERENCES storage.s3_multipart_uploads(id) ON DELETE CASCADE",
+      "referenced_table": "s3_multipart_uploads",
+      "referenced_columns": "{id}",
+      "table_name": "s3_multipart_uploads_parts",
+      "table_columns": "{upload_id}"
+    },
+    {
+      "constraint_name": "s3_multipart_uploads_parts_bucket_id_fkey",
+      "definition": "FOREIGN KEY (bucket_id) REFERENCES storage.buckets(id)",
+      "referenced_table": "buckets",
+      "referenced_columns": "{id}",
+      "table_name": "s3_multipart_uploads_parts",
+      "table_columns": "{bucket_id}"
+    },
+    {
+      "constraint_name": "users_id_fkey",
+      "definition": "FOREIGN KEY (id) REFERENCES auth.users(id) ON DELETE CASCADE",
+      "referenced_table": "users",
+      "referenced_columns": "{id}",
+      "table_name": "users",
+      "table_columns": "{id}"
+    },
+    {
+      "constraint_name": "prefixes_bucketId_fkey",
+      "definition": "FOREIGN KEY (bucket_id) REFERENCES storage.buckets(id)",
+      "referenced_table": "buckets",
+      "referenced_columns": "{id}",
+      "table_name": "prefixes",
+      "table_columns": "{bucket_id}"
+    },
+    {
+      "constraint_name": "projects_user_id_fkey",
+      "definition": "FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE",
+      "referenced_table": "users",
+      "referenced_columns": "{id}",
+      "table_name": "projects",
+      "table_columns": "{user_id}"
+    },
+    {
+      "constraint_name": "project_profiles_user_id_fkey",
+      "definition": "FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE",
+      "referenced_table": "users",
+      "referenced_columns": "{id}",
+      "table_name": "project_profiles",
+      "table_columns": "{user_id}"
+    },
+    {
+      "constraint_name": "project_profiles_project_id_fkey",
+      "definition": "FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE",
+      "referenced_table": "projects",
+      "referenced_columns": "{id}",
+      "table_name": "project_profiles",
+      "table_columns": "{project_id}"
+    },
+    {
+      "constraint_name": "roadmaps_user_id_fkey",
+      "definition": "FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE",
+      "referenced_table": "users",
+      "referenced_columns": "{id}",
+      "table_name": "roadmaps",
+      "table_columns": "{user_id}"
+    },
+    {
+      "constraint_name": "roadmaps_project_id_fkey",
+      "definition": "FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE",
+      "referenced_table": "projects",
+      "referenced_columns": "{id}",
+      "table_name": "roadmaps",
+      "table_columns": "{project_id}"
+    },
+    {
+      "constraint_name": "roadmap_generations_roadmap_id_fkey",
+      "definition": "FOREIGN KEY (roadmap_id) REFERENCES roadmaps(id) ON DELETE CASCADE",
+      "referenced_table": "roadmaps",
+      "referenced_columns": "{id}",
+      "table_name": "roadmap_generations",
+      "table_columns": "{roadmap_id}"
+    },
+    {
+      "constraint_name": "roadmap_data_user_id_fkey",
+      "definition": "FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE",
+      "referenced_table": "users",
+      "referenced_columns": "{id}",
+      "table_name": "roadmap_data",
+      "table_columns": "{user_id}"
+    },
+    {
+      "constraint_name": "roadmap_data_project_id_fkey",
+      "definition": "FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE",
+      "referenced_table": "projects",
+      "referenced_columns": "{id}",
+      "table_name": "roadmap_data",
+      "table_columns": "{project_id}"
+    },
+    {
+      "constraint_name": "budget_items_project_id_fkey",
+      "definition": "FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE",
+      "referenced_table": "projects",
+      "referenced_columns": "{id}",
+      "table_name": "budget_items",
+      "table_columns": "{project_id}"
+    },
+    {
+      "constraint_name": "oauth_authorizations_client_id_fkey",
+      "definition": "FOREIGN KEY (client_id) REFERENCES auth.oauth_clients(id) ON DELETE CASCADE",
+      "referenced_table": "oauth_clients",
+      "referenced_columns": "{id}",
+      "table_name": "oauth_authorizations",
+      "table_columns": "{client_id}"
+    },
+    {
+      "constraint_name": "oauth_authorizations_user_id_fkey",
+      "definition": "FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE CASCADE",
+      "referenced_table": "users",
+      "referenced_columns": "{id}",
+      "table_name": "oauth_authorizations",
+      "table_columns": "{user_id}"
+    },
+    {
+      "constraint_name": "oauth_consents_user_id_fkey",
+      "definition": "FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE CASCADE",
+      "referenced_table": "users",
+      "referenced_columns": "{id}",
+      "table_name": "oauth_consents",
+      "table_columns": "{user_id}"
+    },
+    {
+      "constraint_name": "oauth_consents_client_id_fkey",
+      "definition": "FOREIGN KEY (client_id) REFERENCES auth.oauth_clients(id) ON DELETE CASCADE",
+      "referenced_table": "oauth_clients",
+      "referenced_columns": "{id}",
+      "table_name": "oauth_consents",
+      "table_columns": "{client_id}"
+    },
+    {
+      "constraint_name": "sessions_oauth_client_id_fkey",
+      "definition": "FOREIGN KEY (oauth_client_id) REFERENCES auth.oauth_clients(id) ON DELETE CASCADE",
+      "referenced_table": "oauth_clients",
+      "referenced_columns": "{id}",
+      "table_name": "sessions",
+      "table_columns": "{oauth_client_id}"
+    },
+    {
+      "constraint_name": "vendors_user_id_fkey",
+      "definition": "FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE CASCADE",
+      "referenced_table": "users",
+      "referenced_columns": "{id}",
+      "table_name": "vendors",
+      "table_columns": "{user_id}"
+    },
+    {
+      "constraint_name": "vendors_trade_category_id_fkey",
+      "definition": "FOREIGN KEY (trade_category_id) REFERENCES trade_categories(id) ON DELETE SET NULL",
+      "referenced_table": "trade_categories",
+      "referenced_columns": "{id}",
+      "table_name": "vendors",
+      "table_columns": "{trade_category_id}"
+    },
+    {
+      "constraint_name": "bid_requests_project_id_fkey",
+      "definition": "FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE",
+      "referenced_table": "projects",
+      "referenced_columns": "{id}",
+      "table_name": "bid_requests",
+      "table_columns": "{project_id}"
+    },
+    {
+      "constraint_name": "bid_requests_user_id_fkey",
+      "definition": "FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE CASCADE",
+      "referenced_table": "users",
+      "referenced_columns": "{id}",
+      "table_name": "bid_requests",
+      "table_columns": "{user_id}"
+    },
+    {
+      "constraint_name": "bid_requests_vendor_id_fkey",
+      "definition": "FOREIGN KEY (vendor_id) REFERENCES vendors(id) ON DELETE CASCADE",
+      "referenced_table": "vendors",
+      "referenced_columns": "{id}",
+      "table_name": "bid_requests",
+      "table_columns": "{vendor_id}"
+    },
+    {
+      "constraint_name": "bid_requests_trade_category_id_fkey",
+      "definition": "FOREIGN KEY (trade_category_id) REFERENCES trade_categories(id) ON DELETE SET NULL",
+      "referenced_table": "trade_categories",
+      "referenced_columns": "{id}",
+      "table_name": "bid_requests",
+      "table_columns": "{trade_category_id}"
+    },
+    {
+      "constraint_name": "bids_bid_request_id_fkey",
+      "definition": "FOREIGN KEY (bid_request_id) REFERENCES bid_requests(id) ON DELETE CASCADE",
+      "referenced_table": "bid_requests",
+      "referenced_columns": "{id}",
+      "table_name": "bids",
+      "table_columns": "{bid_request_id}"
+    },
+    {
+      "constraint_name": "bids_vendor_id_fkey",
+      "definition": "FOREIGN KEY (vendor_id) REFERENCES vendors(id) ON DELETE CASCADE",
+      "referenced_table": "vendors",
+      "referenced_columns": "{id}",
+      "table_name": "bids",
+      "table_columns": "{vendor_id}"
+    },
+    {
+      "constraint_name": "bids_project_id_fkey",
+      "definition": "FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE",
+      "referenced_table": "projects",
+      "referenced_columns": "{id}",
+      "table_name": "bids",
+      "table_columns": "{project_id}"
+    },
+    {
+      "constraint_name": "bids_reviewed_by_fkey",
+      "definition": "FOREIGN KEY (reviewed_by) REFERENCES auth.users(id)",
+      "referenced_table": "users",
+      "referenced_columns": "{id}",
+      "table_name": "bids",
+      "table_columns": "{reviewed_by}"
+    },
+    {
+      "constraint_name": "email_communications_bid_request_id_fkey",
+      "definition": "FOREIGN KEY (bid_request_id) REFERENCES bid_requests(id) ON DELETE CASCADE",
+      "referenced_table": "bid_requests",
+      "referenced_columns": "{id}",
+      "table_name": "email_communications",
+      "table_columns": "{bid_request_id}"
+    },
+    {
+      "constraint_name": "email_communications_project_id_fkey",
+      "definition": "FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE",
+      "referenced_table": "projects",
+      "referenced_columns": "{id}",
+      "table_name": "email_communications",
+      "table_columns": "{project_id}"
+    },
+    {
+      "constraint_name": "email_communications_user_id_fkey",
+      "definition": "FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE CASCADE",
+      "referenced_table": "users",
+      "referenced_columns": "{id}",
+      "table_name": "email_communications",
+      "table_columns": "{user_id}"
+    },
+    {
+      "constraint_name": "email_communications_vendor_id_fkey",
+      "definition": "FOREIGN KEY (vendor_id) REFERENCES vendors(id) ON DELETE SET NULL",
+      "referenced_table": "vendors",
+      "referenced_columns": "{id}",
+      "table_name": "email_communications",
+      "table_columns": "{vendor_id}"
+    },
+    {
+      "constraint_name": "user_email_accounts_user_id_fkey",
+      "definition": "FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE CASCADE",
+      "referenced_table": "users",
+      "referenced_columns": "{id}",
+      "table_name": "user_email_accounts",
+      "table_columns": "{user_id}"
+    },
+    {
+      "constraint_name": "vendor_reviews_vendor_id_fkey",
+      "definition": "FOREIGN KEY (vendor_id) REFERENCES vendors(id) ON DELETE CASCADE",
+      "referenced_table": "vendors",
+      "referenced_columns": "{id}",
+      "table_name": "vendor_reviews",
+      "table_columns": "{vendor_id}"
+    },
+    {
+      "constraint_name": "vendor_reviews_project_id_fkey",
+      "definition": "FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE",
+      "referenced_table": "projects",
+      "referenced_columns": "{id}",
+      "table_name": "vendor_reviews",
+      "table_columns": "{project_id}"
+    },
+    {
+      "constraint_name": "vendor_reviews_user_id_fkey",
+      "definition": "FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE CASCADE",
+      "referenced_table": "users",
+      "referenced_columns": "{id}",
+      "table_name": "vendor_reviews",
+      "table_columns": "{user_id}"
+    },
+    {
+      "constraint_name": "vendor_reviews_bid_id_fkey",
+      "definition": "FOREIGN KEY (bid_id) REFERENCES bids(id) ON DELETE SET NULL",
+      "referenced_table": "bids",
+      "referenced_columns": "{id}",
+      "table_name": "vendor_reviews",
+      "table_columns": "{bid_id}"
+    },
+    {
+      "constraint_name": "bid_items_bid_id_fkey",
+      "definition": "FOREIGN KEY (bid_id) REFERENCES bids(id) ON DELETE CASCADE",
+      "referenced_table": "bids",
+      "referenced_columns": "{id}",
+      "table_name": "bid_items",
+      "table_columns": "{bid_id}"
+    },
+    {
+      "constraint_name": "bid_items_budget_item_id_fkey",
+      "definition": "FOREIGN KEY (budget_item_id) REFERENCES budget_items(id) ON DELETE SET NULL",
+      "referenced_table": "budget_items",
+      "referenced_columns": "{id}",
+      "table_name": "bid_items",
+      "table_columns": "{budget_item_id}"
+    },
+    {
+      "constraint_name": "email_templates_user_id_fkey",
+      "definition": "FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE CASCADE",
+      "referenced_table": "users",
+      "referenced_columns": "{id}",
+      "table_name": "email_templates",
+      "table_columns": "{user_id}"
+    },
+    {
+      "constraint_name": "email_templates_trade_category_id_fkey",
+      "definition": "FOREIGN KEY (trade_category_id) REFERENCES trade_categories(id) ON DELETE CASCADE",
+      "referenced_table": "trade_categories",
+      "referenced_columns": "{id}",
+      "table_name": "email_templates",
+      "table_columns": "{trade_category_id}"
+    }
+  ]

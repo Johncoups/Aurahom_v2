@@ -1,0 +1,51 @@
+[
+    {
+      "trigger_name": "update_vendors_updated_at",
+      "event_manipulation": "UPDATE",
+      "action_timing": "BEFORE",
+      "action_statement": "EXECUTE FUNCTION update_updated_at_column()",
+      "action_orientation": "ROW"
+    },
+    {
+      "trigger_name": "update_bid_requests_updated_at",
+      "event_manipulation": "UPDATE",
+      "action_timing": "BEFORE",
+      "action_statement": "EXECUTE FUNCTION update_updated_at_column()",
+      "action_orientation": "ROW"
+    },
+    {
+      "trigger_name": "update_bids_updated_at",
+      "event_manipulation": "UPDATE",
+      "action_timing": "BEFORE",
+      "action_statement": "EXECUTE FUNCTION update_updated_at_column()",
+      "action_orientation": "ROW"
+    },
+    {
+      "trigger_name": "update_email_communications_updated_at",
+      "event_manipulation": "UPDATE",
+      "action_timing": "BEFORE",
+      "action_statement": "EXECUTE FUNCTION update_updated_at_column()",
+      "action_orientation": "ROW"
+    },
+    {
+      "trigger_name": "update_user_email_accounts_updated_at",
+      "event_manipulation": "UPDATE",
+      "action_timing": "BEFORE",
+      "action_statement": "EXECUTE FUNCTION update_updated_at_column()",
+      "action_orientation": "ROW"
+    },
+    {
+      "trigger_name": "update_trade_categories_updated_at",
+      "event_manipulation": "UPDATE",
+      "action_timing": "BEFORE",
+      "action_statement": "EXECUTE FUNCTION update_updated_at_column()",
+      "action_orientation": "ROW"
+    },
+    {
+      "trigger_name": "update_email_templates_updated_at",
+      "event_manipulation": "UPDATE",
+      "action_timing": "BEFORE",
+      "action_statement": "EXECUTE FUNCTION update_updated_at_column()",
+      "action_orientation": "ROW"
+    }
+  ]

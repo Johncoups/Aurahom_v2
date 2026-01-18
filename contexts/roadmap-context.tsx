@@ -527,6 +527,7 @@ export function RoadmapProvider({ children }: { children: ReactNode }) {
 			
 			if (userError) {
 				console.error('❌ User authentication error:', userError);
+				console.error('❌ Full error details:', JSON.stringify(userError, null, 2));
 				setHasExistingProject(false);
 				return;
 			}
@@ -548,36 +549,79 @@ export function RoadmapProvider({ children }: { children: ReactNode }) {
 			
 			if (projectError) {
 				console.error('❌ Error checking existing projects:', projectError);
-				setHasExistingProject(false);
-				return;
+				console.error('❌ Project error details:', JSON.stringify(projectError, null, 2));
+				console.error('❌ Error code:', projectError.code);
+				console.error('❌ Error message:', projectError.message);
+				console.error('❌ Error hint:', projectError.hint);
+				// Don't return early - still check roadmap_data
 			}
 			
 			// Also check for existing roadmap data
-			const { data: roadmapData, error: roadmapError } = await supabase
+			// Check both directly via user_id and via project ownership
+			// This handles cases where roadmap_data.user_id might be NULL but project_id exists
+			let roadmapDataQuery = supabase
 				.from('roadmap_data')
-				.select('id, created_at')
-				.eq('user_id', user.id)
-				.limit(1);
+				.select('id, created_at, user_id, project_id');
+			
+			// Build OR condition: user_id matches OR project_id is in user's projects
+			if (projects && projects.length > 0) {
+				const projectIds = projects.map(p => p.id).join(',');
+				roadmapDataQuery = roadmapDataQuery.or(`user_id.eq.${user.id},project_id.in.(${projectIds})`);
+			} else {
+				// If no projects found, just check user_id
+				roadmapDataQuery = roadmapDataQuery.eq('user_id', user.id);
+			}
+			
+			const { data: roadmapData, error: roadmapError } = await roadmapDataQuery.limit(1);
+			
+			if (roadmapError) {
+				console.error('❌ Error checking roadmap data:', roadmapError);
+				console.error('❌ Roadmap error details:', JSON.stringify(roadmapError, null, 2));
+				console.error('❌ Error code:', roadmapError.code);
+				console.error('❌ Error message:', roadmapError.message);
+				console.error('❌ Error hint:', roadmapError.hint);
+			}
 			
 			console.log('🔍 Projects query result:', {
 				projectCount: projects?.length || 0,
-				projects: projects || []
+				projects: projects || [],
+				hasError: !!projectError,
+				error: projectError ? {
+					code: projectError.code,
+					message: projectError.message,
+					hint: projectError.hint
+				} : null
 			});
 			
 			console.log('🔍 Roadmap data query result:', {
 				roadmapCount: roadmapData?.length || 0,
-				roadmapData: roadmapData || []
+				roadmapData: roadmapData || [],
+				hasError: !!roadmapError,
+				error: roadmapError ? {
+					code: roadmapError.code,
+					message: roadmapError.message,
+					hint: roadmapError.hint
+				} : null
 			});
 			
+			// If there are errors but we got data, still use it
+			// If there are errors and no data, it might be an RLS issue
 			const hasProject = projects && projects.length > 0;
 			const hasRoadmap = roadmapData && roadmapData.length > 0;
 			const hasExistingData = hasProject || hasRoadmap;
+			
+			// If we have errors but no data, log a warning about potential RLS issues
+			if ((projectError || roadmapError) && !hasExistingData) {
+				console.warn('⚠️ Query errors detected but no data found. This might indicate RLS policy issues.');
+				console.warn('⚠️ Please verify that RLS policies are applied correctly in your Supabase database.');
+			}
 			
 			setHasExistingProject(!!hasExistingData);
 			console.log(`✅ User ${hasExistingData ? 'has' : 'does not have'} existing project or roadmap data`);
 			
 		} catch (error) {
-			console.error('❌ Error checking existing project:', error);
+			console.error('❌ Unexpected error checking existing project:', error);
+			console.error('❌ Error stack:', error instanceof Error ? error.stack : 'No stack trace');
 			setHasExistingProject(false);
 		} finally {
 			setIsCheckingProject(false);
@@ -586,6 +630,7 @@ export function RoadmapProvider({ children }: { children: ReactNode }) {
 
 	// Load stored roadmap and check for existing project when component mounts
 	useEffect(() => {
+		console.log('🚀 RoadmapProvider mounted - starting initialization');
 		checkExistingProject();
 		loadStoredRoadmap();
 	}, []); // Empty dependency array means this runs once on mount

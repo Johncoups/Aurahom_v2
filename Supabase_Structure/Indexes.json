@@ -1,0 +1,218 @@
+[
+    {
+      "indexname": "baseline_construction_phases_pkey",
+      "indexdef": "CREATE UNIQUE INDEX baseline_construction_phases_pkey ON public.baseline_construction_phases USING btree (id)"
+    },
+    {
+      "indexname": "projects_pkey",
+      "indexdef": "CREATE UNIQUE INDEX projects_pkey ON public.projects USING btree (id)"
+    },
+    {
+      "indexname": "project_profiles_pkey",
+      "indexdef": "CREATE UNIQUE INDEX project_profiles_pkey ON public.project_profiles USING btree (id)"
+    },
+    {
+      "indexname": "budget_items_pkey",
+      "indexdef": "CREATE UNIQUE INDEX budget_items_pkey ON public.budget_items USING btree (id)"
+    },
+    {
+      "indexname": "idx_budget_items_project",
+      "indexdef": "CREATE INDEX idx_budget_items_project ON public.budget_items USING btree (project_id)"
+    },
+    {
+      "indexname": "idx_budget_items_project_phase",
+      "indexdef": "CREATE INDEX idx_budget_items_project_phase ON public.budget_items USING btree (project_id, phase_id)"
+    },
+    {
+      "indexname": "budget_items_project_phase_description_key",
+      "indexdef": "CREATE UNIQUE INDEX budget_items_project_phase_description_key ON public.budget_items USING btree (project_id, phase_id, description)"
+    },
+    {
+      "indexname": "roadmap_phases_pkey",
+      "indexdef": "CREATE UNIQUE INDEX roadmap_phases_pkey ON public.roadmap_phases USING btree (id)"
+    },
+    {
+      "indexname": "roadmap_generations_pkey",
+      "indexdef": "CREATE UNIQUE INDEX roadmap_generations_pkey ON public.roadmap_generations USING btree (id)"
+    },
+    {
+      "indexname": "roadmaps_pkey",
+      "indexdef": "CREATE UNIQUE INDEX roadmaps_pkey ON public.roadmaps USING btree (id)"
+    },
+    {
+      "indexname": "trade_categories_pkey",
+      "indexdef": "CREATE UNIQUE INDEX trade_categories_pkey ON public.trade_categories USING btree (id)"
+    },
+    {
+      "indexname": "trade_categories_name_key",
+      "indexdef": "CREATE UNIQUE INDEX trade_categories_name_key ON public.trade_categories USING btree (name)"
+    },
+    {
+      "indexname": "vendors_pkey",
+      "indexdef": "CREATE UNIQUE INDEX vendors_pkey ON public.vendors USING btree (id)"
+    },
+    {
+      "indexname": "idx_vendors_user_id",
+      "indexdef": "CREATE INDEX idx_vendors_user_id ON public.vendors USING btree (user_id)"
+    },
+    {
+      "indexname": "idx_vendors_trade_category",
+      "indexdef": "CREATE INDEX idx_vendors_trade_category ON public.vendors USING btree (trade_category_id)"
+    },
+    {
+      "indexname": "idx_vendors_active",
+      "indexdef": "CREATE INDEX idx_vendors_active ON public.vendors USING btree (is_active)"
+    },
+    {
+      "indexname": "idx_vendors_tags",
+      "indexdef": "CREATE INDEX idx_vendors_tags ON public.vendors USING gin (tags)"
+    },
+    {
+      "indexname": "idx_vendors_services_offered",
+      "indexdef": "CREATE INDEX idx_vendors_services_offered ON public.vendors USING gin (services_offered)"
+    },
+    {
+      "indexname": "bid_requests_pkey",
+      "indexdef": "CREATE UNIQUE INDEX bid_requests_pkey ON public.bid_requests USING btree (id)"
+    },
+    {
+      "indexname": "idx_bid_requests_project_id",
+      "indexdef": "CREATE INDEX idx_bid_requests_project_id ON public.bid_requests USING btree (project_id)"
+    },
+    {
+      "indexname": "idx_bid_requests_vendor_id",
+      "indexdef": "CREATE INDEX idx_bid_requests_vendor_id ON public.bid_requests USING btree (vendor_id)"
+    },
+    {
+      "indexname": "idx_bid_requests_user_id",
+      "indexdef": "CREATE INDEX idx_bid_requests_user_id ON public.bid_requests USING btree (user_id)"
+    },
+    {
+      "indexname": "idx_bid_requests_status",
+      "indexdef": "CREATE INDEX idx_bid_requests_status ON public.bid_requests USING btree (status)"
+    },
+    {
+      "indexname": "idx_bid_requests_phase_ids",
+      "indexdef": "CREATE INDEX idx_bid_requests_phase_ids ON public.bid_requests USING gin (phase_ids)"
+    },
+    {
+      "indexname": "bids_pkey",
+      "indexdef": "CREATE UNIQUE INDEX bids_pkey ON public.bids USING btree (id)"
+    },
+    {
+      "indexname": "idx_bids_bid_request_id",
+      "indexdef": "CREATE INDEX idx_bids_bid_request_id ON public.bids USING btree (bid_request_id)"
+    },
+    {
+      "indexname": "idx_bids_vendor_id",
+      "indexdef": "CREATE INDEX idx_bids_vendor_id ON public.bids USING btree (vendor_id)"
+    },
+    {
+      "indexname": "idx_bids_project_id",
+      "indexdef": "CREATE INDEX idx_bids_project_id ON public.bids USING btree (project_id)"
+    },
+    {
+      "indexname": "idx_bids_status",
+      "indexdef": "CREATE INDEX idx_bids_status ON public.bids USING btree (status)"
+    },
+    {
+      "indexname": "email_communications_pkey",
+      "indexdef": "CREATE UNIQUE INDEX email_communications_pkey ON public.email_communications USING btree (id)"
+    },
+    {
+      "indexname": "idx_email_communications_bid_request",
+      "indexdef": "CREATE INDEX idx_email_communications_bid_request ON public.email_communications USING btree (bid_request_id)"
+    },
+    {
+      "indexname": "idx_email_communications_project",
+      "indexdef": "CREATE INDEX idx_email_communications_project ON public.email_communications USING btree (project_id)"
+    },
+    {
+      "indexname": "idx_email_communications_user",
+      "indexdef": "CREATE INDEX idx_email_communications_user ON public.email_communications USING btree (user_id)"
+    },
+    {
+      "indexname": "idx_email_communications_vendor",
+      "indexdef": "CREATE INDEX idx_email_communications_vendor ON public.email_communications USING btree (vendor_id)"
+    },
+    {
+      "indexname": "idx_email_communications_status",
+      "indexdef": "CREATE INDEX idx_email_communications_status ON public.email_communications USING btree (status)"
+    },
+    {
+      "indexname": "idx_email_communications_thread",
+      "indexdef": "CREATE INDEX idx_email_communications_thread ON public.email_communications USING btree (thread_id)"
+    },
+    {
+      "indexname": "user_email_accounts_pkey",
+      "indexdef": "CREATE UNIQUE INDEX user_email_accounts_pkey ON public.user_email_accounts USING btree (id)"
+    },
+    {
+      "indexname": "user_email_accounts_user_id_email_address_key",
+      "indexdef": "CREATE UNIQUE INDEX user_email_accounts_user_id_email_address_key ON public.user_email_accounts USING btree (user_id, email_address)"
+    },
+    {
+      "indexname": "idx_user_email_accounts_user",
+      "indexdef": "CREATE INDEX idx_user_email_accounts_user ON public.user_email_accounts USING btree (user_id)"
+    },
+    {
+      "indexname": "idx_user_email_accounts_active",
+      "indexdef": "CREATE INDEX idx_user_email_accounts_active ON public.user_email_accounts USING btree (is_active)"
+    },
+    {
+      "indexname": "users_pkey",
+      "indexdef": "CREATE UNIQUE INDEX users_pkey ON public.users USING btree (id)"
+    },
+    {
+      "indexname": "users_email_key",
+      "indexdef": "CREATE UNIQUE INDEX users_email_key ON public.users USING btree (email)"
+    },
+    {
+      "indexname": "vendor_reviews_pkey",
+      "indexdef": "CREATE UNIQUE INDEX vendor_reviews_pkey ON public.vendor_reviews USING btree (id)"
+    },
+    {
+      "indexname": "idx_vendor_reviews_vendor",
+      "indexdef": "CREATE INDEX idx_vendor_reviews_vendor ON public.vendor_reviews USING btree (vendor_id)"
+    },
+    {
+      "indexname": "idx_vendor_reviews_user",
+      "indexdef": "CREATE INDEX idx_vendor_reviews_user ON public.vendor_reviews USING btree (user_id)"
+    },
+    {
+      "indexname": "idx_vendor_reviews_project",
+      "indexdef": "CREATE INDEX idx_vendor_reviews_project ON public.vendor_reviews USING btree (project_id)"
+    },
+    {
+      "indexname": "bid_items_pkey",
+      "indexdef": "CREATE UNIQUE INDEX bid_items_pkey ON public.bid_items USING btree (id)"
+    },
+    {
+      "indexname": "idx_bid_items_bid",
+      "indexdef": "CREATE INDEX idx_bid_items_bid ON public.bid_items USING btree (bid_id)"
+    },
+    {
+      "indexname": "idx_bid_items_budget_item",
+      "indexdef": "CREATE INDEX idx_bid_items_budget_item ON public.bid_items USING btree (budget_item_id)"
+    },
+    {
+      "indexname": "email_templates_pkey",
+      "indexdef": "CREATE UNIQUE INDEX email_templates_pkey ON public.email_templates USING btree (id)"
+    },
+    {
+      "indexname": "idx_email_templates_user",
+      "indexdef": "CREATE INDEX idx_email_templates_user ON public.email_templates USING btree (user_id)"
+    },
+    {
+      "indexname": "idx_email_templates_trade",
+      "indexdef": "CREATE INDEX idx_email_templates_trade ON public.email_templates USING btree (trade_category_id)"
+    },
+    {
+      "indexname": "roadmap_data_pkey",
+      "indexdef": "CREATE UNIQUE INDEX roadmap_data_pkey ON public.roadmap_data USING btree (id)"
+    },
+    {
+      "indexname": "idx_roadmap_data_friendly_name",
+      "indexdef": "CREATE INDEX idx_roadmap_data_friendly_name ON public.roadmap_data USING btree (friendly_name)"
+    }
+  ]

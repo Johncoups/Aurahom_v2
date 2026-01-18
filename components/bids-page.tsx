@@ -5,8 +5,9 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
-import { ChevronDown, ChevronRight, Edit2, Mail, Send, Phone, Star } from "lucide-react"
+import { ChevronDown, ChevronRight, Edit2, Mail, Send, Phone, Star, Check, ArrowLeft, Plus, X, Trash2 } from "lucide-react"
 import { useBids } from "@/contexts/bids-context"
 
 interface Vendor {
@@ -14,7 +15,7 @@ interface Vendor {
   name: string
   email: string
   phone?: string
-  status: "Not Requested" | "Pending" | "Bid Received"
+  status: "Not Requested" | "Pending" | "Bid Received" | "Bid Accepted"
   rating?: {
     platform: "Google" | "Facebook"
     score: number
@@ -41,7 +42,7 @@ interface Phase {
 }
 
 export function BidsPage() {
-  const { setSelectedVendor } = useBids()
+  const { setSelectedVendor, selectedVendor } = useBids()
   const [phases, setPhases] = useState<Phase[]>([
     {
       id: "phase1",
@@ -291,16 +292,128 @@ export function BidsPage() {
   ])
 
   const [selectedSubPhase, setSelectedSubPhase] = useState<SubPhase | null>(null)
+  const [selectedSubPhaseContext, setSelectedSubPhaseContext] = useState<{ phaseId: string; subPhaseId: string } | null>(null)
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [editingVendor, setEditingVendor] = useState<string | null>(null)
+  const [vendorToDelete, setVendorToDelete] = useState<{ phaseId: string; subPhaseId: string; vendorId: string; vendorName: string } | null>(null)
+  const [selectedVendorsForBid, setSelectedVendorsForBid] = useState<Set<string>>(new Set())
+  const [bidRequestStep, setBidRequestStep] = useState<"select-vendors" | "choose-method">("select-vendors")
+  const [isAddingVendor, setIsAddingVendor] = useState(false)
+  const [newVendor, setNewVendor] = useState({
+    name: "",
+    email: "",
+    phone: "",
+    website: "",
+    tradeCategory: "",
+    socialMedia: [] as { platform: string; handle: string }[],
+    foundVia: [] as string[]
+  })
+  const [newSocialMedia, setNewSocialMedia] = useState({ platform: "", handle: "" })
 
   const togglePhase = (phaseId: string) => {
     setPhases(phases.map((phase) => (phase.id === phaseId ? { ...phase, isExpanded: !phase.isExpanded } : phase)))
   }
 
-  const handleRequestBids = (subPhase: SubPhase) => {
+  const handleRequestBids = (subPhase: SubPhase, phaseId: string) => {
     setSelectedSubPhase(subPhase)
+    setSelectedSubPhaseContext({ phaseId, subPhaseId: subPhase.id })
+    // Pre-select vendors with "Not Requested" status
+    const notRequestedVendors = subPhase.vendors
+      .filter(v => v.status === "Not Requested")
+      .map(v => v.id)
+    setSelectedVendorsForBid(new Set(notRequestedVendors))
+    setBidRequestStep("select-vendors")
     setIsModalOpen(true)
+  }
+
+  const toggleVendorSelection = (vendorId: string) => {
+    setSelectedVendorsForBid(prev => {
+      const newSet = new Set(prev)
+      if (newSet.has(vendorId)) {
+        newSet.delete(vendorId)
+      } else {
+        newSet.add(vendorId)
+      }
+      return newSet
+    })
+  }
+
+  const handleContinueToMethod = () => {
+    if (selectedVendorsForBid.size === 0) {
+      // Could show an error message here
+      return
+    }
+    setBidRequestStep("choose-method")
+  }
+
+  const handleAddSocialMedia = () => {
+    if (newSocialMedia.platform && newSocialMedia.handle.trim()) {
+      setNewVendor({
+        ...newVendor,
+        socialMedia: [...newVendor.socialMedia, {
+          platform: newSocialMedia.platform as Vendor["socialMedia"][0]["platform"],
+          handle: newSocialMedia.handle
+        }]
+      })
+      setNewSocialMedia({ platform: "", handle: "" })
+    }
+  }
+
+  const removeSocialMedia = (index: number) => {
+    setNewVendor({
+      ...newVendor,
+      socialMedia: newVendor.socialMedia.filter((_, i) => i !== index)
+    })
+  }
+
+  const toggleFoundVia = (source: string) => {
+    setNewVendor({
+      ...newVendor,
+      foundVia: newVendor.foundVia.includes(source)
+        ? newVendor.foundVia.filter(s => s !== source)
+        : [...newVendor.foundVia, source]
+    })
+  }
+
+  const handleAddVendor = () => {
+    if (!selectedSubPhase || !newVendor.name.trim()) {
+      return
+    }
+
+    // Create new vendor
+    const vendorId = `v${Date.now()}`
+    const newVendorData: Vendor = {
+      id: vendorId,
+      name: newVendor.name,
+      email: newVendor.email,
+      phone: newVendor.phone || undefined,
+      status: "Not Requested",
+      socialMedia: newVendor.socialMedia.length > 0 ? newVendor.socialMedia : undefined,
+      foundVia: newVendor.foundVia.length > 0 ? newVendor.foundVia as Vendor["foundVia"] : undefined,
+    }
+
+    // Add vendor to the sub-phase
+    setPhases(
+      phases.map((phase) => ({
+        ...phase,
+        subPhases: phase.subPhases.map((subPhase) =>
+          subPhase.id === selectedSubPhase.id
+            ? {
+                ...subPhase,
+                vendors: [...subPhase.vendors, newVendorData],
+              }
+            : subPhase,
+        ),
+      })),
+    )
+
+    // Auto-select the newly added vendor
+    setSelectedVendorsForBid(prev => new Set([...prev, vendorId]))
+
+    // Reset form
+    setNewVendor({ name: "", email: "", phone: "", website: "", tradeCategory: "", socialMedia: [], foundVia: [] })
+    setNewSocialMedia({ platform: "", handle: "" })
+    setIsAddingVendor(false)
   }
 
   const handleVendorEdit = (
@@ -332,23 +445,129 @@ export function BidsPage() {
     setEditingVendor(null)
   }
 
-  const getStatusBadge = (status: Vendor["status"]) => {
+  const handleDeleteVendor = (phaseId: string, subPhaseId: string, vendorId: string, vendorName: string) => {
+    setVendorToDelete({ phaseId, subPhaseId, vendorId, vendorName })
+  }
+
+  const confirmDeleteVendor = () => {
+    if (!vendorToDelete) return
+
+    setPhases(
+      phases.map((phase) =>
+        phase.id === vendorToDelete.phaseId
+          ? {
+              ...phase,
+              subPhases: phase.subPhases.map((subPhase) =>
+                subPhase.id === vendorToDelete.subPhaseId
+                  ? {
+                      ...subPhase,
+                      vendors: subPhase.vendors.filter((vendor) => vendor.id !== vendorToDelete.vendorId),
+                    }
+                  : subPhase,
+              ),
+            }
+          : phase,
+      ),
+    )
+
+    // Also remove from selected vendors if it was selected
+    setSelectedVendorsForBid(prev => {
+      const newSet = new Set(prev)
+      newSet.delete(vendorToDelete.vendorId)
+      return newSet
+    })
+
+    setVendorToDelete(null)
+  }
+
+  const getStatusBadge = (status: Vendor["status"], vendorId: string, phaseId: string, subPhaseId: string) => {
+    const baseClasses = "text-xs font-medium px-2 py-1 cursor-pointer transition-colors"
+    
+    // Check if any other vendor in this sub-phase already has "Bid Accepted" status
+    const currentPhase = phases.find(p => p.id === phaseId)
+    const currentSubPhase = currentPhase?.subPhases.find(sp => sp.id === subPhaseId)
+    const hasOtherAcceptedBid = currentSubPhase?.vendors.some(
+      v => v.id !== vendorId && v.status === "Bid Accepted"
+    ) || false
+    
+    const handleStatusClick = (newStatus: Vendor["status"]) => {
+      setPhases(
+        phases.map((phase) =>
+          phase.id === phaseId
+            ? {
+                ...phase,
+                subPhases: phase.subPhases.map((subPhase) =>
+                  subPhase.id === subPhaseId
+                    ? {
+                        ...subPhase,
+                        vendors: subPhase.vendors.map((vendor) => {
+                          // If setting to "Bid Accepted", ensure only one vendor can be accepted
+                          if (newStatus === "Bid Accepted") {
+                            // If this vendor is being accepted, reset any other accepted vendor to "Bid Received"
+                            if (vendor.id === vendorId) {
+                              return { ...vendor, status: newStatus }
+                            } else if (vendor.status === "Bid Accepted") {
+                              return { ...vendor, status: "Bid Received" }
+                            }
+                            return vendor
+                          }
+                          // For other status changes, just update this vendor
+                          return vendor.id === vendorId ? { ...vendor, status: newStatus } : vendor
+                        }),
+                      }
+                    : subPhase,
+                ),
+              }
+            : phase,
+        ),
+      )
+    }
+
+    // Render status select with conditional "Bid Accepted" option
+    const renderStatusSelect = (bgColor: string, textColor: string) => (
+      <Select value={status} onValueChange={(value) => handleStatusClick(value as Vendor["status"])}>
+        <SelectTrigger className={`${baseClasses} ${bgColor} ${textColor} hover:opacity-80 border-0 h-auto p-1 px-2`}>
+          <SelectValue />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value="Not Requested">Not Requested</SelectItem>
+          <SelectItem value="Pending">Pending</SelectItem>
+          <SelectItem value="Bid Received">Bid Received</SelectItem>
+          <SelectItem 
+            value="Bid Accepted" 
+            disabled={hasOtherAcceptedBid && status !== "Bid Accepted"}
+            className={hasOtherAcceptedBid && status !== "Bid Accepted" ? "opacity-50 cursor-not-allowed" : ""}
+          >
+            Bid Accepted
+            {hasOtherAcceptedBid && status !== "Bid Accepted" && (
+              <span className="text-xs text-gray-500 ml-2">(Another bid already accepted)</span>
+            )}
+          </SelectItem>
+        </SelectContent>
+      </Select>
+    )
+
     switch (status) {
+      case "Bid Accepted":
+        return renderStatusSelect("bg-blue-100", "text-blue-800")
       case "Bid Received":
-        return <Badge className="bg-green-100 text-green-800 hover:bg-green-100">Bid Received</Badge>
+        return renderStatusSelect("bg-green-100", "text-green-800")
       case "Pending":
-        return <Badge className="bg-yellow-100 text-yellow-800 hover:bg-yellow-100">Pending</Badge>
+        return renderStatusSelect("bg-yellow-100", "text-yellow-800")
       default:
-        return <Badge variant="secondary">Not Requested</Badge>
+        return renderStatusSelect("bg-gray-100", "text-gray-800")
     }
   }
 
   const handleBidOption = (option: string) => {
     // Mock implementation - in real app would handle different bid request methods
-    console.log(`[v0] Bid option selected: ${option} for ${selectedSubPhase?.title}`)
-    setIsModalOpen(false)
-
-    // Update status to pending for demo
+    const selectedVendorIds = Array.from(selectedVendorsForBid)
+    console.log(`[v0] Bid option selected: ${option} for ${selectedSubPhase?.title}`, {
+      vendors: selectedVendorIds,
+      vendorCount: selectedVendorIds.length
+    })
+    
+    // Update status to pending for selected vendors only
     if (selectedSubPhase) {
       setPhases(
         phases.map((phase) => ({
@@ -357,16 +576,22 @@ export function BidsPage() {
             subPhase.id === selectedSubPhase.id
               ? {
                   ...subPhase,
-                  vendors: subPhase.vendors.map((vendor) => ({
-                    ...vendor,
-                    status: "Pending" as const,
-                  })),
+                  vendors: subPhase.vendors.map((vendor) => 
+                    selectedVendorsForBid.has(vendor.id)
+                      ? { ...vendor, status: "Pending" as const }
+                      : vendor
+                  ),
                 }
               : subPhase,
           ),
         })),
       )
     }
+
+    // Reset and close modal
+    setIsModalOpen(false)
+    setBidRequestStep("select-vendors")
+    setSelectedVendorsForBid(new Set())
   }
 
   return (
@@ -404,8 +629,13 @@ export function BidsPage() {
 
                           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-4">
                             {subPhase.vendors.map((vendor, index) => (
-                              <div key={vendor.id} className="bg-white p-4 rounded-lg border shadow-sm">
-                                <div className="flex items-start justify-between mb-3">
+                              <div key={vendor.id} className="bg-white p-4 rounded-lg border shadow-sm flex flex-col h-full">
+                                {/* Status Badge at Top */}
+                                <div className="mb-3">
+                                  {getStatusBadge(vendor.status, vendor.id, phase.id, subPhase.id)}
+                                </div>
+
+                                <div className="flex items-start justify-between mb-3 flex-1 min-h-0">
                                   {editingVendor === vendor.id ? (
                                     <div className="flex-1 space-y-2">
                                       <Input
@@ -459,27 +689,42 @@ export function BidsPage() {
                                     </div>
                                   ) : (
                                     <>
-                                      <div className="flex-1">
-                                        <p className="font-semibold text-sm mb-1">{vendor.name}</p>
+                                      <div className="flex-1 min-w-0">
+                                        <div className="flex items-start justify-between mb-2">
+                                          <p className="font-semibold text-sm pr-2">{vendor.name}</p>
+                                          <div className="flex items-center gap-1">
+                                            <Button variant="ghost" size="sm" className="flex-shrink-0 h-6 w-6 p-0" onClick={() => setEditingVendor(vendor.id)}>
+                                              <Edit2 className="h-3 w-3" />
+                                            </Button>
+                                            <Button 
+                                              variant="ghost" 
+                                              size="sm" 
+                                              className="flex-shrink-0 h-6 w-6 p-0 text-red-600 hover:text-red-700 hover:bg-red-50" 
+                                              onClick={() => handleDeleteVendor(phase.id, subPhase.id, vendor.id, vendor.name)}
+                                            >
+                                              <Trash2 className="h-3 w-3" />
+                                            </Button>
+                                          </div>
+                                        </div>
 
                                         {/* Contact Information */}
-                                        <div className="space-y-1 mb-2">
+                                        <div className="space-y-1 mb-3">
                                           <p className="text-xs text-gray-600 flex items-center">
-                                            <Mail className="h-3 w-3 mr-1" />
-                                            {vendor.email}
+                                            <Mail className="h-3 w-3 mr-1 flex-shrink-0" />
+                                            <span className="truncate">{vendor.email}</span>
                                           </p>
                                           {vendor.phone && (
                                             <p className="text-xs text-gray-600 flex items-center">
-                                              <Phone className="h-3 w-3 mr-1" />
-                                              {vendor.phone}
+                                              <Phone className="h-3 w-3 mr-1 flex-shrink-0" />
+                                              <span className="truncate">{vendor.phone}</span>
                                             </p>
                                           )}
                                         </div>
 
                                         {/* Rating */}
                                         {vendor.rating && (
-                                          <div className="flex items-center mb-2">
-                                            <Star className="h-3 w-3 text-yellow-500 fill-current mr-1" />
+                                          <div className="flex items-center mb-3">
+                                            <Star className="h-3 w-3 text-yellow-500 fill-current mr-1 flex-shrink-0" />
                                             <span className="text-xs font-medium">{vendor.rating.score}</span>
                                             <span className="text-xs text-gray-500 ml-1">
                                               ({vendor.rating.reviews} {vendor.rating.platform} reviews)
@@ -489,11 +734,11 @@ export function BidsPage() {
 
                                         {/* Social Media */}
                                         {vendor.socialMedia && vendor.socialMedia.length > 0 && (
-                                          <div className="mb-2">
+                                          <div className="mb-3">
                                             <p className="text-xs text-gray-500 mb-1">Social:</p>
                                             <div className="flex flex-wrap gap-1">
                                               {vendor.socialMedia.map((social, idx) => (
-                                                <Badge key={idx} variant="outline" className="text-xs px-1 py-0">
+                                                <Badge key={idx} variant="outline" className="text-xs px-1.5 py-0.5">
                                                   {social.platform}: {social.handle}
                                                 </Badge>
                                               ))}
@@ -503,11 +748,11 @@ export function BidsPage() {
 
                                         {/* Found Via */}
                                         {vendor.foundVia && vendor.foundVia.length > 0 && (
-                                          <div className="mb-2">
+                                          <div className="mb-3">
                                             <p className="text-xs text-gray-500 mb-1">Found via:</p>
                                             <div className="flex flex-wrap gap-1">
                                               {vendor.foundVia.map((platform, idx) => (
-                                                <Badge key={idx} variant="secondary" className="text-xs px-1 py-0">
+                                                <Badge key={idx} variant="secondary" className="text-xs px-1.5 py-0.5">
                                                   {platform}
                                                 </Badge>
                                               ))}
@@ -515,29 +760,34 @@ export function BidsPage() {
                                           </div>
                                         )}
                                       </div>
-                                      <Button variant="ghost" size="sm" onClick={() => setEditingVendor(vendor.id)}>
-                                        <Edit2 className="h-3 w-3" />
-                                      </Button>
                                     </>
                                   )}
                                 </div>
-                                <div className="flex items-center justify-between">
-                                  {getStatusBadge(vendor.status)}
-                                  <Button
-                                    variant="outline"
-                                    size="sm"
-                                    onClick={() => setSelectedVendor({ id: vendor.id, name: vendor.name, email: vendor.email, phone: vendor.phone })}
-                                  >
-                                    Use for Schedule
-                                  </Button>
-                                </div>
+                                
+                                {/* Full-width Button at Bottom - Only show for Bid Accepted */}
+                                {vendor.status === "Bid Accepted" && (
+                                  <div className="mt-auto pt-3 border-t">
+                                    <Button
+                                      variant={selectedVendor?.id === vendor.id ? "default" : "outline"}
+                                      size="sm"
+                                      className={`w-full ${
+                                        selectedVendor?.id === vendor.id 
+                                          ? "bg-cyan-600 hover:bg-cyan-700 text-white" 
+                                          : ""
+                                      }`}
+                                      onClick={() => setSelectedVendor({ id: vendor.id, name: vendor.name, email: vendor.email, phone: vendor.phone })}
+                                    >
+                                      Use for Schedule
+                                    </Button>
+                                  </div>
+                                )}
                               </div>
                             ))}
                           </div>
                         </div>
 
-                        <div className="ml-6">
-                          <Button onClick={() => handleRequestBids(subPhase)} className="bg-cyan-600 hover:bg-cyan-700">
+                        <div className="ml-6 flex-shrink-0">
+                          <Button onClick={() => handleRequestBids(subPhase, phase.id)} className="bg-cyan-600 hover:bg-cyan-700 whitespace-nowrap">
                             Request Bids
                           </Button>
                         </div>
@@ -552,64 +802,371 @@ export function BidsPage() {
       </div>
 
       {/* Bid Request Modal */}
-      <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
+      <Dialog open={isModalOpen} onOpenChange={(open) => {
+        setIsModalOpen(open)
+        if (!open) {
+          // Reset when closing
+          setBidRequestStep("select-vendors")
+          setSelectedVendorsForBid(new Set())
+          setIsAddingVendor(false)
+          setSelectedSubPhaseContext(null)
+          setNewVendor({ name: "", email: "", phone: "", website: "", tradeCategory: "", socialMedia: [], foundVia: [] })
+          setNewSocialMedia({ platform: "", handle: "" })
+        }
+      }}>
         <DialogContent className="max-w-2xl">
           <DialogHeader>
-            <DialogTitle>Request Bids for {selectedSubPhase?.title}</DialogTitle>
+            <DialogTitle>
+              {bidRequestStep === "select-vendors" 
+                ? `Select Vendors for ${selectedSubPhase?.title}`
+                : `How would you like to send bid requests?`}
+            </DialogTitle>
           </DialogHeader>
 
-          <div className="space-y-6 py-4">
-            {/* Option 1: Manual Control */}
-            <div className="border rounded-lg p-4">
-              <h3 className="font-semibold mb-2 flex items-center">
-                <Edit2 className="h-4 w-4 mr-2" />
-                I'll Send It Myself
-              </h3>
+          {bidRequestStep === "select-vendors" ? (
+            <div className="space-y-4 py-4">
               <p className="text-sm text-gray-600 mb-4">
-                Manage the communication yourself. We can prepare a professional email draft for you to send, or you can
-                simply mark the bids as 'Pending' to track them here.
+                Select the contractors you'd like to request bids from. You can select multiple contractors or add a new one.
               </p>
-              <div className="flex gap-3">
-                <Button variant="outline" onClick={() => handleBidOption("prepare-email")}>
-                  Prepare Email Draft
+              
+              {/* Add New Vendor Form */}
+              {isAddingVendor ? (
+                <div className="border-2 border-dashed border-cyan-300 rounded-lg p-4 bg-cyan-50 mb-4">
+                  <div className="flex items-center justify-between mb-3">
+                    <h4 className="font-semibold text-sm">Add New Vendor</h4>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => {
+                        setIsAddingVendor(false)
+                        setNewVendor({ name: "", email: "", phone: "", website: "", tradeCategory: "", socialMedia: [], foundVia: [] })
+                        setNewSocialMedia({ platform: "", handle: "" })
+                      }}
+                    >
+                      <X className="h-4 w-4" />
+                    </Button>
+                  </div>
+                  <div className="space-y-3">
+                    <div>
+                      <label className="text-xs font-medium text-gray-700 mb-1 block">Vendor Name *</label>
+                      <Input
+                        placeholder="e.g., ABC Construction"
+                        value={newVendor.name}
+                        onChange={(e) => setNewVendor({ ...newVendor, name: e.target.value })}
+                        className="text-sm"
+                        autoFocus
+                      />
+                    </div>
+                    <div>
+                      <label className="text-xs font-medium text-gray-700 mb-1 block">Email</label>
+                      <Input
+                        type="email"
+                        placeholder="contact@example.com"
+                        value={newVendor.email}
+                        onChange={(e) => setNewVendor({ ...newVendor, email: e.target.value })}
+                        className="text-sm"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-xs font-medium text-gray-700 mb-1 block">Phone</label>
+                      <Input
+                        type="tel"
+                        placeholder="(555) 123-4567"
+                        value={newVendor.phone}
+                        onChange={(e) => setNewVendor({ ...newVendor, phone: e.target.value })}
+                        className="text-sm"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-xs font-medium text-gray-700 mb-1 block">Website (Optional)</label>
+                      <Input
+                        type="url"
+                        placeholder="https://www.example.com"
+                        value={newVendor.website}
+                        onChange={(e) => setNewVendor({ ...newVendor, website: e.target.value })}
+                        className="text-sm"
+                      />
+                    </div>
+                    
+                    {/* Social Media */}
+                    <div>
+                      <label className="text-xs font-medium text-gray-700 mb-2 block">Social Media (Optional)</label>
+                      {newVendor.socialMedia.length > 0 && (
+                        <div className="space-y-2 mb-2">
+                          {newVendor.socialMedia.map((social, idx) => (
+                            <div key={idx} className="flex items-center gap-2 p-2 bg-gray-50 rounded border">
+                              <Badge variant="outline" className="text-xs">{social.platform}</Badge>
+                              <span className="text-xs flex-1">{social.handle}</span>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="h-6 w-6 p-0"
+                                onClick={() => removeSocialMedia(idx)}
+                              >
+                                <X className="h-3 w-3" />
+                              </Button>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                      <div className="flex gap-2">
+                        <Select value={newSocialMedia.platform} onValueChange={(value) => setNewSocialMedia({ ...newSocialMedia, platform: value })}>
+                          <SelectTrigger className="text-xs h-8">
+                            <SelectValue placeholder="Platform" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="Facebook">Facebook</SelectItem>
+                            <SelectItem value="Instagram">Instagram</SelectItem>
+                            <SelectItem value="LinkedIn">LinkedIn</SelectItem>
+                            <SelectItem value="TikTok">TikTok</SelectItem>
+                            <SelectItem value="Snapchat">Snapchat</SelectItem>
+                            <SelectItem value="Reddit">Reddit</SelectItem>
+                            <SelectItem value="Quora">Quora</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <Input
+                          placeholder="@handle"
+                          value={newSocialMedia.handle}
+                          onChange={(e) => setNewSocialMedia({ ...newSocialMedia, handle: e.target.value })}
+                          className="text-sm flex-1"
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter" && newSocialMedia.platform && newSocialMedia.handle.trim()) {
+                              handleAddSocialMedia()
+                            }
+                          }}
+                        />
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={handleAddSocialMedia}
+                          disabled={!newSocialMedia.platform || !newSocialMedia.handle.trim()}
+                          className="h-8"
+                        >
+                          <Plus className="h-3 w-3" />
+                        </Button>
+                      </div>
+                    </div>
+
+                    {/* Found Via */}
+                    <div>
+                      <label className="text-xs font-medium text-gray-700 mb-2 block">How did you find them? (Optional)</label>
+                      <div className="flex flex-wrap gap-2">
+                        {["Google", "Facebook", "Snapchat", "TikTok", "Reddit", "Quora", "Referral", "Other"].map((source) => (
+                          <Button
+                            key={source}
+                            type="button"
+                            variant={newVendor.foundVia.includes(source) ? "default" : "outline"}
+                            size="sm"
+                            onClick={() => toggleFoundVia(source)}
+                            className={`text-xs h-7 ${
+                              newVendor.foundVia.includes(source) ? "bg-cyan-600 hover:bg-cyan-700" : ""
+                            }`}
+                          >
+                            {source}
+                          </Button>
+                        ))}
+                      </div>
+                    </div>
+
+                    <Button
+                      onClick={handleAddVendor}
+                      disabled={!newVendor.name.trim()}
+                      className="w-full bg-cyan-600 hover:bg-cyan-700"
+                      size="sm"
+                    >
+                      Add Vendor
+                    </Button>
+                  </div>
+                </div>
+              ) : (
+                <Button
+                  variant="outline"
+                  onClick={() => setIsAddingVendor(true)}
+                  className="w-full border-dashed border-2 border-gray-300 hover:border-cyan-500 hover:bg-cyan-50 mb-4"
+                >
+                  <Plus className="h-4 w-4 mr-2" />
+                  Add New Vendor
                 </Button>
-                <Button variant="secondary" onClick={() => handleBidOption("mark-pending")}>
-                  Just Mark as Pending
+              )}
+              
+              <div className="space-y-2 max-h-96 overflow-y-auto">
+                {selectedSubPhase?.vendors.map((vendor) => {
+                  const isSelected = selectedVendorsForBid.has(vendor.id)
+                  return (
+                    <div
+                      key={vendor.id}
+                      className={`border rounded-lg p-4 cursor-pointer transition-colors ${
+                        isSelected ? "border-cyan-500 bg-cyan-50" : "border-gray-200 hover:border-gray-300"
+                      }`}
+                      onClick={() => toggleVendorSelection(vendor.id)}
+                    >
+                      <div className="flex items-start justify-between">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2 mb-2">
+                            <div className={`w-5 h-5 rounded border-2 flex items-center justify-center ${
+                              isSelected ? "border-cyan-500 bg-cyan-500" : "border-gray-300"
+                            }`}>
+                              {isSelected && <Check className="h-3 w-3 text-white" />}
+                            </div>
+                            <p className="font-semibold text-sm">{vendor.name}</p>
+                            {selectedSubPhaseContext ? (
+                              getStatusBadge(vendor.status, vendor.id, selectedSubPhaseContext.phaseId, selectedSubPhaseContext.subPhaseId)
+                            ) : (
+                              <Badge className={`text-xs font-medium px-2 py-1 ${
+                                vendor.status === "Bid Accepted" ? "bg-blue-100 text-blue-800" :
+                                vendor.status === "Bid Received" ? "bg-green-100 text-green-800" :
+                                vendor.status === "Pending" ? "bg-yellow-100 text-yellow-800" :
+                                "bg-gray-100 text-gray-800"
+                              } border-0`}>
+                                {vendor.status}
+                              </Badge>
+                            )}
+                          </div>
+                          
+                          <div className="ml-7 space-y-1">
+                            <p className="text-xs text-gray-600 flex items-center">
+                              <Mail className="h-3 w-3 mr-1" />
+                              {vendor.email}
+                            </p>
+                            {vendor.phone && (
+                              <p className="text-xs text-gray-600 flex items-center">
+                                <Phone className="h-3 w-3 mr-1" />
+                                {vendor.phone}
+                              </p>
+                            )}
+                            {vendor.rating && (
+                              <div className="flex items-center">
+                                <Star className="h-3 w-3 text-yellow-500 fill-current mr-1" />
+                                <span className="text-xs">{vendor.rating.score} ({vendor.rating.reviews} reviews)</span>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+
+              <div className="flex justify-between items-center pt-4 border-t">
+                <Button variant="outline" onClick={() => {
+                  setIsModalOpen(false)
+                  setIsAddingVendor(false)
+                  setNewVendor({ name: "", email: "", phone: "", website: "", tradeCategory: "", socialMedia: [], foundVia: [] })
+                  setNewSocialMedia({ platform: "", handle: "" })
+                }}>
+                  Cancel
+                </Button>
+                <Button 
+                  onClick={handleContinueToMethod}
+                  disabled={selectedVendorsForBid.size === 0}
+                  className="bg-cyan-600 hover:bg-cyan-700"
+                >
+                  Continue ({selectedVendorsForBid.size} {selectedVendorsForBid.size === 1 ? 'vendor' : 'vendors'} selected)
                 </Button>
               </div>
             </div>
+          ) : (
+            <div className="space-y-6 py-4">
+              <div className="mb-4 p-3 bg-gray-50 rounded-lg">
+                <p className="text-sm font-medium mb-2">Selected Vendors ({selectedVendorsForBid.size}):</p>
+                <div className="flex flex-wrap gap-2">
+                  {selectedSubPhase?.vendors
+                    .filter(v => selectedVendorsForBid.has(v.id))
+                    .map(vendor => (
+                      <Badge key={vendor.id} variant="secondary" className="text-xs">
+                        {vendor.name}
+                      </Badge>
+                    ))}
+                </div>
+              </div>
 
-            {/* Option 2: Send via Aurahöm (Recommended) */}
-            <div className="border-2 border-cyan-200 rounded-lg p-4 bg-cyan-50">
-              <div className="flex items-center justify-between mb-2">
-                <h3 className="font-semibold flex items-center">
-                  <Send className="h-4 w-4 mr-2" />
-                  Send via Aurahöm
+              {/* Option 1: Manual Control */}
+              <div className="border rounded-lg p-4">
+                <h3 className="font-semibold mb-2 flex items-center">
+                  <Edit2 className="h-4 w-4 mr-2" />
+                  I'll Send It Myself
                 </h3>
-                <Badge className="bg-cyan-600 hover:bg-cyan-600">Recommended</Badge>
+                <p className="text-sm text-gray-600 mb-4">
+                  Manage the communication yourself. We can prepare a professional email draft for you to send, or you can
+                  simply mark the bids as 'Pending' to track them here.
+                </p>
+                <div className="flex gap-3">
+                  <Button variant="outline" onClick={() => handleBidOption("prepare-email")}>
+                    Prepare Email Draft
+                  </Button>
+                  <Button variant="secondary" onClick={() => handleBidOption("mark-pending")}>
+                    Just Mark as Pending
+                  </Button>
+                </div>
               </div>
-              <p className="text-sm text-gray-600 mb-4">
-                We will send a professional bid request to the selected vendors. Your email remains private, and you can
-                track everything automatically in your dashboard.
-              </p>
-              <Button className="bg-cyan-600 hover:bg-cyan-700" onClick={() => handleBidOption("send-via-aurahom")}>
-                Send via Aurahöm
-              </Button>
-            </div>
 
-            {/* Option 3: Send From My Email */}
-            <div className="border rounded-lg p-4">
-              <h3 className="font-semibold mb-2 flex items-center">
-                <Mail className="h-4 w-4 mr-2" />
-                Send from My Email Address
-              </h3>
-              <p className="text-sm text-gray-600 mb-4">
-                Authorize Aurahöm to send the bid request directly from your connected email account (e.g., Gmail,
-                Outlook). All correspondence, including replies, will be automatically saved and organized in your
-                project's 'Documents' folder.
-              </p>
-              <Button variant="outline" onClick={() => handleBidOption("send-from-email")}>
-                Send and Sync from My Email
+              {/* Option 2: Send via Aurahöm (Recommended) */}
+              <div className="border-2 border-cyan-200 rounded-lg p-4 bg-cyan-50">
+                <div className="flex items-center justify-between mb-2">
+                  <h3 className="font-semibold flex items-center">
+                    <Send className="h-4 w-4 mr-2" />
+                    Send via Aurahöm
+                  </h3>
+                  <Badge className="bg-cyan-600 hover:bg-cyan-600">Recommended</Badge>
+                </div>
+                <p className="text-sm text-gray-600 mb-4">
+                  We will send a professional bid request to the selected vendors. Your email remains private, and you can
+                  track everything automatically in your dashboard.
+                </p>
+                <Button className="bg-cyan-600 hover:bg-cyan-700" onClick={() => handleBidOption("send-via-aurahom")}>
+                  Send via Aurahöm
+                </Button>
+              </div>
+
+              {/* Option 3: Send From My Email */}
+              <div className="border rounded-lg p-4">
+                <h3 className="font-semibold mb-2 flex items-center">
+                  <Mail className="h-4 w-4 mr-2" />
+                  Send from My Email Address
+                </h3>
+                <p className="text-sm text-gray-600 mb-4">
+                  Authorize Aurahöm to send the bid request directly from your connected email account (e.g., Gmail,
+                  Outlook). All correspondence, including replies, will be automatically saved and organized in your
+                  project's 'Documents' folder.
+                </p>
+                <Button variant="outline" onClick={() => handleBidOption("send-from-email")}>
+                  Send and Sync from My Email
+                </Button>
+              </div>
+
+              <div className="flex justify-start pt-4 border-t">
+                <Button variant="ghost" onClick={() => setBidRequestStep("select-vendors")} className="flex items-center gap-2">
+                  <ArrowLeft className="h-4 w-4" />
+                  Back to Vendor Selection
+                </Button>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Confirmation Modal */}
+      <Dialog open={!!vendorToDelete} onOpenChange={(open) => !open && setVendorToDelete(null)}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Delete Contractor?</DialogTitle>
+          </DialogHeader>
+          <div className="py-4">
+            <p className="text-sm text-gray-600 mb-4">
+              Are you sure you want to delete <strong>{vendorToDelete?.vendorName}</strong>? This action cannot be undone.
+            </p>
+            <div className="flex justify-end gap-3">
+              <Button variant="outline" onClick={() => setVendorToDelete(null)}>
+                Cancel
+              </Button>
+              <Button 
+                variant="destructive" 
+                onClick={confirmDeleteVendor}
+                className="bg-red-600 hover:bg-red-700"
+              >
+                Delete
               </Button>
             </div>
           </div>
