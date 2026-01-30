@@ -9,12 +9,15 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { ChevronDown, ChevronRight, Edit2, Mail, Send, Phone, Star, Check, ArrowLeft, Plus, X, Trash2 } from "lucide-react"
 import { useBids } from "@/contexts/bids-context"
+import { useRoadmap } from "@/contexts/roadmap-context"
+import { EmailDraftModal } from "@/components/email-draft-modal"
 
 interface Vendor {
   id: string
   name: string
   email: string
   phone?: string
+  contactName?: string // Contact person at the vendor company
   status: "Not Requested" | "Pending" | "Bid Received" | "Bid Accepted"
   rating?: {
     platform: "Google" | "Facebook"
@@ -43,6 +46,8 @@ interface Phase {
 
 export function BidsPage() {
   const { setSelectedVendor, selectedVendor } = useBids()
+  const { profile, roadmap } = useRoadmap()
+  const [isEmailDraftModalOpen, setIsEmailDraftModalOpen] = useState(false)
   const [phases, setPhases] = useState<Phase[]>([
     {
       id: "phase1",
@@ -304,6 +309,7 @@ export function BidsPage() {
     email: "",
     phone: "",
     website: "",
+    contactName: "",
     tradeCategory: "",
     socialMedia: [] as { platform: string; handle: string }[],
     foundVia: [] as string[]
@@ -387,6 +393,7 @@ export function BidsPage() {
       name: newVendor.name,
       email: newVendor.email,
       phone: newVendor.phone || undefined,
+      contactName: newVendor.contactName || undefined,
       status: "Not Requested",
       socialMedia: newVendor.socialMedia.length > 0 ? newVendor.socialMedia : undefined,
       foundVia: newVendor.foundVia.length > 0 ? newVendor.foundVia as Vendor["foundVia"] : undefined,
@@ -411,7 +418,7 @@ export function BidsPage() {
     setSelectedVendorsForBid(prev => new Set([...prev, vendorId]))
 
     // Reset form
-    setNewVendor({ name: "", email: "", phone: "", website: "", tradeCategory: "", socialMedia: [], foundVia: [] })
+    setNewVendor({ name: "", email: "", phone: "", website: "", contactName: "", tradeCategory: "", socialMedia: [], foundVia: [] })
     setNewSocialMedia({ platform: "", handle: "" })
     setIsAddingVendor(false)
   }
@@ -422,6 +429,7 @@ export function BidsPage() {
     vendorId: string,
     newName: string,
     newEmail: string,
+    newContactName?: string,
   ) => {
     setPhases(
       phases.map((phase) =>
@@ -433,7 +441,9 @@ export function BidsPage() {
                   ? {
                       ...subPhase,
                       vendors: subPhase.vendors.map((vendor) =>
-                        vendor.id === vendorId ? { ...vendor, name: newName, email: newEmail } : vendor,
+                        vendor.id === vendorId 
+                          ? { ...vendor, name: newName, email: newEmail, contactName: newContactName || undefined } 
+                          : vendor,
                       ),
                     }
                   : subPhase,
@@ -447,6 +457,30 @@ export function BidsPage() {
 
   const handleDeleteVendor = (phaseId: string, subPhaseId: string, vendorId: string, vendorName: string) => {
     setVendorToDelete({ phaseId, subPhaseId, vendorId, vendorName })
+  }
+
+  const handleCopyLetter = (vendorId: string) => {
+    if (!selectedSubPhaseContext) return
+    const { phaseId, subPhaseId } = selectedSubPhaseContext
+    setPhases((prev) =>
+      prev.map((phase) =>
+        phase.id === phaseId
+          ? {
+              ...phase,
+              subPhases: phase.subPhases.map((sp) =>
+                sp.id === subPhaseId
+                  ? {
+                      ...sp,
+                      vendors: sp.vendors.map((v) =>
+                        v.id === vendorId ? { ...v, status: "Pending" as const } : v
+                      ),
+                    }
+                  : sp
+              ),
+            }
+          : phase
+      )
+    )
   }
 
   const confirmDeleteVendor = () => {
@@ -560,12 +594,38 @@ export function BidsPage() {
   }
 
   const handleBidOption = (option: string) => {
-    // Mock implementation - in real app would handle different bid request methods
     const selectedVendorIds = Array.from(selectedVendorsForBid)
     console.log(`[v0] Bid option selected: ${option} for ${selectedSubPhase?.title}`, {
       vendors: selectedVendorIds,
       vendorCount: selectedVendorIds.length
     })
+    
+    if (option === "prepare-email") {
+      // Open email draft modal
+      const context = getEmailDraftContext()
+      console.log("📧 Opening email draft modal...", {
+        selectedSubPhaseContext,
+        selectedVendorsForBid: Array.from(selectedVendorsForBid),
+        selectedVendorsForBidSize: selectedVendorsForBid.size,
+        hasSelectedSubPhase: !!selectedSubPhase,
+        context: context,
+        canOpen: !!context
+      })
+      
+      if (!context) {
+        console.error("❌ Cannot open email draft - context is null", {
+          selectedSubPhaseContext,
+          selectedVendorsForBid: Array.from(selectedVendorsForBid),
+          selectedSubPhase: selectedSubPhase?.id,
+          phases: phases.map(p => ({ id: p.id, title: p.title }))
+        })
+        // Don't open modal if context is missing
+        return
+      }
+      
+      setIsEmailDraftModalOpen(true)
+      return // Don't close the bid request modal yet
+    }
     
     // Update status to pending for selected vendors only
     if (selectedSubPhase) {
@@ -592,6 +652,130 @@ export function BidsPage() {
     setIsModalOpen(false)
     setBidRequestStep("select-vendors")
     setSelectedVendorsForBid(new Set())
+  }
+
+  // Get email draft context from current selection
+  // Uses the first selected vendor for the email draft
+  function getEmailDraftContext() {
+    // Try to get context from selectedSubPhaseContext first, fallback to selectedSubPhase
+    let phaseId: string | undefined
+    let subPhaseId: string | undefined
+    
+    if (selectedSubPhaseContext) {
+      phaseId = selectedSubPhaseContext.phaseId
+      subPhaseId = selectedSubPhaseContext.subPhaseId
+    } else if (selectedSubPhase) {
+      // Fallback: try to find the phase/subphase from selectedSubPhase
+      const phase = phases.find(p => p.subPhases.some(sp => sp.id === selectedSubPhase.id))
+      if (phase) {
+        phaseId = phase.id
+        subPhaseId = selectedSubPhase.id
+      }
+    }
+    
+    if (!phaseId || !subPhaseId) {
+      console.warn("⚠️ getEmailDraftContext: Cannot determine phase/subphase", {
+        hasSelectedSubPhaseContext: !!selectedSubPhaseContext,
+        hasSelectedSubPhase: !!selectedSubPhase
+      })
+      return null
+    }
+    
+    if (selectedVendorsForBid.size === 0) {
+      console.warn("⚠️ getEmailDraftContext: No vendors selected")
+      return null
+    }
+    
+    // Get current vendor data from phases state (not the snapshot)
+    const selectedPhase = phases.find(p => p.id === phaseId)
+    if (!selectedPhase) {
+      console.warn("⚠️ getEmailDraftContext: Phase not found", phaseId)
+      return null
+    }
+    
+    const currentSubPhase = selectedPhase.subPhases.find(sp => sp.id === subPhaseId)
+    if (!currentSubPhase) {
+      console.warn("⚠️ getEmailDraftContext: SubPhase not found", subPhaseId)
+      return null
+    }
+    
+    // Get the first selected vendor from current state
+    const selectedVendorId = Array.from(selectedVendorsForBid)[0]
+    const selectedVendor = currentSubPhase.vendors.find(v => v.id === selectedVendorId)
+    
+    if (!selectedVendor) {
+      console.warn("⚠️ getEmailDraftContext: Vendor not found", {
+        selectedVendorId,
+        availableVendorIds: currentSubPhase.vendors.map(v => v.id)
+      })
+      return null
+    }
+
+    // Get project info from profile/roadmap
+    const houseSize = profile?.houseSize ? parseInt(profile.houseSize) : undefined
+    const budgetRange = roadmap?.phases?.[0]?.duration // This is a placeholder - you may want to get actual budget from project context
+    
+    return {
+      projectProfile: profile || undefined,
+      phaseTitle: selectedPhase.title,
+      subPhaseTitle: currentSubPhase.title,
+      vendorId: selectedVendor.id,
+      vendorName: selectedVendor.name,
+      vendorEmail: selectedVendor.email,
+      vendorContactName: selectedVendor.contactName,
+      constructionMethod: profile?.constructionMethod,
+      location: profile?.cityState,
+      houseSize,
+      foundationType: profile?.foundationType,
+      numberOfStories: profile?.numberOfStories,
+      targetStartDate: profile?.targetStartDate,
+      budgetRange: budgetRange || undefined
+    }
+  }
+
+  // Get email draft contexts for all selected vendors (for multi-letter navigation)
+  function getEmailDraftContexts(): ReturnType<typeof getEmailDraftContext>[] {
+    const first = getEmailDraftContext()
+    if (!first) return []
+    let phaseId: string | undefined
+    let subPhaseId: string | undefined
+    if (selectedSubPhaseContext) {
+      phaseId = selectedSubPhaseContext.phaseId
+      subPhaseId = selectedSubPhaseContext.subPhaseId
+    } else if (selectedSubPhase) {
+      const phase = phases.find(p => p.subPhases.some(sp => sp.id === selectedSubPhase!.id))
+      if (phase) {
+        phaseId = phase.id
+        subPhaseId = selectedSubPhase.id
+      }
+    }
+    if (!phaseId || !subPhaseId) return first ? [first] : []
+    const selectedPhase = phases.find(p => p.id === phaseId)!
+    const currentSubPhase = selectedPhase.subPhases.find(sp => sp.id === subPhaseId)!
+    const houseSize = profile?.houseSize ? parseInt(profile.houseSize) : undefined
+    const budgetRange = roadmap?.phases?.[0]?.duration
+    const contexts: ReturnType<typeof getEmailDraftContext>[] = []
+    for (const vendorId of selectedVendorsForBid) {
+      const vendor = currentSubPhase.vendors.find(v => v.id === vendorId)
+      if (!vendor) continue
+      contexts.push({
+        projectProfile: profile || undefined,
+        phaseTitle: selectedPhase.title,
+        subPhaseTitle: currentSubPhase.title,
+        vendorId: vendor.id,
+        vendorName: vendor.name,
+        vendorEmail: vendor.email,
+        vendorContactName: vendor.contactName,
+        constructionMethod: profile?.constructionMethod,
+        location: profile?.cityState,
+        houseSize,
+        foundationType: profile?.foundationType,
+        numberOfStories: profile?.numberOfStories,
+        targetStartDate: profile?.targetStartDate,
+        budgetRange: budgetRange || undefined
+      })
+    }
+    return contexts.length > 0 ? contexts : (first ? [first] : [])
   }
 
   return (
@@ -648,6 +832,7 @@ export function BidsPage() {
                                             vendor.id,
                                             e.target.value,
                                             vendor.email,
+                                            vendor.contactName,
                                           )
                                         }
                                         onKeyDown={(e) => {
@@ -658,6 +843,7 @@ export function BidsPage() {
                                               vendor.id,
                                               e.currentTarget.value,
                                               vendor.email,
+                                              vendor.contactName,
                                             )
                                           }
                                         }}
@@ -775,7 +961,7 @@ export function BidsPage() {
                                           ? "bg-cyan-600 hover:bg-cyan-700 text-white" 
                                           : ""
                                       }`}
-                                      onClick={() => setSelectedVendor({ id: vendor.id, name: vendor.name, email: vendor.email, phone: vendor.phone })}
+                                      onClick={() => setSelectedVendor({ id: vendor.id, name: vendor.name, email: vendor.email, phone: vendor.phone, contactName: vendor.contactName })}
                                     >
                                       Use for Schedule
                                     </Button>
@@ -805,16 +991,19 @@ export function BidsPage() {
       <Dialog open={isModalOpen} onOpenChange={(open) => {
         setIsModalOpen(open)
         if (!open) {
-          // Reset when closing
-          setBidRequestStep("select-vendors")
-          setSelectedVendorsForBid(new Set())
-          setIsAddingVendor(false)
-          setSelectedSubPhaseContext(null)
-          setNewVendor({ name: "", email: "", phone: "", website: "", tradeCategory: "", socialMedia: [], foundVia: [] })
-          setNewSocialMedia({ platform: "", handle: "" })
+          // Reset when closing - but only if email draft modal is not open
+          if (!isEmailDraftModalOpen) {
+            setBidRequestStep("select-vendors")
+            setSelectedVendorsForBid(new Set())
+            setIsAddingVendor(false)
+            // Don't clear selectedSubPhaseContext here - it might be needed for email draft
+            // setSelectedSubPhaseContext(null)
+            setNewVendor({ name: "", email: "", phone: "", website: "", contactName: "", tradeCategory: "", socialMedia: [], foundVia: [] })
+            setNewSocialMedia({ platform: "", handle: "" })
+          }
         }
       }}>
-        <DialogContent className="max-w-2xl">
+        <DialogContent className="max-w-2xl" aria-describedby={undefined}>
           <DialogHeader>
             <DialogTitle>
               {bidRequestStep === "select-vendors" 
@@ -839,7 +1028,7 @@ export function BidsPage() {
                       size="sm"
                       onClick={() => {
                         setIsAddingVendor(false)
-                        setNewVendor({ name: "", email: "", phone: "", website: "", tradeCategory: "", socialMedia: [], foundVia: [] })
+                        setNewVendor({ name: "", email: "", phone: "", website: "", contactName: "", tradeCategory: "", socialMedia: [], foundVia: [] })
                         setNewSocialMedia({ platform: "", handle: "" })
                       }}
                     >
@@ -874,6 +1063,15 @@ export function BidsPage() {
                         placeholder="(555) 123-4567"
                         value={newVendor.phone}
                         onChange={(e) => setNewVendor({ ...newVendor, phone: e.target.value })}
+                        className="text-sm"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-xs font-medium text-gray-700 mb-1 block">Contact Name (Optional)</label>
+                      <Input
+                        placeholder="e.g., John Smith, Sales Department"
+                        value={newVendor.contactName}
+                        onChange={(e) => setNewVendor({ ...newVendor, contactName: e.target.value })}
                         className="text-sm"
                       />
                     </div>
@@ -991,7 +1189,13 @@ export function BidsPage() {
               )}
               
               <div className="space-y-2 max-h-96 overflow-y-auto">
-                {selectedSubPhase?.vendors.map((vendor) => {
+                {(() => {
+                  // Get current vendor data from phases state to ensure we have the latest status
+                  const currentPhase = phases.find(p => p.id === selectedSubPhaseContext?.phaseId)
+                  const currentSubPhase = currentPhase?.subPhases.find(sp => sp.id === selectedSubPhaseContext?.subPhaseId)
+                  const currentVendors = currentSubPhase?.vendors || selectedSubPhase?.vendors || []
+                  
+                  return currentVendors.map((vendor) => {
                   const isSelected = selectedVendorsForBid.has(vendor.id)
                   return (
                     <div
@@ -1046,14 +1250,15 @@ export function BidsPage() {
                       </div>
                     </div>
                   )
-                })}
+                  })
+                })()}
               </div>
 
               <div className="flex justify-between items-center pt-4 border-t">
                 <Button variant="outline" onClick={() => {
                   setIsModalOpen(false)
                   setIsAddingVendor(false)
-                  setNewVendor({ name: "", email: "", phone: "", website: "", tradeCategory: "", socialMedia: [], foundVia: [] })
+                        setNewVendor({ name: "", email: "", phone: "", website: "", contactName: "", tradeCategory: "", socialMedia: [], foundVia: [] })
                   setNewSocialMedia({ platform: "", handle: "" })
                 }}>
                   Cancel
@@ -1120,22 +1325,6 @@ export function BidsPage() {
                 </Button>
               </div>
 
-              {/* Option 3: Send From My Email */}
-              <div className="border rounded-lg p-4">
-                <h3 className="font-semibold mb-2 flex items-center">
-                  <Mail className="h-4 w-4 mr-2" />
-                  Send from My Email Address
-                </h3>
-                <p className="text-sm text-gray-600 mb-4">
-                  Authorize Aurahöm to send the bid request directly from your connected email account (e.g., Gmail,
-                  Outlook). All correspondence, including replies, will be automatically saved and organized in your
-                  project's 'Documents' folder.
-                </p>
-                <Button variant="outline" onClick={() => handleBidOption("send-from-email")}>
-                  Send and Sync from My Email
-                </Button>
-              </div>
-
               <div className="flex justify-start pt-4 border-t">
                 <Button variant="ghost" onClick={() => setBidRequestStep("select-vendors")} className="flex items-center gap-2">
                   <ArrowLeft className="h-4 w-4" />
@@ -1147,9 +1336,41 @@ export function BidsPage() {
         </DialogContent>
       </Dialog>
 
+      {/* Email Draft Modal */}
+      {(() => {
+        // Only try to get contexts if modal is open
+        if (!isEmailDraftModalOpen) return null
+        
+        const contexts = getEmailDraftContexts()
+        if (!contexts.length) {
+          console.error("⚠️ Cannot open email draft modal - missing context", {
+            selectedSubPhaseContext,
+            selectedVendorsForBid: Array.from(selectedVendorsForBid),
+            selectedVendorsForBidSize: selectedVendorsForBid.size,
+            hasSelectedSubPhase: !!selectedSubPhase,
+            selectedSubPhaseId: selectedSubPhase?.id,
+            phasesCount: phases.length,
+            bidRequestStep,
+            isModalOpen
+          })
+          return null
+        }
+        
+        return (
+          <EmailDraftModal
+            open={isEmailDraftModalOpen}
+            onClose={() => {
+              setIsEmailDraftModalOpen(false)
+            }}
+            contexts={contexts}
+            onCopyLetter={handleCopyLetter}
+          />
+        )
+      })()}
+
       {/* Delete Confirmation Modal */}
       <Dialog open={!!vendorToDelete} onOpenChange={(open) => !open && setVendorToDelete(null)}>
-        <DialogContent className="max-w-md">
+        <DialogContent className="max-w-md" aria-describedby={undefined}>
           <DialogHeader>
             <DialogTitle>Delete Contractor?</DialogTitle>
           </DialogHeader>

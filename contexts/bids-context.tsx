@@ -7,6 +7,7 @@ export type SelectedVendor = {
   name: string
   email?: string
   phone?: string
+  contactName?: string
 }
 
 type BidsContextType = {
