@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import {
   AlertDialog,
@@ -90,13 +90,16 @@ export function EmailDraftModal({ open, onClose, contexts, onCopyLetter }: Email
   const [showFollowUps, setShowFollowUps] = useState(false);
   const [followUpQuestions, setFollowUpQuestions] = useState<Question[]>([]);
   const [copyReminderPending, setCopyReminderPending] = useState<{ vendorId: string; vendorName: string } | null>(null);
+  const questionsLoadedRef = useRef(false);
 
   // Load initial questions when modal opens
   useEffect(() => {
-    if (open && step === "loading-questions") {
+    // Only load questions if modal is opening fresh and not already loaded
+    if (open && step === "loading-questions" && !questionsLoadedRef.current) {
+      questionsLoadedRef.current = true;
       loadInitialQuestions();
     }
-  }, [open]);
+  }, [open, step]);
 
   async function loadInitialQuestions() {
     try {
@@ -234,6 +237,7 @@ export function EmailDraftModal({ open, onClose, contexts, onCopyLetter }: Email
     setShowFollowUps(false);
     setFollowUpQuestions([]);
     setCopyReminderPending(null);
+    questionsLoadedRef.current = false; // Reset the ref when closing
     onClose();
   }
 
@@ -470,9 +474,14 @@ export function EmailDraftModal({ open, onClose, contexts, onCopyLetter }: Email
     );
   }
 
+  const isQuestionsPane = step === "loading-questions" || step === "answering" || step === "generating";
+  const contentClassName = isQuestionsPane
+    ? "max-w-2xl max-h-[90vh] overflow-y-auto"
+    : "w-full max-w-[calc(100%-2rem)] sm:!max-w-[min(92vw,1600px)] max-h-[90vh] overflow-y-auto";
+
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="w-full max-w-[calc(100%-2rem)] sm:!max-w-[min(92vw,1600px)] max-h-[90vh] overflow-y-auto" aria-describedby={undefined}>
+      <DialogContent className={contentClassName} aria-describedby={undefined}>
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Sparkles className="h-5 w-5 text-cyan-600" />
@@ -672,7 +681,7 @@ export function EmailDraftModal({ open, onClose, contexts, onCopyLetter }: Email
               <div className="space-y-2">
                 <p>Remember to attach any necessary documents (e.g. plans, specs) before sending your email.</p>
                 <p>
-                  The status for <strong>{copyReminderPending?.vendorName}</strong> will be set to <strong>Pending</strong>.
+                  The status for <strong>{copyReminderPending?.vendorName}</strong> will be set to <strong className="text-yellow-700 bg-yellow-100 px-2 py-0.5 rounded">Pending</strong>.
                 </p>
               </div>
             </AlertDialogDescription>
