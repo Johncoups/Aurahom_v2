@@ -110,21 +110,23 @@ function RoadmapInner() {
 
 export default function RoadmapPage() {
 	const router = useRouter()
-	
+
 	return (
 		<ProtectedRoute>
-			<div className="min-h-screen bg-gray-50">
-				<DashboardHeader />
-				<main className="pb-6">
-					<FeatureNavigation onFeatureClick={(feature) => {
-						if (feature === "roadmap") return; // Stay on roadmap
-						if (feature === "dashboard") router.push("/dashboard");
-						if (feature === "timeline") router.push("/roadmap"); // Timeline demo removed
-						// Add other feature routes as needed
-					}} />
-					<RoadmapInner />
-				</main>
-			</div>
+			<RoadmapProvider>
+				<div className="min-h-screen bg-gray-50">
+					<DashboardHeader />
+					<main className="pb-6">
+						<FeatureNavigation onFeatureClick={(feature) => {
+							if (feature === "roadmap") return; // Stay on roadmap
+							if (feature === "dashboard") router.push("/dashboard");
+							if (feature === "timeline") router.push("/roadmap"); // Timeline demo removed
+							// Add other feature routes as needed
+						}} />
+						<RoadmapInner />
+					</main>
+				</div>
+			</RoadmapProvider>
 		</ProtectedRoute>
 	)
 }
