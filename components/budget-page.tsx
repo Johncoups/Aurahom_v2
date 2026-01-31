@@ -527,13 +527,19 @@ export function BudgetPage({ projectId, constructionMethod }: BudgetPageProps) {
           .single()
 
         if (error) {
-          console.error('Error fetching foundation type:', error)
+          // PGRST116 = no rows returned; treat as "no foundation type" instead of error
+          if (error.code === 'PGRST116') {
+            setFoundationType(undefined)
+            return
+          }
+          console.error('Error fetching foundation type:', error.message ?? error.code ?? error)
           return
         }
 
         setFoundationType(data?.foundation_type || undefined)
-      } catch (error) {
-        console.error('Error fetching foundation type:', error)
+      } catch (err) {
+        const message = err instanceof Error ? err.message : String(err)
+        console.error('Error fetching foundation type:', message)
       }
     }
 
@@ -843,7 +849,7 @@ export function BudgetPage({ projectId, constructionMethod }: BudgetPageProps) {
       item.actualCost,
       item.currentPaid,
       (item.actualCost || 0) - (item.currentPaid || 0), // Due (calculated)
-      item.variance,
+      item.variance ?? 0,
       item.isCustom ? "Yes" : "No"
     ])
 
@@ -893,7 +899,7 @@ export function BudgetPage({ projectId, constructionMethod }: BudgetPageProps) {
         actualCost: item.actualCost,
         currentPaid: item.currentPaid,
         due: (item.actualCost || 0) - (item.currentPaid || 0),
-        variance: item.variance,
+        variance: item.variance ?? 0,
         isCustom: item.isCustom
       }))
     }
@@ -1400,7 +1406,7 @@ export function BudgetPage({ projectId, constructionMethod }: BudgetPageProps) {
                       ? "text-red-600 font-bold bg-red-50 rounded px-2 py-1"
                       : ""
                   }`}>
-                    <span>${item.variance.toLocaleString()}</span>
+                    <span>${(item.variance ?? 0).toLocaleString()}</span>
                     {pendingSaves.has(item.id) && (
                       <Loader2 className="h-3 w-3 animate-spin text-cyan-600" aria-label="Saving" />
                     )}
