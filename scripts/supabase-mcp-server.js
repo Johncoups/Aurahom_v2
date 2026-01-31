@@ -1,15 +1,24 @@
 #!/usr/bin/env node
 
-require('dotenv').config({ path: '.env.local' });
+const path = require('path');
+// Load .env.local from project root (parent of scripts/)
+const envPath = path.resolve(__dirname, '..', '.env.local');
+require('dotenv').config({ path: envPath });
+
 const { McpServer } = require('@modelcontextprotocol/sdk/server/mcp.js');
 const { StdioServerTransport } = require('@modelcontextprotocol/sdk/server/stdio.js');
 const { createClient } = require('@supabase/supabase-js');
 
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+
+if (!supabaseUrl || !supabaseKey) {
+  console.error('[Supabase MCP] Missing env: NEXT_PUBLIC_SUPABASE_URL and (SUPABASE_SERVICE_ROLE_KEY or NEXT_PUBLIC_SUPABASE_ANON_KEY) required. Check .env.local and that Cursor is loading it.');
+  process.exit(1);
+}
+
 // Initialize Supabase client
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-);
+const supabase = createClient(supabaseUrl, supabaseKey);
 
 // Create MCP server
 const server = new McpServer({

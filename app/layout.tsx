@@ -4,6 +4,7 @@ import { Space_Grotesk, DM_Sans } from "next/font/google"
 import "./globals.css"
 import { AuthProvider } from "@/contexts/auth-context"
 import { BidsProvider } from "@/contexts/bids-context"
+import { Toaster } from "sonner"
 
 const spaceGrotesk = Space_Grotesk({
   subsets: ["latin"],
@@ -41,6 +42,7 @@ export default function RootLayout({
         <AuthProvider>
           <BidsProvider>
             <main id="main-content">{children}</main>
+            <Toaster richColors position="top-center" closeButton />
           </BidsProvider>
         </AuthProvider>
       </body>

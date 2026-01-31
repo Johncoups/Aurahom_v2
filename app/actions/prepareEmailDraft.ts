@@ -4,7 +4,7 @@ import { generateText } from "@/lib/openai";
 import { OPENAI_MODELS } from "@/lib/openai";
 import type { OnboardingProfile } from "@/lib/roadmap-types";
 
-interface EmailDraftContext {
+export interface EmailDraftContext {
   projectProfile?: OnboardingProfile;
   phaseTitle: string;
   subPhaseTitle: string;
@@ -339,6 +339,26 @@ Example of correct response format:
       pitfalls: []
     };
   }
+}
+
+/**
+ * Generate a professional bid request email from context only (no Q&A).
+ * Used by "Send via Aurahom" to send draft-quality emails.
+ */
+export async function generateBidRequestEmailContent(
+  context: EmailDraftContext
+): Promise<{ subject: string; bodyHtml: string }> {
+  const { draft } = await generateEmailDraft(context, {}, []);
+  // Draft format: "Subject: ...\n\nBody text..."
+  const subjectMatch = draft.match(/^Subject:\s*(.+?)(?:\n|$)/im);
+  const subject = subjectMatch ? subjectMatch[1].trim() : "Bid request: " + context.subPhaseTitle;
+  let body = draft
+    .replace(/^Subject:\s*.+?(?=\n\n|\n$)/im, "")
+    .trim()
+    .replace(/^\s*\n+/, "");
+  if (!body) body = draft.replace(/^Subject:\s*.+?(?=\n|\n\n)/im, "").trim();
+  const bodyHtml = "<p>" + body.replace(/\n\n/g, "</p><p>").replace(/\n/g, "<br/>") + "</p>";
+  return { subject, bodyHtml };
 }
 
 /**

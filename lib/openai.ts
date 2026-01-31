@@ -90,6 +90,45 @@ export async function generateText(
 }
 
 /**
+ * Generate roadmap guidance text from profile and phase details.
+ * Used when enhancing a phase with AI-generated insights.
+ */
+export async function generateRoadmapContent(
+  profile: {
+    role?: string;
+    experience?: string;
+    constructionMethod?: string;
+    currentPhase?: string;
+    diyPhases?: string[];
+    weeklyHourlyCommitment?: number;
+    cityState?: string;
+    propertyAddress?: string;
+    background?: string;
+  },
+  phaseDetails: string,
+  model: OpenAIModel = OPENAI_MODELS.GPT4OMINI
+): Promise<string> {
+  const prompt = `You are a construction project advisor. Based on this homeowner profile and phase, give brief practical guidance (2-4 short paragraphs) for this phase.
+
+PROFILE:
+- Role: ${profile.role ?? "homeowner"}
+- Experience: ${profile.experience ?? "not specified"}
+- Construction method: ${profile.constructionMethod ?? "not specified"}
+- Current phase: ${profile.currentPhase ?? "not specified"}
+- DIY phases (if any): ${(profile.diyPhases ?? []).join(", ") || "none"}
+- Weekly time (hours): ${profile.weeklyHourlyCommitment ?? "not specified"}
+- Location: ${profile.cityState ?? "not specified"}
+- Property: ${profile.propertyAddress ?? "not specified"}
+- Background: ${profile.background ?? "not specified"}
+
+PHASE:
+${phaseDetails}
+
+Provide concise, actionable guidance. No markdown or bullets—plain paragraphs.`;
+  return generateText(prompt, model, { temperature: 0.4, maxTokens: 512 });
+}
+
+/**
  * Generate structured content (JSON) using OpenAI
  */
 export async function generateStructuredContent<T>(

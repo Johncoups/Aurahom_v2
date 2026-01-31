@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "supabase": {
+      "command": "node",
+      "args": ["scripts/supabase-mcp-server.js"],
+      "cwd": "."
+    }
+  }
+}
