@@ -3,54 +3,62 @@
 ## Overview
 Transform the hardcoded bids UI into a fully functional vendor and bid management system with database persistence, email integration, and budget/schedule integration.
 
+## User Persona & Direction
+**The Bids page is designed for how a contractor (general contractor) would use it, not an owner-builder.**
+
+- **Primary user:** General contractor (GC) managing projects and requesting/collecting bids from **subcontractors** (subs) for each trade or phase.
+- **Workflow:** Contractor has **projects/jobs**; within each project they organize by **trades/phases** (e.g. Foundation, Framing, Roofing, Electrical, Plumbing, HVAC, Drywall, etc.). For each trade they add subs, send bid requests, compare bids, and award work.
+- **Terminology and UI** should align with contractor usage where appropriate (e.g. "subs," "subcontractors," "projects," "trades," "bid requests out," "bids received") rather than owner-builder–centric language.
+- **Scope:** Cover all trades needed to build a house (full construction phase list), not a shortened owner-builder–oriented subset.
+
 ---
 
 ## Phase 1: Database Schema & Setup 🗄️
 
 ### Supabase Tables
-- [ ] Create `vendors` table with all fields
-  - [ ] Add user_id, name, email, phone, website
-  - [ ] Add rating fields (platform, score, reviews)
-  - [ ] Add social_media JSONB field
-  - [ ] Add found_via array field
-  - [ ] Add preferred_contact_method and notes
-  - [ ] Add timestamps (created_at, updated_at)
-- [ ] Create `bid_requests` table
-  - [ ] Add project_id, user_id, vendor_id references
-  - [ ] Add phase_id, sub_phase_id, sub_phase_title
-  - [ ] Add status field with enum values
-  - [ ] Add request_method field
-  - [ ] Add requested_at, due_date timestamps
-  - [ ] Add message_sent field
-- [ ] Create `bids` table
-  - [ ] Add bid_request_id, vendor_id, project_id references
-  - [ ] Add cost fields (total, materials, labor)
-  - [ ] Add timeline fields (days, description)
-  - [ ] Add notes and attachments JSONB
-  - [ ] Add status field
-  - [ ] Add timestamps (submitted_at, reviewed_at)
-- [ ] Create `vendor_reviews` table (optional)
-  - [ ] Add vendor_id, project_id, user_id references
-  - [ ] Add rating fields (overall, quality, timeline, communication, price)
-  - [ ] Add review_text and would_recommend
-  - [ ] Add timestamp
+- [x] Create `vendors` table with all fields
+  - [x] Add user_id, name, email, phone, website
+  - [x] Add rating fields (platform, score, reviews)
+  - [x] Add social_media JSONB field
+  - [x] Add found_via array field
+  - [x] Add preferred_contact_method and notes
+  - [x] Add timestamps (created_at, updated_at)
+- [x] Create `bid_requests` table
+  - [x] Add project_id, user_id, vendor_id references
+  - [x] Add phase_ids, scope_title (phase/subphase scope)
+  - [x] Add status field with enum values
+  - [x] Add request_method field
+  - [x] Add requested_at, due_date timestamps
+  - [x] Add message_sent field
+- [x] Create `bids` table
+  - [x] Add bid_request_id, vendor_id, project_id references
+  - [x] Add cost fields (total, materials, labor)
+  - [x] Add timeline fields (days, description)
+  - [x] Add notes and attachments JSONB
+  - [x] Add status field
+  - [x] Add timestamps (submitted_at, reviewed_at)
+- [x] Create `vendor_reviews` table (optional)
+  - [x] Add vendor_id, project_id, user_id references
+  - [x] Add rating fields (overall, quality, timeline, communication, price)
+  - [x] Add review_text and would_recommend
+  - [x] Add timestamp
 
 ### Database Indexes
-- [ ] Add index on `vendors(user_id)`
-- [ ] Add index on `bid_requests(project_id)`
-- [ ] Add index on `bid_requests(vendor_id)`
-- [ ] Add index on `bids(bid_request_id)`
-- [ ] Add index on `bids(project_id)`
+- [x] Add index on `vendors(user_id)`
+- [x] Add index on `bid_requests(project_id)`
+- [x] Add index on `bid_requests(vendor_id)`
+- [x] Add index on `bids(bid_request_id)`
+- [x] Add index on `bids(project_id)`
 
 ### Row Level Security (RLS)
-- [ ] Enable RLS on `vendors` table
-- [ ] Add policy: Users can only access their own vendors
-- [ ] Enable RLS on `bid_requests` table
-- [ ] Add policy: Users can only access their own bid requests
-- [ ] Enable RLS on `bids` table
-- [ ] Add policy: Users can only access bids for their projects
-- [ ] Enable RLS on `vendor_reviews` table
-- [ ] Add policy: Users can only access their own reviews
+- [x] Enable RLS on `vendors` table
+- [x] Add policy: Users can only access their own vendors
+- [x] Enable RLS on `bid_requests` table
+- [x] Add policy: Users can only access their own bid requests
+- [x] Enable RLS on `bids` table
+- [x] Add policy: Users can only access bids for their projects
+- [x] Enable RLS on `vendor_reviews` table
+- [x] Add policy: Users can only access their own reviews
 
 ### Test Data
 - [ ] Create seed data SQL for vendors (similar to budget seed files)
@@ -91,14 +99,14 @@ Transform the hardcoded bids UI into a fully functional vendor and bid managemen
 - [ ] Add TypeScript interfaces for Bid type
 
 ### Email Functions
-- [ ] Choose email service (SendGrid, Resend, or AWS SES)
-- [ ] Set up email service API keys in environment variables
-- [ ] Create `lib/email.ts` file
-- [ ] Implement `sendBidRequestEmail(bidRequest, vendor)` function
-- [ ] Create email template for bid requests
+- [x] Choose email service (SendGrid, Resend, or AWS SES)
+- [x] Set up email service API keys in environment variables
+- [x] Create `lib/email.ts` file
+- [x] Implement `sendBidRequestEmail(bidRequest, vendor)` function (via Send via Aurahom action + Resend)
+- [x] Create email template for bid requests (AI-generated via prepareEmailDraft flow)
 - [ ] Implement `sendBidReceivedNotification(bid, user)` function
 - [ ] Create email template for bid received notifications
-- [ ] Add error handling and retry logic
+- [x] Add error handling and retry logic
 
 ### Utility Functions
 - [ ] Implement `importVendorsFromCSV(csvData)` function
@@ -133,7 +141,7 @@ Transform the hardcoded bids UI into a fully functional vendor and bid managemen
 - [ ] Add refresh/reload functions
 
 ### Phase Integration
-- [ ] Connect to roadmap phases (use actual phase IDs)
+- [x] Connect to roadmap phases (use actual phase IDs)
 - [ ] Map sub-phases to budget categories
 - [ ] Sync with construction timeline
 
@@ -226,25 +234,26 @@ Transform the hardcoded bids UI into a fully functional vendor and bid managemen
 ## Phase 6: Email & Notifications 📧
 
 ### Email Service Setup
-- [ ] Choose email provider (SendGrid/Resend/AWS SES)
-- [ ] Create account and get API keys
-- [ ] Add API keys to `.env.local`
-- [ ] Test email sending functionality
+- [x] Choose email provider (SendGrid/Resend/AWS SES)
+- [x] Create account and get API keys
+- [x] Add API keys to `.env.local`
+- [x] Test email sending functionality
 
 ### Email Templates
-- [ ] Create bid request email template (HTML)
+- [x] Create bid request email template (HTML) — AI-generated via Prepare Email Draft flow
+- [ ] **To Do:** Refine the actual email content sent via "Send via Aurahom" (copy, layout, branding)
 - [ ] Create bid received notification template
 - [ ] Create bid accepted notification template
 - [ ] Create bid rejected notification template
 - [ ] Add company branding to templates
 
 ### Email Functionality
-- [ ] Implement "Send via Aurahöm" option
+- [x] Implement "Send via Aurahöm" option
 - [ ] Implement "Send from My Email" option (OAuth)
-- [ ] Implement "Prepare Email Draft" option
+- [x] Implement "Prepare Email Draft" option
 - [ ] Add email tracking (opened, clicked)
 - [ ] Add automatic follow-up reminders
-- [ ] Store sent emails in database
+- [x] Store sent emails in database
 
 ### In-App Notifications
 - [ ] Add notification system (optional)
@@ -290,6 +299,15 @@ Transform the hardcoded bids UI into a fully functional vendor and bid managemen
 
 ## Phase 8: Polish & Production 🚀
 
+### Go-Live: Send via Aurahom
+When taking the app live, implement the following for production email sending:
+
+- [ ] **Resend (production):** In Resend dashboard, add and verify your production domain (e.g. `aurahom.com` or your sending domain). Use a verified FROM address (e.g. `bids@aurahom.com`).
+- [ ] **Environment:** Set `RESEND_API_KEY` in production (Vercel/hosting) to your live Resend API key; do not use the test/sandbox key in production.
+- [ ] **Rate limiting:** Keep or add rate limiting for the send-Bid-request action so users cannot abuse the Resend quota (see Phase 8 Security — "Add rate limiting for email sending").
+- [ ] **Logging/monitoring:** Log send attempts (success/failure) and optionally track Resend webhooks for bounces/complaints so you can fix bad addresses or content.
+- [ ] **Reply-to (optional):** If you want vendor replies to go to the homeowner, set the email’s Reply-To to the user’s email when sending via Aurahom.
+
 ### Performance
 - [ ] Optimize database queries
 - [ ] Add pagination for vendor list
@@ -318,7 +336,7 @@ Transform the hardcoded bids UI into a fully functional vendor and bid managemen
 - [ ] Add confirmation dialogs for destructive actions
 - [ ] Add undo functionality where possible
 - [ ] Add keyboard shortcuts
-- [ ] Add success/error toast messages
+- [x] Add success/error toast messages
 
 ---
 
@@ -392,19 +410,19 @@ git push origin feature/bids
 
 ## Progress Tracking
 
-**Phase 1 (Database):** ⬜ Not Started  
-**Phase 2 (Backend):** ⬜ Not Started  
-**Phase 3 (UI Updates):** ⬜ Not Started  
+**Phase 1 (Database):** ✅ Schema, indexes, RLS in place (`database-schema-bids.sql`)  
+**Phase 2 (Backend):** 🔶 Partial — Email done; Vendor/Bid CRUD in `lib/bids.ts` not started  
+**Phase 3 (UI Updates):** 🔶 Partial — Send via Aurahom + DB records; vendors still local state  
 **Phase 4 (New Features):** ⬜ Not Started  
 **Phase 5 (Integration):** ⬜ Not Started  
-**Phase 6 (Email):** ⬜ Not Started  
+**Phase 6 (Email):** ✅ Send via Aurahom, Prepare Draft, Resend, store in DB  
 **Phase 7 (Testing):** ⬜ Not Started  
-**Phase 8 (Production):** ⬜ Not Started  
+**Phase 8 (Production):** 🔶 Partial — Toasts added  
 **Phase 9 (Advanced):** ⬜ Not Started  
 
-**Overall Completion:** 0 / 150+ tasks ✨
+**Overall Completion:** ~50+ tasks done (schema, email flow, Send via Aurahom, Prepare Draft, toasts)
 
 ---
 
-*Last Updated: November 1, 2025*
+*Last Updated: January 2026*
 

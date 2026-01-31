@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useMemo, useEffect, useRef } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -10,7 +10,12 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { ChevronDown, ChevronRight, Edit2, Mail, Send, Phone, Star, Check, ArrowLeft, Plus, X, Trash2 } from "lucide-react"
 import { useBids } from "@/contexts/bids-context"
 import { useRoadmap } from "@/contexts/roadmap-context"
+import { useAuth } from "@/contexts/auth-context"
 import { EmailDraftModal } from "@/components/email-draft-modal"
+import { sendBidRequestViaAurahom, ensureVendorForUser } from "@/app/actions/sendBidRequestViaAurahom"
+import { toast } from "sonner"
+import { getPhasesForMethod } from "@/lib/roadmap-phases"
+import type { ConstructionMethod } from "@/lib/roadmap-types"
 
 interface Vendor {
   id: string
@@ -44,257 +49,45 @@ interface Phase {
   isExpanded: boolean
 }
 
+const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+
 export function BidsPage() {
   const { setSelectedVendor, selectedVendor } = useBids()
-  const { profile, roadmap } = useRoadmap()
+  const { profile, roadmap, activeProjectId } = useRoadmap()
+  const { user } = useAuth()
   const [isEmailDraftModalOpen, setIsEmailDraftModalOpen] = useState(false)
-  const [phases, setPhases] = useState<Phase[]>([
-    {
-      id: "phase1",
-      title: "Phase 1: Planning & Design",
+  // Build phases from full construction phase list (all trades needed to build a house)
+  const constructionMethod = (profile?.constructionMethod && profile.constructionMethod !== ""
+    ? profile.constructionMethod
+    : "traditional-frame") as ConstructionMethod
+  // Exclude "Just Starting" from Bids page; resequence display numbers (UI only, no DB change)
+  const initialPhases = useMemo<Phase[]>(() => {
+    const baseline = getPhasesForMethod(constructionMethod).filter((p) => p.id !== "just-starting")
+    return baseline.map((phase, index) => ({
+      id: phase.id,
+      title: `${index + 1}. ${phase.title}`,
       isExpanded: false,
-      subPhases: [
-        {
-          id: "architectural",
-          title: "Architectural Plans",
-          vendors: [
-            {
-              id: "v1",
-              name: "Design Studio Pro",
-              email: "contact@designstudio.com",
-              phone: "(555) 123-4567",
-              status: "Bid Received",
-              rating: { platform: "Google", score: 4.8, reviews: 127 },
-              socialMedia: [
-                { platform: "Facebook", handle: "@designstudiopro" },
-                { platform: "Instagram", handle: "@designstudio_pro" },
-              ],
-              foundVia: ["Google", "Facebook"],
-            },
-            {
-              id: "v2",
-              name: "Modern Architecture Co",
-              email: "bids@modernarch.com",
-              phone: "(555) 234-5678",
-              status: "Pending",
-              rating: { platform: "Facebook", score: 4.6, reviews: 89 },
-              socialMedia: [{ platform: "LinkedIn", handle: "@modern-architecture-co" }],
-              foundVia: ["Google", "Reddit"],
-            },
-            {
-              id: "v3",
-              name: "Blueprint Masters",
-              email: "info@blueprintmasters.com",
-              phone: "(555) 345-6789",
-              status: "Not Requested",
-              rating: { platform: "Google", score: 4.9, reviews: 203 },
-              socialMedia: [
-                { platform: "Facebook", handle: "@blueprintmasters" },
-                { platform: "Instagram", handle: "@blueprint_masters" },
-              ],
-              foundVia: ["Google", "Quora"],
-            },
-          ],
-        },
-        {
-          id: "permits",
-          title: "Permit Services",
-          vendors: [
-            {
-              id: "v4",
-              name: "City Permit Solutions",
-              email: "permits@citysolutions.com",
-              phone: "(555) 456-7890",
-              status: "Not Requested",
-              rating: { platform: "Google", score: 4.4, reviews: 56 },
-              foundVia: ["Google"],
-            },
-            {
-              id: "v5",
-              name: "Fast Track Permits",
-              email: "hello@fasttrack.com",
-              phone: "(555) 567-8901",
-              status: "Not Requested",
-              socialMedia: [{ platform: "LinkedIn", handle: "@fasttrack-permits" }],
-              foundVia: ["Facebook", "TikTok"],
-            },
-            {
-              id: "v6",
-              name: "Permit Pro Services",
-              email: "bids@permitpro.com",
-              phone: "(555) 678-9012",
-              status: "Not Requested",
-              rating: { platform: "Facebook", score: 4.7, reviews: 34 },
-              foundVia: ["Google", "Reddit"],
-            },
-          ],
-        },
-      ],
-    },
-    {
-      id: "phase2",
-      title: "Phase 2: Foundation & Framing",
-      isExpanded: true,
-      subPhases: [
-        {
-          id: "concrete",
-          title: "Concrete Foundation",
-          vendors: [
-            {
-              id: "v7",
-              name: "Johnson Concrete",
-              email: "bids@johnsonconcrete.com",
-              phone: "(555) 789-0123",
-              status: "Pending",
-              rating: { platform: "Google", score: 4.5, reviews: 78 },
-              socialMedia: [{ platform: "Facebook", handle: "@johnsonconcrete" }],
-              foundVia: ["Google", "Facebook"],
-            },
-            {
-              id: "v8",
-              name: "Midwest Foundations",
-              email: "quotes@midwestfound.com",
-              phone: "(555) 890-1234",
-              status: "Bid Received",
-              rating: { platform: "Google", score: 4.9, reviews: 156 },
-              socialMedia: [
-                { platform: "Instagram", handle: "@midwest_foundations" },
-                { platform: "LinkedIn", handle: "@midwest-foundations" },
-              ],
-              foundVia: ["Google", "Snapchat"],
-            },
-            {
-              id: "v9",
-              name: "Chatfield Poured Walls",
-              email: "info@chatfieldwalls.com",
-              phone: "(555) 901-2345",
-              status: "Not Requested",
-              rating: { platform: "Facebook", score: 4.3, reviews: 42 },
-              foundVia: ["Facebook", "Reddit"],
-            },
-          ],
-        },
-        {
-          id: "framing",
-          title: "Lumber & Framing",
-          vendors: [
-            {
-              id: "v10",
-              name: "Premier Framing Co",
-              email: "estimates@premierframing.com",
-              phone: "(555) 012-3456",
-              status: "Not Requested",
-              rating: { platform: "Google", score: 4.7, reviews: 91 },
-              socialMedia: [{ platform: "TikTok", handle: "@premierframing" }],
-              foundVia: ["Google", "TikTok"],
-            },
-            {
-              id: "v11",
-              name: "Timber Works LLC",
-              email: "bids@timberworks.com",
-              phone: "(555) 123-4567",
-              status: "Not Requested",
-              socialMedia: [
-                { platform: "Facebook", handle: "@timberworksllc" },
-                { platform: "Instagram", handle: "@timber_works" },
-              ],
-              foundVia: ["Facebook", "Quora"],
-            },
-            {
-              id: "v12",
-              name: "Structural Solutions",
-              email: "quotes@structuralsol.com",
-              phone: "(555) 234-5678",
-              status: "Not Requested",
-              rating: { platform: "Google", score: 4.6, reviews: 67 },
-              foundVia: ["Google", "Reddit"],
-            },
-          ],
-        },
-      ],
-    },
-    {
-      id: "phase3",
-      title: "Phase 3: Exterior & Interior Rough-in",
-      isExpanded: false,
-      subPhases: [
-        {
-          id: "roofing",
-          title: "Roofing",
-          vendors: [
-            {
-              id: "v13",
-              name: "Elite Roofing Systems",
-              email: "bids@eliteroofing.com",
-              phone: "(555) 345-6789",
-              status: "Not Requested",
-              rating: { platform: "Google", score: 4.9, reviews: 203 },
-              socialMedia: [
-                { platform: "Facebook", handle: "@eliteroofingsystems" },
-                { platform: "Instagram", handle: "@elite_roofing_systems" },
-              ],
-              foundVia: ["Google", "Quora"],
-            },
-            {
-              id: "v14",
-              name: "Weatherguard Roofing",
-              email: "quotes@weatherguard.com",
-              phone: "(555) 456-7890",
-              status: "Not Requested",
-              rating: { platform: "Google", score: 4.4, reviews: 56 },
-              foundVia: ["Google"],
-            },
-            {
-              id: "v15",
-              name: "Summit Roof Solutions",
-              email: "info@summitroofs.com",
-              phone: "(555) 567-8901",
-              status: "Not Requested",
-              socialMedia: [{ platform: "LinkedIn", handle: "@summitroofsolutions" }],
-              foundVia: ["Facebook", "TikTok"],
-            },
-          ],
-        },
-        {
-          id: "plumbing",
-          title: "Plumbing Rough-in",
-          vendors: [
-            {
-              id: "v16",
-              name: "Master Plumbing Co",
-              email: "bids@masterplumbing.com",
-              phone: "(555) 678-9012",
-              status: "Not Requested",
-              rating: { platform: "Facebook", score: 4.7, reviews: 34 },
-              foundVia: ["Google", "Reddit"],
-            },
-            {
-              id: "v17",
-              name: "Flow Right Plumbing",
-              email: "estimates@flowright.com",
-              phone: "(555) 789-0123",
-              status: "Not Requested",
-              socialMedia: [{ platform: "TikTok", handle: "@flowrightplumbing" }],
-              foundVia: ["Google", "TikTok"],
-            },
-            {
-              id: "v18",
-              name: "Precision Pipe Works",
-              email: "quotes@precisionpipe.com",
-              phone: "(555) 890-1234",
-              status: "Not Requested",
-              rating: { platform: "Google", score: 4.5, reviews: 78 },
-              socialMedia: [
-                { platform: "Facebook", handle: "@precisionpipeworks" },
-                { platform: "Instagram", handle: "@precision_pipe_works" },
-              ],
-              foundVia: ["Google", "Facebook"],
-            },
-          ],
-        },
-      ],
-    },
-  ])
+      subPhases: [{ id: phase.id, title: phase.title, vendors: [] as Vendor[] }],
+    }))
+  }, [constructionMethod])
+  const [phases, setPhases] = useState<Phase[]>(initialPhases)
+  const isInitialMount = useRef(true)
+  // When construction method changes (e.g. profile loads), reinitialize phase list
+  useEffect(() => {
+    if (isInitialMount.current) {
+      isInitialMount.current = false
+      return
+    }
+    const baseline = getPhasesForMethod(constructionMethod).filter((p) => p.id !== "just-starting")
+    setPhases(
+      baseline.map((phase, index) => ({
+        id: phase.id,
+        title: `${index + 1}. ${phase.title}`,
+        isExpanded: false,
+        subPhases: [{ id: phase.id, title: phase.title, vendors: [] as Vendor[] }],
+      }))
+    )
+  }, [constructionMethod])
 
   const [selectedSubPhase, setSelectedSubPhase] = useState<SubPhase | null>(null)
   const [selectedSubPhaseContext, setSelectedSubPhaseContext] = useState<{ phaseId: string; subPhaseId: string } | null>(null)
@@ -560,7 +353,7 @@ export function BidsPage() {
     // Render status select with conditional "Bid Accepted" option
     const renderStatusSelect = (bgColor: string, textColor: string) => (
       <Select value={status} onValueChange={(value) => handleStatusClick(value as Vendor["status"])}>
-        <SelectTrigger className={`${baseClasses} ${bgColor} ${textColor} hover:opacity-80 border-0 h-auto p-1 px-2`}>
+        <SelectTrigger className={baseClasses + " " + bgColor + " " + textColor + " hover:opacity-80 border-0 h-auto p-1 px-2"}>
           <SelectValue />
         </SelectTrigger>
         <SelectContent>
@@ -625,6 +418,11 @@ export function BidsPage() {
       
       setIsEmailDraftModalOpen(true)
       return // Don't close the bid request modal yet
+    }
+
+    if (option === "send-via-aurahom") {
+      handleSendViaAurahom()
+      return
     }
     
     // Update status to pending for selected vendors only
@@ -730,6 +528,121 @@ export function BidsPage() {
       numberOfStories: profile?.numberOfStories,
       targetStartDate: profile?.targetStartDate,
       budgetRange: budgetRange || undefined
+    }
+  }
+
+  async function handleSendViaAurahom() {
+    if (!user?.id) {
+      toast.error("Please sign in to send via Aurahom.")
+      return
+    }
+    if (!activeProjectId) {
+      toast.error("Please open or create a project first.")
+      return
+    }
+    if (!selectedSubPhase || selectedVendorsForBid.size === 0) {
+      toast.error("Please select at least one vendor.")
+      return
+    }
+
+    const selectedPhase = phases.find((p) => p.subPhases.some((sp) => sp.id === selectedSubPhase.id))
+    if (!selectedPhase) {
+      toast.error("Could not find phase.")
+      return
+    }
+    const currentSubPhase = selectedPhase.subPhases.find((sp) => sp.id === selectedSubPhase.id)
+    if (!currentSubPhase) {
+      toast.error("Could not find sub-phase.")
+      return
+    }
+
+    const phaseIds = [selectedSubPhase.id]
+    const scopeTitle = currentSubPhase.title
+    const houseSize = profile?.houseSize ? parseInt(profile.houseSize) : undefined
+    const budgetRange = roadmap?.phases?.[0]?.duration
+
+    const vendorObjects = currentSubPhase.vendors.filter((v) => selectedVendorsForBid.has(v.id))
+    let successCount = 0
+    let failCount = 0
+
+    try {
+      for (const vendor of vendorObjects) {
+        let vendorId: string | undefined
+        if (UUID_REGEX.test(vendor.id)) {
+          vendorId = vendor.id
+        } else {
+          const ensured = await ensureVendorForUser(user.id, { name: vendor.name, email: vendor.email })
+          if (!ensured.success || !ensured.vendorId) {
+            toast.error(vendor.name + ": " + (ensured.error ?? "Could not create vendor."))
+            failCount++
+            continue
+          }
+          vendorId = ensured.vendorId
+        }
+
+        const draftContext = {
+          projectProfile: profile || undefined,
+          phaseTitle: selectedPhase.title,
+          subPhaseTitle: currentSubPhase.title,
+          vendorName: vendor.name,
+          vendorEmail: vendor.email,
+          vendorContactName: vendor.contactName,
+          constructionMethod: profile?.constructionMethod,
+          location: profile?.cityState,
+          houseSize,
+          foundationType: profile?.foundationType,
+          numberOfStories: profile?.numberOfStories,
+          targetStartDate: profile?.targetStartDate,
+          budgetRange: budgetRange || undefined,
+        }
+
+        const result = await sendBidRequestViaAurahom({
+          projectId: activeProjectId,
+          userId: user.id,
+          vendorId,
+          phaseIds,
+          scopeTitle,
+          draftContext,
+          subject: "",
+          bodyHtml: "",
+        })
+
+        if (result.success) successCount++
+        else {
+          toast.error(vendor.name + ": " + (result.error ?? "Send failed."))
+          failCount++
+        }
+      }
+
+      if (successCount > 0) {
+        toast.success(successCount === vendorObjects.length ? "Bid requests sent." : successCount + " of " + vendorObjects.length + " sent.")
+        if (selectedSubPhase) {
+          setPhases(
+            phases.map((phase) => ({
+              ...phase,
+              subPhases: phase.subPhases.map((sp) =>
+                sp.id === selectedSubPhase.id
+                  ? {
+                      ...sp,
+                      vendors: sp.vendors.map((v) =>
+                        selectedVendorsForBid.has(v.id) ? { ...v, status: "Pending" as const } : v
+                      ),
+                    }
+                  : sp
+              ),
+            }))
+          )
+        }
+        setIsModalOpen(false)
+        setBidRequestStep("select-vendors")
+        setSelectedVendorsForBid(new Set())
+      }
+      if (failCount > 0 && successCount === 0) {
+        toast.error("No emails sent. Check errors above.")
+      }
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Something went wrong."
+      toast.error(message)
     }
   }
 
@@ -956,11 +869,12 @@ export function BidsPage() {
                                     <Button
                                       variant={selectedVendor?.id === vendor.id ? "default" : "outline"}
                                       size="sm"
-                                      className={`w-full ${
-                                        selectedVendor?.id === vendor.id 
-                                          ? "bg-cyan-600 hover:bg-cyan-700 text-white" 
-                                          : ""
-                                      }`}
+                                      className={
+                                        "w-full " +
+                                        (selectedVendor?.id === vendor.id
+                                          ? "bg-cyan-600 hover:bg-cyan-700 text-white"
+                                          : "")
+                                      }
                                       onClick={() => setSelectedVendor({ id: vendor.id, name: vendor.name, email: vendor.email, phone: vendor.phone, contactName: vendor.contactName })}
                                     >
                                       Use for Schedule
@@ -1006,9 +920,9 @@ export function BidsPage() {
         <DialogContent className="max-w-2xl" aria-describedby={undefined}>
           <DialogHeader>
             <DialogTitle>
-              {bidRequestStep === "select-vendors" 
-                ? `Select Vendors for ${selectedSubPhase?.title}`
-                : `How would you like to send bid requests?`}
+              {bidRequestStep === "select-vendors"
+                ? "Select Vendors for " + (selectedSubPhase?.title ?? "")
+                : "How would you like to send bid requests?"}
             </DialogTitle>
           </DialogHeader>
 
@@ -1157,9 +1071,10 @@ export function BidsPage() {
                             variant={newVendor.foundVia.includes(source) ? "default" : "outline"}
                             size="sm"
                             onClick={() => toggleFoundVia(source)}
-                            className={`text-xs h-7 ${
-                              newVendor.foundVia.includes(source) ? "bg-cyan-600 hover:bg-cyan-700" : ""
-                            }`}
+                            className={
+                              "text-xs h-7 " +
+                              (newVendor.foundVia.includes(source) ? "bg-cyan-600 hover:bg-cyan-700" : "")
+                            }
                           >
                             {source}
                           </Button>
@@ -1200,29 +1115,39 @@ export function BidsPage() {
                   return (
                     <div
                       key={vendor.id}
-                      className={`border rounded-lg p-4 cursor-pointer transition-colors ${
-                        isSelected ? "border-cyan-500 bg-cyan-50" : "border-gray-200 hover:border-gray-300"
-                      }`}
+                      className={
+                        "border rounded-lg p-4 cursor-pointer transition-colors " +
+                        (isSelected ? "border-cyan-500 bg-cyan-50" : "border-gray-200 hover:border-gray-300")
+                      }
                       onClick={() => toggleVendorSelection(vendor.id)}
                     >
                       <div className="flex items-start justify-between">
                         <div className="flex-1">
                           <div className="flex items-center gap-2 mb-2">
-                            <div className={`w-5 h-5 rounded border-2 flex items-center justify-center ${
-                              isSelected ? "border-cyan-500 bg-cyan-500" : "border-gray-300"
-                            }`}>
+                            <div
+                              className={
+                                "w-5 h-5 rounded border-2 flex items-center justify-center " +
+                                (isSelected ? "border-cyan-500 bg-cyan-500" : "border-gray-300")
+                              }
+                            >
                               {isSelected && <Check className="h-3 w-3 text-white" />}
                             </div>
                             <p className="font-semibold text-sm">{vendor.name}</p>
                             {selectedSubPhaseContext ? (
                               getStatusBadge(vendor.status, vendor.id, selectedSubPhaseContext.phaseId, selectedSubPhaseContext.subPhaseId)
                             ) : (
-                              <Badge className={`text-xs font-medium px-2 py-1 ${
-                                vendor.status === "Bid Accepted" ? "bg-blue-100 text-blue-800" :
-                                vendor.status === "Bid Received" ? "bg-green-100 text-green-800" :
-                                vendor.status === "Pending" ? "bg-yellow-100 text-yellow-800" :
-                                "bg-gray-100 text-gray-800"
-                              } border-0`}>
+                              <Badge
+                                className={
+                                  "text-xs font-medium px-2 py-1 border-0 " +
+                                  (vendor.status === "Bid Accepted"
+                                    ? "bg-blue-100 text-blue-800"
+                                    : vendor.status === "Bid Received"
+                                      ? "bg-green-100 text-green-800"
+                                      : vendor.status === "Pending"
+                                        ? "bg-yellow-100 text-yellow-800"
+                                        : "bg-gray-100 text-gray-800")
+                                }
+                              >
                                 {vendor.status}
                               </Badge>
                             )}
