@@ -55,16 +55,16 @@ INSERT INTO trade_categories (name, display_order, icon, description, applies_to
 ('Final Finishes', 21, '✨', 'Cleaning, Hardware, Accessories', ARRAY['traditional-frame', 'post-frame', 'icf', 'sip', 'modular', 'other'], false, ARRAY['final-touches']);
 
 -- ============================================================================
--- TABLE 2: VENDORS
+-- TABLE 2: VENDORS (shared directory – independent of users)
 -- ============================================================================
--- Stores contractor/vendor information with contact details and ratings
+-- One canonical record per contractor/company. Many users can link to the same
+-- vendor via user_vendors. Enables shared directory and less duplication.
 
 CREATE TABLE vendors (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE NOT NULL,
-  trade_category_id UUID REFERENCES trade_categories(id) ON DELETE SET NULL,
-  
-  -- Basic Information
+  created_by_user_id UUID REFERENCES auth.users(id) ON DELETE SET NULL, -- who first added (optional audit)
+
+  -- Basic Information (company-level)
   name TEXT NOT NULL,
   company_name TEXT,
   email TEXT,
@@ -74,47 +74,98 @@ CREATE TABLE vendors (
   city TEXT,
   state TEXT,
   zip_code TEXT,
-  
-  -- Ratings & Reviews
-  rating_platform TEXT, -- 'Google', 'Facebook', 'Angi', etc.
+
+  -- Ratings & Reviews (aggregate or first source)
+  rating_platform TEXT,
   rating_score DECIMAL(2,1) CHECK (rating_score >= 0 AND rating_score <= 5),
   rating_reviews INTEGER DEFAULT 0,
-  
-  -- Social Media & Discovery
-  social_media JSONB DEFAULT '[]'::jsonb, -- [{platform: 'Facebook', handle: '@example'}]
-  found_via TEXT[], -- ['Google', 'Facebook', 'Referral']
-  
-  -- Contact Preferences
-  preferred_contact_method TEXT DEFAULT 'email', -- 'email', 'phone', 'text'
-  contact_hours TEXT, -- 'M-F 9am-5pm'
-  
+
+  -- Social Media
+  social_media JSONB DEFAULT '[]'::jsonb,
+
   -- Capabilities
-  services_offered TEXT[], -- ['Plumbing', 'HVAC', 'Electrical'] - array of trade_categories this vendor offers
-  specialties TEXT[], -- ['ICF', 'SIP', 'Post-Frame'] for construction methods
-  service_area TEXT[], -- ['County A', 'County B'] or ZIP codes
+  services_offered TEXT[],
+  specialties TEXT[],
+  service_area TEXT[],
   licensed BOOLEAN DEFAULT false,
   insured BOOLEAN DEFAULT false,
   license_number TEXT,
   insurance_info TEXT,
-  
-  -- Internal Notes
-  notes TEXT, -- Private notes about vendor
-  tags TEXT[], -- User-defined tags for filtering
-  
-  -- Status
-  is_active BOOLEAN DEFAULT true,
-  is_favorite BOOLEAN DEFAULT false,
-  
+
   -- Metadata
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
-CREATE INDEX idx_vendors_user_id ON vendors(user_id);
-CREATE INDEX idx_vendors_trade_category ON vendors(trade_category_id);
-CREATE INDEX idx_vendors_active ON vendors(is_active);
-CREATE INDEX idx_vendors_tags ON vendors USING GIN(tags);
-CREATE INDEX idx_vendors_services_offered ON vendors USING GIN(services_offered); -- For searching vendors by service
+CREATE INDEX idx_vendors_name ON vendors(name);
+CREATE INDEX idx_vendors_services_offered ON vendors USING GIN(services_offered);
+
+-- ============================================================================
+-- TABLE 2b: USER_VENDORS (bridge – links users to vendors, user-specific data)
+-- ============================================================================
+-- "My vendors": user adds a vendor (existing or new) and stores their own
+-- classification, notes, favorites, and how they found them.
+
+CREATE TABLE user_vendors (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE NOT NULL,
+  vendor_id UUID REFERENCES vendors(id) ON DELETE CASCADE NOT NULL,
+
+  trade_category_id UUID REFERENCES trade_categories(id) ON DELETE SET NULL, -- user's classification for this vendor
+
+  -- User-specific
+  notes TEXT,
+  tags TEXT[],
+  preferred_contact_method TEXT DEFAULT 'email',
+  contact_hours TEXT,
+  found_via TEXT[],
+  is_favorite BOOLEAN DEFAULT false,
+  is_active BOOLEAN DEFAULT true,
+
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+
+  UNIQUE(user_id, vendor_id)
+);
+
+CREATE INDEX idx_user_vendors_user_id ON user_vendors(user_id);
+CREATE INDEX idx_user_vendors_vendor_id ON user_vendors(vendor_id);
+CREATE INDEX idx_user_vendors_trade_category ON user_vendors(trade_category_id);
+CREATE INDEX idx_user_vendors_tags ON user_vendors USING GIN(tags);
+
+-- ============================================================================
+-- TABLE 2c: PROJECT_VENDORS (bridge – ties vendors to a specific project)
+-- ============================================================================
+-- "Vendors on this project": which subs are used for this job. created_by_user_id
+-- on vendors is only who first entered the vendor into the directory; this table
+-- ties the vendor to the individual project.
+
+CREATE TABLE project_vendors (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  project_id UUID REFERENCES projects(id) ON DELETE CASCADE NOT NULL,
+  vendor_id UUID REFERENCES vendors(id) ON DELETE CASCADE NOT NULL,
+
+  trade_category_id UUID REFERENCES trade_categories(id) ON DELETE SET NULL,
+
+  -- Project-specific
+  notes TEXT,
+  tags TEXT[],
+  preferred_contact_method TEXT DEFAULT 'email',
+  found_via TEXT[],
+  is_favorite BOOLEAN DEFAULT false,
+  is_active BOOLEAN DEFAULT true,
+  added_by_user_id UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+
+  UNIQUE(project_id, vendor_id)
+);
+
+CREATE INDEX idx_project_vendors_project_id ON project_vendors(project_id);
+CREATE INDEX idx_project_vendors_vendor_id ON project_vendors(vendor_id);
+CREATE INDEX idx_project_vendors_trade_category ON project_vendors(trade_category_id);
+CREATE INDEX idx_project_vendors_added_by ON project_vendors(added_by_user_id);
 
 -- ============================================================================
 -- TABLE 3: BID REQUESTS
@@ -453,6 +504,8 @@ CREATE INDEX idx_email_templates_trade ON email_templates(trade_category_id);
 -- Enable RLS
 ALTER TABLE trade_categories ENABLE ROW LEVEL SECURITY;
 ALTER TABLE vendors ENABLE ROW LEVEL SECURITY;
+ALTER TABLE user_vendors ENABLE ROW LEVEL SECURITY;
+ALTER TABLE project_vendors ENABLE ROW LEVEL SECURITY;
 ALTER TABLE bid_requests ENABLE ROW LEVEL SECURITY;
 ALTER TABLE bids ENABLE ROW LEVEL SECURITY;
 ALTER TABLE email_communications ENABLE ROW LEVEL SECURITY;
@@ -461,28 +514,73 @@ ALTER TABLE vendor_reviews ENABLE ROW LEVEL SECURITY;
 ALTER TABLE bid_items ENABLE ROW LEVEL SECURITY;
 ALTER TABLE email_templates ENABLE ROW LEVEL SECURITY;
 
--- Trade Categories (public read, admin write)
+-- Trade Categories (public read)
 CREATE POLICY "Trade categories are viewable by everyone"
   ON trade_categories FOR SELECT
   USING (true);
 
--- Vendors (users can only see their own)
-CREATE POLICY "Users can view their own vendors"
+-- Vendors (shared directory: any authenticated user can read; anyone can add)
+CREATE POLICY "Authenticated users can view vendors"
   ON vendors FOR SELECT
+  TO authenticated
+  USING (true);
+
+CREATE POLICY "Authenticated users can create vendors"
+  ON vendors FOR INSERT
+  TO authenticated
+  WITH CHECK (true);
+
+CREATE POLICY "Users can update vendors they created"
+  ON vendors FOR UPDATE
+  TO authenticated
+  USING (created_by_user_id = auth.uid())
+  WITH CHECK (created_by_user_id = auth.uid());
+
+-- User Vendors (users see only their own links)
+CREATE POLICY "Users can view their own user_vendors"
+  ON user_vendors FOR SELECT
   USING (auth.uid() = user_id);
 
-CREATE POLICY "Users can create their own vendors"
-  ON vendors FOR INSERT
+CREATE POLICY "Users can create their own user_vendors"
+  ON user_vendors FOR INSERT
   WITH CHECK (auth.uid() = user_id);
 
-CREATE POLICY "Users can update their own vendors"
-  ON vendors FOR UPDATE
+CREATE POLICY "Users can update their own user_vendors"
+  ON user_vendors FOR UPDATE
   USING (auth.uid() = user_id)
   WITH CHECK (auth.uid() = user_id);
 
-CREATE POLICY "Users can delete their own vendors"
-  ON vendors FOR DELETE
+CREATE POLICY "Users can delete their own user_vendors"
+  ON user_vendors FOR DELETE
   USING (auth.uid() = user_id);
+
+-- Project Vendors (users see only for their projects)
+CREATE POLICY "Users can view project_vendors for their projects"
+  ON project_vendors FOR SELECT
+  USING (
+    project_id IN (SELECT id FROM projects WHERE user_id = auth.uid())
+  );
+
+CREATE POLICY "Users can create project_vendors for their projects"
+  ON project_vendors FOR INSERT
+  WITH CHECK (
+    project_id IN (SELECT id FROM projects WHERE user_id = auth.uid())
+  );
+
+CREATE POLICY "Users can update project_vendors for their projects"
+  ON project_vendors FOR UPDATE
+  USING (
+    project_id IN (SELECT id FROM projects WHERE user_id = auth.uid())
+  )
+  WITH CHECK (
+    project_id IN (SELECT id FROM projects WHERE user_id = auth.uid())
+  );
+
+CREATE POLICY "Users can delete project_vendors for their projects"
+  ON project_vendors FOR DELETE
+  USING (
+    project_id IN (SELECT id FROM projects WHERE user_id = auth.uid())
+  );
 
 -- Bid Requests (users can only see their own)
 CREATE POLICY "Users can view their own bid requests"
@@ -629,7 +727,10 @@ $$ LANGUAGE plpgsql;
 -- Apply to all tables
 CREATE TRIGGER update_vendors_updated_at BEFORE UPDATE ON vendors
   FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
-
+CREATE TRIGGER update_user_vendors_updated_at BEFORE UPDATE ON user_vendors
+  FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+CREATE TRIGGER update_project_vendors_updated_at BEFORE UPDATE ON project_vendors
+  FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 CREATE TRIGGER update_bid_requests_updated_at BEFORE UPDATE ON bid_requests
   FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
@@ -675,36 +776,40 @@ FROM bid_requests br
 LEFT JOIN vendors v ON br.vendor_id = v.id
 LEFT JOIN trade_categories tc ON br.trade_category_id = tc.id;
 
--- View: Vendor Performance Summary
+-- View: Vendor Performance Summary (per user–vendor link)
 CREATE VIEW vendor_performance_summary AS
 SELECT 
-  v.id,
-  v.user_id,
+  uv.id,
+  uv.user_id,
+  uv.vendor_id,
+  uv.trade_category_id,
   v.name,
-  v.trade_category_id,
   -- Bid statistics
   COUNT(DISTINCT br.id) as total_requests_sent,
   COUNT(DISTINCT b.id) as total_bids_received,
   COUNT(DISTINCT CASE WHEN b.status = 'accepted' THEN b.id END) as bids_accepted,
   AVG(b.total_amount) as avg_bid_amount,
-  -- Review statistics
+  -- Review statistics (vendor-level)
   COUNT(DISTINCT vr.id) as review_count,
   AVG(vr.overall_rating) as avg_overall_rating,
   AVG(vr.quality_rating) as avg_quality_rating,
   AVG(vr.timeline_rating) as avg_timeline_rating,
   COUNT(DISTINCT CASE WHEN vr.would_recommend THEN vr.id END) as recommend_count
-FROM vendors v
-LEFT JOIN bid_requests br ON v.id = br.vendor_id
+FROM user_vendors uv
+JOIN vendors v ON v.id = uv.vendor_id
+LEFT JOIN bid_requests br ON v.id = br.vendor_id AND br.user_id = uv.user_id
 LEFT JOIN bids b ON br.id = b.bid_request_id
-LEFT JOIN vendor_reviews vr ON v.id = vr.vendor_id
-GROUP BY v.id, v.user_id, v.name, v.trade_category_id;
+LEFT JOIN vendor_reviews vr ON v.id = vr.vendor_id AND vr.user_id = uv.user_id
+GROUP BY uv.id, uv.user_id, uv.vendor_id, uv.trade_category_id, v.name;
 
 -- ============================================================================
 -- COMMENTS
 -- ============================================================================
 
 COMMENT ON TABLE trade_categories IS 'Defines contractor types (Plumber, Electrician, etc.) with construction method applicability';
-COMMENT ON TABLE vendors IS 'Stores contractor/vendor information with ratings and contact details';
+COMMENT ON TABLE vendors IS 'Shared vendor directory – one record per contractor; independent of users';
+COMMENT ON TABLE user_vendors IS 'Bridge: links users to vendors (global “my list”) with user-specific notes, trade classification, favorites';
+COMMENT ON TABLE project_vendors IS 'Bridge: ties vendors to a specific project; “vendors on this job” (created_by_user_id on vendors is who entered the vendor, not project)';
 COMMENT ON TABLE bid_requests IS 'Tracks bid requests sent to vendors, supports 3 email methods';
 COMMENT ON TABLE bids IS 'Actual bid submissions from vendors with detailed cost breakdowns';
 COMMENT ON TABLE email_communications IS 'Tracks all email communications for bid requests across all 3 send methods';

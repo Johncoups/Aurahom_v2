@@ -1,0 +1,8 @@
+id,user_id,name,city_state,property_address,house_size,foundation_type,number_of_stories,target_start_date,background,created_at,updated_at
+3c3e1a3b-7ed2-404d-be37-6ab61b174668,3e23706f-fd58-44c1-8e1b-94f26418af60,"Project - Rice County, MN","Rice County, MN",null,2000,full-basement,2-story,null,null,2025-09-20 00:10:42.112783+00,2025-09-20 00:10:42.112783+00
+8f1d56e1-51c6-4d94-bc01-91c06f006a07,201f3ed8-13cb-4afe-a6c8-bbbd6ce39a9f,"Project - Rice County, MN","Rice County, MN",null,2000,pier,2-story,null,null,2025-09-27 20:24:34.05538+00,2025-09-27 20:24:34.05538+00
+af1045df-7e10-483f-9e49-ad14448b7069,2105c518-5f96-4966-8e1b-11655d4aafcf,Project - Rice County,Rice County,null,2000,crawlspace,2-story,null,null,2025-09-27 20:45:20.171268+00,2025-09-27 20:45:20.171268+00
+80e1848a-14d8-4b9b-8ef1-70a3a4850960,d8fb8ff8-4c59-44d7-84dd-509b0a111762,"Project - Rice County, MN","Rice County, MN",null,2000,full-basement,2-story,null,null,2025-09-27 20:52:43.0905+00,2025-09-27 20:52:43.0905+00
+faa2ce97-f51f-4379-a198-94f71aacc514,6960cb8e-0271-49c4-88e4-0d199b8b690f,Project - Rice County,Rice County,null,2000,crawlspace,2-story,null,null,2025-09-27 20:55:03.56947+00,2025-09-27 20:55:03.56947+00
+8a1449f9-6f73-40ea-9df0-47d7529f83a1,d2a5d8da-e9c5-487f-91db-652c567c738e,"Project - Rice County, MN","Rice County, MN",null,2000,full-basement,2-story,null,null,2025-10-29 23:13:05.075772+00,2025-10-29 23:13:05.075772+00
+aef2019e-da93-420e-9ad8-a6c2416264a3,82059598-f517-4e35-b859-7262c7794666,"Project - Rice County, MN","Rice County, MN",null,2000,full-basement,2-story,null,null,2025-08-24 20:52:35.369014+00,2025-08-24 20:52:35.369014+00

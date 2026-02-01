@@ -1,0 +1,8 @@
+id,email,first_name,last_name,phone,is_active,created_at,updated_at
+3e23706f-fd58-44c1-8e1b-94f26418af60,johntest2@gmail.com,John,,,true,2025-08-15 00:28:52.289913+00,2025-08-15 00:28:52.289913+00
+201f3ed8-13cb-4afe-a6c8-bbbd6ce39a9f,johntest@gmail.com,null,null,null,true,2025-08-21 23:45:19.25436+00,2025-08-21 23:45:19.25436+00
+82059598-f517-4e35-b859-7262c7794666,testuser3@gmail.com,Test,User,,true,2025-08-24 20:51:12.629258+00,2025-08-24 20:51:12.629258+00
+2105c518-5f96-4966-8e1b-11655d4aafcf,johnsip@gmail.com,John,M Armenta,,true,2025-09-27 20:44:01.918322+00,2025-09-27 20:44:01.918322+00
+d8fb8ff8-4c59-44d7-84dd-509b0a111762,johnicf@gmail.com,John,M Armenta,,true,2025-09-27 20:51:43.617805+00,2025-09-27 20:51:43.617805+00
+6960cb8e-0271-49c4-88e4-0d199b8b690f,johnmod@gmail.com,John,M Armenta,,true,2025-09-27 20:54:23.387498+00,2025-09-27 20:54:23.387498+00
+d2a5d8da-e9c5-487f-91db-652c567c738e,johntraditional@gmail.com,John,M Armenta,,true,2025-10-29 23:11:27.857737+00,2025-10-29 23:11:27.857737+00

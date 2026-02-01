@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useMemo, useEffect, useRef } from "react"
+import { useState, useMemo, useEffect, useRef, useCallback } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -8,38 +8,21 @@ import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { ChevronDown, ChevronRight, Edit2, Mail, Send, Phone, Star, Check, ArrowLeft, Plus, X, Trash2 } from "lucide-react"
-import { useBids } from "@/contexts/bids-context"
+import { useBids, type VendorWithBidStatus } from "@/contexts/bids-context"
 import { useRoadmap } from "@/contexts/roadmap-context"
 import { useAuth } from "@/contexts/auth-context"
 import { EmailDraftModal } from "@/components/email-draft-modal"
 import { sendBidRequestViaAurahom, ensureVendorForUser } from "@/app/actions/sendBidRequestViaAurahom"
+import { addVendorToPhase, updateVendorAction, removeVendorFromPhase } from "@/app/actions/bidsCrud"
+import { acceptBidAction } from "@/app/actions/acceptBidAction"
 import { toast } from "sonner"
 import { getPhasesForMethod } from "@/lib/roadmap-phases"
 import type { ConstructionMethod } from "@/lib/roadmap-types"
 
-interface Vendor {
-  id: string
-  name: string
-  email: string
-  phone?: string
-  contactName?: string // Contact person at the vendor company
-  status: "Not Requested" | "Pending" | "Bid Received" | "Bid Accepted"
-  rating?: {
-    platform: "Google" | "Facebook"
-    score: number
-    reviews: number
-  }
-  socialMedia?: {
-    platform: "Facebook" | "Instagram" | "LinkedIn" | "TikTok" | "Snapchat" | "Reddit" | "Quora"
-    handle: string
-  }[]
-  foundVia?: ("Google" | "Facebook" | "Snapchat" | "TikTok" | "Reddit" | "Quora")[]
-}
-
 interface SubPhase {
   id: string
   title: string
-  vendors: Vendor[]
+  vendors: VendorWithBidStatus[]
 }
 
 interface Phase {
@@ -52,48 +35,48 @@ interface Phase {
 const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
 
 export function BidsPage() {
-  const { setSelectedVendor, selectedVendor } = useBids()
+  const {
+    setSelectedVendor,
+    selectedVendor,
+    loadProjectData,
+    refresh,
+    getVendorsForPhase,
+    isLoading: bidsLoading,
+    error: bidsError,
+    bidsByRequest,
+    acceptedBidByRequest,
+    bidItemsByBid,
+  } = useBids()
   const { profile, roadmap, activeProjectId } = useRoadmap()
   const { user } = useAuth()
+
+  // Load bids data when project is available
+  useEffect(() => {
+    if (activeProjectId?.trim()) {
+      loadProjectData(activeProjectId)
+    }
+  }, [activeProjectId, loadProjectData])
   const [isEmailDraftModalOpen, setIsEmailDraftModalOpen] = useState(false)
-  // Build phases from full construction phase list (all trades needed to build a house)
+  // Build phases from full construction phase list (vendors come from context via getVendorsForPhase)
   const constructionMethod = (profile?.constructionMethod && profile.constructionMethod !== ""
     ? profile.constructionMethod
     : "traditional-frame") as ConstructionMethod
-  // Exclude "Just Starting" from Bids page; resequence display numbers (UI only, no DB change)
-  const initialPhases = useMemo<Phase[]>(() => {
+  const phases = useMemo<Phase[]>(() => {
     const baseline = getPhasesForMethod(constructionMethod).filter((p) => p.id !== "just-starting")
     return baseline.map((phase, index) => ({
       id: phase.id,
       title: `${index + 1}. ${phase.title}`,
       isExpanded: false,
-      subPhases: [{ id: phase.id, title: phase.title, vendors: [] as Vendor[] }],
+      subPhases: [{ id: phase.id, title: phase.title, vendors: [] }],
     }))
   }, [constructionMethod])
-  const [phases, setPhases] = useState<Phase[]>(initialPhases)
-  const isInitialMount = useRef(true)
-  // When construction method changes (e.g. profile loads), reinitialize phase list
-  useEffect(() => {
-    if (isInitialMount.current) {
-      isInitialMount.current = false
-      return
-    }
-    const baseline = getPhasesForMethod(constructionMethod).filter((p) => p.id !== "just-starting")
-    setPhases(
-      baseline.map((phase, index) => ({
-        id: phase.id,
-        title: `${index + 1}. ${phase.title}`,
-        isExpanded: false,
-        subPhases: [{ id: phase.id, title: phase.title, vendors: [] as Vendor[] }],
-      }))
-    )
-  }, [constructionMethod])
+  const [phasesExpanded, setPhasesExpanded] = useState<Record<string, boolean>>({})
 
   const [selectedSubPhase, setSelectedSubPhase] = useState<SubPhase | null>(null)
   const [selectedSubPhaseContext, setSelectedSubPhaseContext] = useState<{ phaseId: string; subPhaseId: string } | null>(null)
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [editingVendor, setEditingVendor] = useState<string | null>(null)
-  const [vendorToDelete, setVendorToDelete] = useState<{ phaseId: string; subPhaseId: string; vendorId: string; vendorName: string } | null>(null)
+  const [vendorToDelete, setVendorToDelete] = useState<{ phaseId: string; subPhaseId: string; vendorId: string; vendorName: string; bidRequestId: string } | null>(null)
   const [selectedVendorsForBid, setSelectedVendorsForBid] = useState<Set<string>>(new Set())
   const [bidRequestStep, setBidRequestStep] = useState<"select-vendors" | "choose-method">("select-vendors")
   const [isAddingVendor, setIsAddingVendor] = useState(false)
@@ -110,16 +93,17 @@ export function BidsPage() {
   const [newSocialMedia, setNewSocialMedia] = useState({ platform: "", handle: "" })
 
   const togglePhase = (phaseId: string) => {
-    setPhases(phases.map((phase) => (phase.id === phaseId ? { ...phase, isExpanded: !phase.isExpanded } : phase)))
+    setPhasesExpanded((prev) => ({ ...prev, [phaseId]: !prev[phaseId] }))
   }
 
-  const handleRequestBids = (subPhase: SubPhase, phaseId: string) => {
-    setSelectedSubPhase(subPhase)
-    setSelectedSubPhaseContext({ phaseId, subPhaseId: subPhase.id })
-    // Pre-select vendors with "Not Requested" status
-    const notRequestedVendors = subPhase.vendors
-      .filter(v => v.status === "Not Requested")
-      .map(v => v.id)
+  const handleRequestBids = (phaseId: string, subPhaseId: string, subPhaseTitle: string) => {
+    if (!activeProjectId) return
+    const vendors = getVendorsForPhase(subPhaseId, activeProjectId)
+    setSelectedSubPhase({ id: subPhaseId, title: subPhaseTitle, vendors })
+    setSelectedSubPhaseContext({ phaseId, subPhaseId })
+    const notRequestedVendors = vendors
+      .filter((v) => v.status === "Not Requested")
+      .map((v) => v.id)
     setSelectedVendorsForBid(new Set(notRequestedVendors))
     setBidRequestStep("select-vendors")
     setIsModalOpen(true)
@@ -174,185 +158,128 @@ export function BidsPage() {
     })
   }
 
-  const handleAddVendor = () => {
-    if (!selectedSubPhase || !newVendor.name.trim()) {
+  const handleAddVendor = async () => {
+    if (!selectedSubPhase || !newVendor.name.trim() || !activeProjectId || !user?.id) {
+      toast.error("Please sign in and select a project.")
       return
     }
 
-    // Create new vendor
-    const vendorId = `v${Date.now()}`
-    const newVendorData: Vendor = {
-      id: vendorId,
-      name: newVendor.name,
-      email: newVendor.email,
-      phone: newVendor.phone || undefined,
-      contactName: newVendor.contactName || undefined,
-      status: "Not Requested",
-      socialMedia: newVendor.socialMedia.length > 0 ? newVendor.socialMedia : undefined,
-      foundVia: newVendor.foundVia.length > 0 ? newVendor.foundVia as Vendor["foundVia"] : undefined,
+    try {
+      const result = await addVendorToPhase({
+        projectId: activeProjectId,
+        userId: user.id,
+        phaseId: selectedSubPhase.id,
+        scopeTitle: selectedSubPhase.title,
+        vendor: {
+          name: newVendor.name.trim(),
+          email: newVendor.email.trim() || undefined,
+          phone: newVendor.phone.trim() || undefined,
+          website: newVendor.website.trim() || undefined,
+        },
+      })
+
+      if (result.success && result.vendorId) {
+        setSelectedVendorsForBid((prev) => new Set([...prev, result.vendorId!]))
+        await refresh()
+        setNewVendor({ name: "", email: "", phone: "", website: "", contactName: "", tradeCategory: "", socialMedia: [], foundVia: [] })
+        setNewSocialMedia({ platform: "", handle: "" })
+        setIsAddingVendor(false)
+        toast.success("Vendor added.")
+      } else {
+        toast.error(result.error ?? "Failed to add vendor")
+      }
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed to add vendor")
     }
-
-    // Add vendor to the sub-phase
-    setPhases(
-      phases.map((phase) => ({
-        ...phase,
-        subPhases: phase.subPhases.map((subPhase) =>
-          subPhase.id === selectedSubPhase.id
-            ? {
-                ...subPhase,
-                vendors: [...subPhase.vendors, newVendorData],
-              }
-            : subPhase,
-        ),
-      })),
-    )
-
-    // Auto-select the newly added vendor
-    setSelectedVendorsForBid(prev => new Set([...prev, vendorId]))
-
-    // Reset form
-    setNewVendor({ name: "", email: "", phone: "", website: "", contactName: "", tradeCategory: "", socialMedia: [], foundVia: [] })
-    setNewSocialMedia({ platform: "", handle: "" })
-    setIsAddingVendor(false)
   }
 
-  const handleVendorEdit = (
-    phaseId: string,
-    subPhaseId: string,
+  const handleVendorEdit = async (
+    _phaseId: string,
+    _subPhaseId: string,
     vendorId: string,
     newName: string,
     newEmail: string,
-    newContactName?: string,
   ) => {
-    setPhases(
-      phases.map((phase) =>
-        phase.id === phaseId
-          ? {
-              ...phase,
-              subPhases: phase.subPhases.map((subPhase) =>
-                subPhase.id === subPhaseId
-                  ? {
-                      ...subPhase,
-                      vendors: subPhase.vendors.map((vendor) =>
-                        vendor.id === vendorId 
-                          ? { ...vendor, name: newName, email: newEmail, contactName: newContactName || undefined } 
-                          : vendor,
-                      ),
-                    }
-                  : subPhase,
-              ),
-            }
-          : phase,
-      ),
-    )
-    setEditingVendor(null)
+    const result = await updateVendorAction(vendorId, {
+      name: newName.trim(),
+      email: newEmail.trim() || undefined,
+    })
+    if (result.success) {
+      await refresh()
+      setEditingVendor(null)
+      toast.success("Vendor updated.")
+    } else {
+      toast.error(result.error ?? "Failed to update vendor")
+    }
   }
 
-  const handleDeleteVendor = (phaseId: string, subPhaseId: string, vendorId: string, vendorName: string) => {
-    setVendorToDelete({ phaseId, subPhaseId, vendorId, vendorName })
+  const handleDeleteVendor = (phaseId: string, subPhaseId: string, vendorId: string, vendorName: string, bidRequestId: string) => {
+    setVendorToDelete({ phaseId, subPhaseId, vendorId, vendorName, bidRequestId })
   }
 
-  const handleCopyLetter = (vendorId: string) => {
-    if (!selectedSubPhaseContext) return
-    const { phaseId, subPhaseId } = selectedSubPhaseContext
-    setPhases((prev) =>
-      prev.map((phase) =>
-        phase.id === phaseId
-          ? {
-              ...phase,
-              subPhases: phase.subPhases.map((sp) =>
-                sp.id === subPhaseId
-                  ? {
-                      ...sp,
-                      vendors: sp.vendors.map((v) =>
-                        v.id === vendorId ? { ...v, status: "Pending" as const } : v
-                      ),
-                    }
-                  : sp
-              ),
-            }
-          : phase
-      )
-    )
+  const handleCopyLetter = (_vendorId: string) => {
+    // Status updated via createBidRequestManual/markBidRequestAsSent; refresh to show latest
+    refresh()
   }
 
-  const confirmDeleteVendor = () => {
-    if (!vendorToDelete) return
+  const confirmDeleteVendor = async () => {
+    if (!vendorToDelete || !activeProjectId) return
 
-    setPhases(
-      phases.map((phase) =>
-        phase.id === vendorToDelete.phaseId
-          ? {
-              ...phase,
-              subPhases: phase.subPhases.map((subPhase) =>
-                subPhase.id === vendorToDelete.subPhaseId
-                  ? {
-                      ...subPhase,
-                      vendors: subPhase.vendors.filter((vendor) => vendor.id !== vendorToDelete.vendorId),
-                    }
-                  : subPhase,
-              ),
-            }
-          : phase,
-      ),
-    )
-
-    // Also remove from selected vendors if it was selected
-    setSelectedVendorsForBid(prev => {
-      const newSet = new Set(prev)
-      newSet.delete(vendorToDelete.vendorId)
-      return newSet
+    const result = await removeVendorFromPhase({
+      projectId: activeProjectId,
+      vendorId: vendorToDelete.vendorId,
+      bidRequestId: vendorToDelete.bidRequestId,
+      removeFromProject: false,
     })
 
-    setVendorToDelete(null)
+    if (result.success) {
+      setSelectedVendorsForBid((prev) => {
+        const newSet = new Set(prev)
+        newSet.delete(vendorToDelete.vendorId)
+        return newSet
+      })
+      setVendorToDelete(null)
+      await refresh()
+      toast.success("Vendor removed.")
+    } else {
+      toast.error(result.error ?? "Failed to remove vendor")
+    }
   }
 
-  const getStatusBadge = (status: Vendor["status"], vendorId: string, phaseId: string, subPhaseId: string) => {
+  const getStatusBadge = (vendor: VendorWithBidStatus, phaseId: string, subPhaseId: string) => {
+    const status = vendor.status
     const baseClasses = "text-xs font-medium px-2 py-1 cursor-pointer transition-colors"
-    
-    // Check if any other vendor in this sub-phase already has "Bid Accepted" status
-    const currentPhase = phases.find(p => p.id === phaseId)
-    const currentSubPhase = currentPhase?.subPhases.find(sp => sp.id === subPhaseId)
-    const hasOtherAcceptedBid = currentSubPhase?.vendors.some(
-      v => v.id !== vendorId && v.status === "Bid Accepted"
-    ) || false
-    
-    const handleStatusClick = (newStatus: Vendor["status"]) => {
-      setPhases(
-        phases.map((phase) =>
-          phase.id === phaseId
-            ? {
-                ...phase,
-                subPhases: phase.subPhases.map((subPhase) =>
-                  subPhase.id === subPhaseId
-                    ? {
-                        ...subPhase,
-                        vendors: subPhase.vendors.map((vendor) => {
-                          // If setting to "Bid Accepted", ensure only one vendor can be accepted
-                          if (newStatus === "Bid Accepted") {
-                            // If this vendor is being accepted, reset any other accepted vendor to "Bid Received"
-                            if (vendor.id === vendorId) {
-                              return { ...vendor, status: newStatus }
-                            } else if (vendor.status === "Bid Accepted") {
-                              return { ...vendor, status: "Bid Received" }
-                            }
-                            return vendor
-                          }
-                          // For other status changes, just update this vendor
-                          return vendor.id === vendorId ? { ...vendor, status: newStatus } : vendor
-                        }),
-                      }
-                    : subPhase,
-                ),
-              }
-            : phase,
-        ),
-      )
+
+    const vendorsInPhase = activeProjectId ? getVendorsForPhase(subPhaseId, activeProjectId) : []
+    const hasOtherAcceptedBid = vendorsInPhase.some(
+      (v) => v.id !== vendor.id && v.status === "Bid Accepted"
+    )
+
+    const handleStatusClick = async (newStatus: VendorWithBidStatus["status"]) => {
+      if (newStatus === "Bid Accepted" && vendor.bidRequestId && user?.id) {
+        const bids = bidsByRequest[vendor.bidRequestId] ?? []
+        const bidToAccept = bids.length > 0
+          ? bids.reduce((lowest, b) =>
+              (b.total_amount ?? 0) < (lowest.total_amount ?? 0) ? b : lowest
+            )
+          : null
+        if (bidToAccept) {
+          const result = await acceptBidAction({ bidId: bidToAccept.id, userId: user.id })
+          if (result.success) {
+            await refresh()
+            toast.success("Bid accepted. Budget updated.")
+          } else {
+            toast.error(result.error ?? "Failed to accept bid")
+          }
+        } else {
+          toast.error("No bid to accept. Record a bid first.")
+        }
+      }
+      // Other status changes are derived from bid_request (send request, record bid) - no action
     }
 
-    // Render status select with conditional "Bid Accepted" option
     const renderStatusSelect = (bgColor: string, textColor: string) => (
-      <Select value={status} onValueChange={(value) => handleStatusClick(value as Vendor["status"])}>
+      <Select value={status} onValueChange={(value) => handleStatusClick(value as VendorWithBidStatus["status"])}>
         <SelectTrigger className={baseClasses + " " + bgColor + " " + textColor + " hover:opacity-80 border-0 h-auto p-1 px-2"}>
           <SelectValue />
         </SelectTrigger>
@@ -360,8 +287,8 @@ export function BidsPage() {
           <SelectItem value="Not Requested">Not Requested</SelectItem>
           <SelectItem value="Pending">Pending</SelectItem>
           <SelectItem value="Bid Received">Bid Received</SelectItem>
-          <SelectItem 
-            value="Bid Accepted" 
+          <SelectItem
+            value="Bid Accepted"
             disabled={hasOtherAcceptedBid && status !== "Bid Accepted"}
             className={hasOtherAcceptedBid && status !== "Bid Accepted" ? "opacity-50 cursor-not-allowed" : ""}
           >
@@ -386,7 +313,7 @@ export function BidsPage() {
     }
   }
 
-  const handleBidOption = (option: string) => {
+  const handleBidOption = async (option: string) => {
     const selectedVendorIds = Array.from(selectedVendorsForBid)
     console.log(`[v0] Bid option selected: ${option} for ${selectedSubPhase?.title}`, {
       vendors: selectedVendorIds,
@@ -424,26 +351,10 @@ export function BidsPage() {
       handleSendViaAurahom()
       return
     }
-    
-    // Update status to pending for selected vendors only
-    if (selectedSubPhase) {
-      setPhases(
-        phases.map((phase) => ({
-          ...phase,
-          subPhases: phase.subPhases.map((subPhase) =>
-            subPhase.id === selectedSubPhase.id
-              ? {
-                  ...subPhase,
-                  vendors: subPhase.vendors.map((vendor) => 
-                    selectedVendorsForBid.has(vendor.id)
-                      ? { ...vendor, status: "Pending" as const }
-                      : vendor
-                  ),
-                }
-              : subPhase,
-          ),
-        })),
-      )
+
+    // "Just Mark as Pending" - status comes from DB after send; refresh to show latest
+    if (option === "mark-pending") {
+      await refresh()
     }
 
     // Reset and close modal
@@ -484,22 +395,14 @@ export function BidsPage() {
       return null
     }
     
-    // Get current vendor data from phases state (not the snapshot)
-    const selectedPhase = phases.find(p => p.id === phaseId)
-    if (!selectedPhase) {
-      console.warn("⚠️ getEmailDraftContext: Phase not found", phaseId)
-      return null
-    }
-    
-    const currentSubPhase = selectedPhase.subPhases.find(sp => sp.id === subPhaseId)
-    if (!currentSubPhase) {
-      console.warn("⚠️ getEmailDraftContext: SubPhase not found", subPhaseId)
-      return null
-    }
-    
-    // Get the first selected vendor from current state
+    const selectedPhase = phases.find((p) => p.id === phaseId)
+    if (!selectedPhase) return null
+    const currentSubPhase = selectedPhase.subPhases.find((sp) => sp.id === subPhaseId)
+    if (!currentSubPhase) return null
+
+    const vendors = activeProjectId ? getVendorsForPhase(subPhaseId, activeProjectId) : []
     const selectedVendorId = Array.from(selectedVendorsForBid)[0]
-    const selectedVendor = currentSubPhase.vendors.find(v => v.id === selectedVendorId)
+    const selectedVendor = vendors.find((v) => v.id === selectedVendorId)
     
     if (!selectedVendor) {
       console.warn("⚠️ getEmailDraftContext: Vendor not found", {
@@ -519,8 +422,8 @@ export function BidsPage() {
       subPhaseTitle: currentSubPhase.title,
       vendorId: selectedVendor.id,
       vendorName: selectedVendor.name,
-      vendorEmail: selectedVendor.email,
-      vendorContactName: selectedVendor.contactName,
+      vendorEmail: selectedVendor.email ?? "",
+      vendorContactName: undefined,
       constructionMethod: profile?.constructionMethod,
       location: profile?.cityState,
       houseSize,
@@ -550,18 +453,13 @@ export function BidsPage() {
       toast.error("Could not find phase.")
       return
     }
-    const currentSubPhase = selectedPhase.subPhases.find((sp) => sp.id === selectedSubPhase.id)
-    if (!currentSubPhase) {
-      toast.error("Could not find sub-phase.")
-      return
-    }
 
     const phaseIds = [selectedSubPhase.id]
-    const scopeTitle = currentSubPhase.title
+    const scopeTitle = selectedSubPhase.title
     const houseSize = profile?.houseSize ? parseInt(profile.houseSize) : undefined
     const budgetRange = roadmap?.phases?.[0]?.duration
 
-    const vendorObjects = currentSubPhase.vendors.filter((v) => selectedVendorsForBid.has(v.id))
+    const vendorObjects = selectedSubPhase.vendors.filter((v) => selectedVendorsForBid.has(v.id))
     let successCount = 0
     let failCount = 0
 
@@ -570,7 +468,7 @@ export function BidsPage() {
         let vendorId: string | undefined
         if (UUID_REGEX.test(vendor.id)) {
           vendorId = vendor.id
-        } else {
+        } else if (vendor.email?.trim()) {
           const ensured = await ensureVendorForUser(user.id, { name: vendor.name, email: vendor.email })
           if (!ensured.success || !ensured.vendorId) {
             toast.error(vendor.name + ": " + (ensured.error ?? "Could not create vendor."))
@@ -578,15 +476,19 @@ export function BidsPage() {
             continue
           }
           vendorId = ensured.vendorId
+        } else {
+          toast.error(vendor.name + ": Email required for Send via Aurahom.")
+          failCount++
+          continue
         }
 
         const draftContext = {
           projectProfile: profile || undefined,
           phaseTitle: selectedPhase.title,
-          subPhaseTitle: currentSubPhase.title,
+          subPhaseTitle: selectedSubPhase.title,
           vendorName: vendor.name,
-          vendorEmail: vendor.email,
-          vendorContactName: vendor.contactName,
+          vendorEmail: vendor.email ?? "",
+          vendorContactName: undefined,
           constructionMethod: profile?.constructionMethod,
           location: profile?.cityState,
           houseSize,
@@ -616,23 +518,7 @@ export function BidsPage() {
 
       if (successCount > 0) {
         toast.success(successCount === vendorObjects.length ? "Bid requests sent." : successCount + " of " + vendorObjects.length + " sent.")
-        if (selectedSubPhase) {
-          setPhases(
-            phases.map((phase) => ({
-              ...phase,
-              subPhases: phase.subPhases.map((sp) =>
-                sp.id === selectedSubPhase.id
-                  ? {
-                      ...sp,
-                      vendors: sp.vendors.map((v) =>
-                        selectedVendorsForBid.has(v.id) ? { ...v, status: "Pending" as const } : v
-                      ),
-                    }
-                  : sp
-              ),
-            }))
-          )
-        }
+        await refresh()
         setIsModalOpen(false)
         setBidRequestStep("select-vendors")
         setSelectedVendorsForBid(new Set())
@@ -662,14 +548,15 @@ export function BidsPage() {
         subPhaseId = selectedSubPhase.id
       }
     }
-    if (!phaseId || !subPhaseId) return first ? [first] : []
-    const selectedPhase = phases.find(p => p.id === phaseId)!
-    const currentSubPhase = selectedPhase.subPhases.find(sp => sp.id === subPhaseId)!
+    if (!phaseId || !subPhaseId || !activeProjectId) return first ? [first] : []
+    const selectedPhase = phases.find((p) => p.id === phaseId)!
+    const currentSubPhase = selectedPhase.subPhases.find((sp) => sp.id === subPhaseId)!
+    const vendors = getVendorsForPhase(subPhaseId, activeProjectId)
     const houseSize = profile?.houseSize ? parseInt(profile.houseSize) : undefined
     const budgetRange = roadmap?.phases?.[0]?.duration
     const contexts: ReturnType<typeof getEmailDraftContext>[] = []
     for (const vendorId of selectedVendorsForBid) {
-      const vendor = currentSubPhase.vendors.find(v => v.id === vendorId)
+      const vendor = vendors.find((v) => v.id === vendorId)
       if (!vendor) continue
       contexts.push({
         projectProfile: profile || undefined,
@@ -677,8 +564,8 @@ export function BidsPage() {
         subPhaseTitle: currentSubPhase.title,
         vendorId: vendor.id,
         vendorName: vendor.name,
-        vendorEmail: vendor.email,
-        vendorContactName: vendor.contactName,
+        vendorEmail: vendor.email ?? "",
+        vendorContactName: undefined,
         constructionMethod: profile?.constructionMethod,
         location: profile?.cityState,
         houseSize,
@@ -691,6 +578,11 @@ export function BidsPage() {
     return contexts.length > 0 ? contexts : (first ? [first] : [])
   }
 
+  const phaseVendors = useCallback(
+    (phaseId: string) => (activeProjectId ? getVendorsForPhase(phaseId, activeProjectId) : []),
+    [activeProjectId, getVendorsForPhase]
+  )
+
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
       <div className="mb-8">
@@ -698,8 +590,32 @@ export function BidsPage() {
         <p className="text-gray-600">Request and manage bids from contractors for each phase of your project.</p>
       </div>
 
+      {bidsLoading && (
+        <div className="flex items-center justify-center py-12">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-cyan-600" />
+        </div>
+      )}
+
+      {bidsError && (
+        <div className="rounded-lg bg-red-50 p-4 text-red-800 mb-6">
+          {bidsError}
+          <Button variant="outline" size="sm" className="mt-2" onClick={() => activeProjectId && loadProjectData(activeProjectId)}>
+            Retry
+          </Button>
+        </div>
+      )}
+
+      {!activeProjectId && !bidsLoading && (
+        <div className="rounded-lg bg-amber-50 p-6 text-amber-800 text-center">
+          <p>Please complete onboarding and open a project to manage bids.</p>
+        </div>
+      )}
+
+      {activeProjectId && !bidsLoading && !bidsError && (
       <div className="space-y-4">
-        {phases.map((phase) => (
+        {phases.map((phase) => {
+          const vendors = phaseVendors(phase.id)
+          return (
           <Card key={phase.id} className="overflow-hidden">
             <CardHeader
               className="cursor-pointer hover:bg-gray-50 transition-colors"
@@ -707,7 +623,7 @@ export function BidsPage() {
             >
               <CardTitle className="flex items-center justify-between">
                 <span className="text-lg font-semibold">{phase.title}</span>
-                {phase.isExpanded ? (
+                {(phasesExpanded[phase.id] ?? false) ? (
                   <ChevronDown className="h-5 w-5 text-gray-500" />
                 ) : (
                   <ChevronRight className="h-5 w-5 text-gray-500" />
@@ -715,7 +631,7 @@ export function BidsPage() {
               </CardTitle>
             </CardHeader>
 
-            {phase.isExpanded && (
+            {(phasesExpanded[phase.id] ?? false) && (
               <CardContent className="pt-0">
                 <div className="space-y-4">
                   {phase.subPhases.map((subPhase) => (
@@ -724,12 +640,17 @@ export function BidsPage() {
                         <div className="flex-1">
                           <h3 className="font-semibold text-gray-900 mb-3">{subPhase.title}</h3>
 
+                          {vendors.length === 0 ? (
+                            <div className="text-sm text-gray-500 py-6 text-center border border-dashed rounded-lg">
+                              No vendors for this phase yet. Click &quot;Request Bids&quot; to add vendors.
+                            </div>
+                          ) : (
                           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-4">
-                            {subPhase.vendors.map((vendor, index) => (
+                            {vendors.map((vendor, index) => (
                               <div key={vendor.id} className="bg-white p-4 rounded-lg border shadow-sm flex flex-col h-full">
                                 {/* Status Badge at Top */}
                                 <div className="mb-3">
-                                  {getStatusBadge(vendor.status, vendor.id, phase.id, subPhase.id)}
+                                  {getStatusBadge(vendor, phase.id, subPhase.id)}
                                 </div>
 
                                 <div className="flex items-start justify-between mb-3 flex-1 min-h-0">
@@ -744,8 +665,7 @@ export function BidsPage() {
                                             subPhase.id,
                                             vendor.id,
                                             e.target.value,
-                                            vendor.email,
-                                            vendor.contactName,
+                                            vendor.email ?? "",
                                           )
                                         }
                                         onKeyDown={(e) => {
@@ -755,8 +675,7 @@ export function BidsPage() {
                                               subPhase.id,
                                               vendor.id,
                                               e.currentTarget.value,
-                                              vendor.email,
-                                              vendor.contactName,
+                                              vendor.email ?? "",
                                             )
                                           }
                                         }}
@@ -795,14 +714,16 @@ export function BidsPage() {
                                             <Button variant="ghost" size="sm" className="flex-shrink-0 h-6 w-6 p-0" onClick={() => setEditingVendor(vendor.id)}>
                                               <Edit2 className="h-3 w-3" />
                                             </Button>
+                                            {vendor.bidRequestId && (
                                             <Button 
                                               variant="ghost" 
                                               size="sm" 
                                               className="flex-shrink-0 h-6 w-6 p-0 text-red-600 hover:text-red-700 hover:bg-red-50" 
-                                              onClick={() => handleDeleteVendor(phase.id, subPhase.id, vendor.id, vendor.name)}
+                                              onClick={() => handleDeleteVendor(phase.id, subPhase.id, vendor.id, vendor.name, vendor.bidRequestId)}
                                             >
                                               <Trash2 className="h-3 w-3" />
                                             </Button>
+                                            )}
                                           </div>
                                         </div>
 
@@ -821,22 +742,22 @@ export function BidsPage() {
                                         </div>
 
                                         {/* Rating */}
-                                        {vendor.rating && (
+                                        {(vendor.rating_score ?? vendor.rating_reviews) != null && (
                                           <div className="flex items-center mb-3">
                                             <Star className="h-3 w-3 text-yellow-500 fill-current mr-1 flex-shrink-0" />
-                                            <span className="text-xs font-medium">{vendor.rating.score}</span>
+                                            <span className="text-xs font-medium">{vendor.rating_score ?? "—"}</span>
                                             <span className="text-xs text-gray-500 ml-1">
-                                              ({vendor.rating.reviews} {vendor.rating.platform} reviews)
+                                              ({vendor.rating_reviews ?? 0} {vendor.rating_platform ?? ""} reviews)
                                             </span>
                                           </div>
                                         )}
 
                                         {/* Social Media */}
-                                        {vendor.socialMedia && vendor.socialMedia.length > 0 && (
+                                        {vendor.social_media && vendor.social_media.length > 0 && (
                                           <div className="mb-3">
                                             <p className="text-xs text-gray-500 mb-1">Social:</p>
                                             <div className="flex flex-wrap gap-1">
-                                              {vendor.socialMedia.map((social, idx) => (
+                                              {vendor.social_media.map((social, idx) => (
                                                 <Badge key={idx} variant="outline" className="text-xs px-1.5 py-0.5">
                                                   {social.platform}: {social.handle}
                                                 </Badge>
@@ -846,11 +767,11 @@ export function BidsPage() {
                                         )}
 
                                         {/* Found Via */}
-                                        {vendor.foundVia && vendor.foundVia.length > 0 && (
+                                        {vendor.project_vendor?.found_via && vendor.project_vendor.found_via.length > 0 && (
                                           <div className="mb-3">
                                             <p className="text-xs text-gray-500 mb-1">Found via:</p>
                                             <div className="flex flex-wrap gap-1">
-                                              {vendor.foundVia.map((platform, idx) => (
+                                              {vendor.project_vendor.found_via.map((platform, idx) => (
                                                 <Badge key={idx} variant="secondary" className="text-xs px-1.5 py-0.5">
                                                   {platform}
                                                 </Badge>
@@ -863,6 +784,23 @@ export function BidsPage() {
                                   )}
                                 </div>
                                 
+                                {/* Linked budget items - show for Bid Accepted */}
+                                {vendor.status === "Bid Accepted" && vendor.acceptedBidId && bidItemsByBid[vendor.acceptedBidId]?.length > 0 && (
+                                  <div className="mt-3 pt-3 border-t text-xs">
+                                    <p className="text-gray-500 mb-1 font-medium">Linked to budget:</p>
+                                    <ul className="space-y-0.5">
+                                      {bidItemsByBid[vendor.acceptedBidId].map((item) => (
+                                        <li key={item.id} className="flex justify-between text-gray-600">
+                                          <span className="truncate">{item.description ?? "—"}</span>
+                                          {item.total_cost != null && (
+                                            <span className="text-gray-700 font-medium ml-2">${item.total_cost.toLocaleString()}</span>
+                                          )}
+                                        </li>
+                                      ))}
+                                    </ul>
+                                  </div>
+                                )}
+
                                 {/* Full-width Button at Bottom - Only show for Bid Accepted */}
                                 {vendor.status === "Bid Accepted" && (
                                   <div className="mt-auto pt-3 border-t">
@@ -875,7 +813,7 @@ export function BidsPage() {
                                           ? "bg-cyan-600 hover:bg-cyan-700 text-white"
                                           : "")
                                       }
-                                      onClick={() => setSelectedVendor({ id: vendor.id, name: vendor.name, email: vendor.email, phone: vendor.phone, contactName: vendor.contactName })}
+                                      onClick={() => setSelectedVendor({ id: vendor.id, name: vendor.name, email: vendor.email ?? undefined, phone: vendor.phone ?? undefined })}
                                     >
                                       Use for Schedule
                                     </Button>
@@ -884,10 +822,11 @@ export function BidsPage() {
                               </div>
                             ))}
                           </div>
+                          )}
                         </div>
 
                         <div className="ml-6 flex-shrink-0">
-                          <Button onClick={() => handleRequestBids(subPhase, phase.id)} className="bg-cyan-600 hover:bg-cyan-700 whitespace-nowrap">
+                          <Button onClick={() => handleRequestBids(phase.id, subPhase.id, subPhase.title)} className="bg-cyan-600 hover:bg-cyan-700 whitespace-nowrap">
                             Request Bids
                           </Button>
                         </div>
@@ -898,8 +837,9 @@ export function BidsPage() {
               </CardContent>
             )}
           </Card>
-        ))}
+        )})}
       </div>
+      )}
 
       {/* Bid Request Modal */}
       <Dialog open={isModalOpen} onOpenChange={(open) => {
@@ -1105,11 +1045,11 @@ export function BidsPage() {
               
               <div className="space-y-2 max-h-96 overflow-y-auto">
                 {(() => {
-                  // Get current vendor data from phases state to ensure we have the latest status
-                  const currentPhase = phases.find(p => p.id === selectedSubPhaseContext?.phaseId)
-                  const currentSubPhase = currentPhase?.subPhases.find(sp => sp.id === selectedSubPhaseContext?.subPhaseId)
-                  const currentVendors = currentSubPhase?.vendors || selectedSubPhase?.vendors || []
-                  
+                  const currentVendors =
+                    selectedSubPhaseContext && activeProjectId
+                      ? getVendorsForPhase(selectedSubPhaseContext.subPhaseId, activeProjectId)
+                      : selectedSubPhase?.vendors ?? []
+
                   return currentVendors.map((vendor) => {
                   const isSelected = selectedVendorsForBid.has(vendor.id)
                   return (
@@ -1134,7 +1074,7 @@ export function BidsPage() {
                             </div>
                             <p className="font-semibold text-sm">{vendor.name}</p>
                             {selectedSubPhaseContext ? (
-                              getStatusBadge(vendor.status, vendor.id, selectedSubPhaseContext.phaseId, selectedSubPhaseContext.subPhaseId)
+                              getStatusBadge(vendor, selectedSubPhaseContext.phaseId, selectedSubPhaseContext.subPhaseId)
                             ) : (
                               <Badge
                                 className={

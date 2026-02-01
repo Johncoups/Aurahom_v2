@@ -1,6 +1,7 @@
 "use server";
 
 import { sendEmail } from "@/lib/email";
+import { ensureProjectVendor, findExistingBidRequest } from "@/lib/bids";
 import { createServerSupabaseClient } from "@/lib/supabase-server";
 import { generateBidRequestEmailContent } from "@/app/actions/prepareEmailDraft";
 import type { EmailDraftContext } from "@/app/actions/prepareEmailDraft";
@@ -106,7 +107,29 @@ export async function sendBidRequestViaAurahom(
     return { success: false, error: "Vendor has no email address." };
   }
 
-  // 2. Create bid_request (request_method = 'aurahom')
+  // 2. Idempotency check: don't create duplicate bid requests for same scope
+  const existingResult = await findExistingBidRequest({
+    projectId,
+    vendorId,
+    phaseIds,
+    scopeTitle: scopeTitle ?? undefined,
+  });
+  if (existingResult.bidRequest) {
+    // Return existing request instead of creating duplicate
+    return {
+      success: true,
+      bidRequestId: existingResult.bidRequest.id,
+      error: undefined,
+    };
+  }
+
+  // 3. Ensure vendor is on the project (project_vendors) — Workflow 2 A
+  const ensured = await ensureProjectVendor(projectId, vendorId, userId);
+  if (!ensured.success) {
+    return { success: false, error: ensured.error ?? "Could not add vendor to project." };
+  }
+
+  // 4. Create bid_request (request_method = 'aurahom')
   const { data: bidRequest, error: insertRequestError } = await supabase
     .from("bid_requests")
     .insert({
@@ -137,14 +160,14 @@ export async function sendBidRequestViaAurahom(
     return { success: false, error: "Failed to create bid request." };
   }
 
-  // 3. Send email via Resend
+  // 5. Send email via Resend
   const emailResult = await sendEmail({
     to: vendor.email,
     subject,
     html: bodyHtml,
   });
 
-  // 4. Record email_communications (send_method = 'aurahom')
+  // 6. Record email_communications (send_method = 'aurahom')
   const commStatus = emailResult.success ? "sent" : "failed";
   const now = new Date().toISOString();
   await supabase.from("email_communications").insert({

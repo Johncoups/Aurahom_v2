@@ -10,6 +10,7 @@ import { SchedulePage } from "@/components/schedule-page"
 import { TaskGeneratorPage } from "@/components/task-generator-page"
 import { BidsPage } from "@/components/bids-page"
 import { BudgetPage } from "@/components/budget-page"
+import { VendorsPageLinear } from "@/components/vendors-page-linear"
 import { RoadmapProvider, useRoadmap } from "@/contexts/roadmap-context"
 import { RoadmapView } from "@/components/roadmap-view"
 import { Button } from "@/components/ui/button"
@@ -75,7 +76,9 @@ function DashboardInner() {
 				return <TaskGeneratorPage />
 			case "bids":
 				return <BidsPage />
-		case "budget":
+		case "vendors":
+			return <VendorsPageLinear />
+			case "budget":
 			return <BudgetPage projectId={profile?.projectId ?? activeProjectId ?? undefined} constructionMethod={profile?.constructionMethod} />
 			default:
 				return <DashboardContent />
@@ -86,7 +89,7 @@ function DashboardInner() {
 		<div className="min-h-screen bg-gray-50">
 			<DashboardHeader />
 			<main className="pb-6">
-				<FeatureNavigation onFeatureClick={handleFeatureClick} />
+				<FeatureNavigation onFeatureClick={handleFeatureClick} activeFeatureId={currentView} />
 				{renderCurrentView()}
 			</main>
 		</div>

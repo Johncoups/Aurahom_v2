@@ -34,6 +34,14 @@ jest.mock('next/router', () => ({
   },
 }))
 
+// Mock Next.js headers (cookies) - required for server-side code that uses createServerSupabaseClient
+jest.mock('next/headers', () => ({
+  cookies: jest.fn(() => Promise.resolve({
+    getAll: jest.fn(() => []),
+    set: jest.fn(),
+  })),
+}))
+
 // Mock Next.js navigation
 jest.mock('next/navigation', () => ({
   useRouter() {
@@ -53,6 +61,14 @@ jest.mock('next/navigation', () => ({
     return '/'
   },
 }))
+
+// Mock Supabase server client (for Server Actions that use createServerSupabaseClient)
+jest.mock('@/lib/supabase-server', () => {
+  const mockFrom = jest.fn()
+  return {
+    createServerSupabaseClient: jest.fn(() => Promise.resolve({ from: mockFrom })),
+  }
+})
 
 // Mock Supabase client
 jest.mock('@/lib/supabase', () => ({
